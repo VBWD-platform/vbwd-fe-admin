@@ -30,6 +30,7 @@ const NAV_SECTIONS = [
       { label: 'Layouts', to: '/admin/cms/layouts' },
       { label: 'Widgets', to: '/admin/cms/widgets' },
       { label: 'Styles', to: '/admin/cms/styles' },
+      { label: 'Routing Rules', to: '/admin/cms/routing-rules' },
     ],
   },
 ];

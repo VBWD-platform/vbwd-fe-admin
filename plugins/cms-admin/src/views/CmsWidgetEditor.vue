@@ -190,6 +190,160 @@
           </div>
         </template>
 
+        <!-- Vue Component widget -->
+        <template v-else-if="form.widget_type === 'vue-component'">
+          <div class="html-widget-editors">
+            <div class="editor-pane">
+              <!-- Tabs: General / CSS / Preview (breadcrumb only) or just General for unknown components -->
+              <div class="editor-pane__tabs">
+                <button
+                  type="button"
+                  :class="['pane-tab', { active: activeVueTab === 'General' }]"
+                  @click="activeVueTab = 'General'"
+                >
+                  General
+                </button>
+                <template v-if="vueComponentConfig.component_name === 'CmsBreadcrumb'">
+                  <button
+                    type="button"
+                    :class="['pane-tab', { active: activeVueTab === 'CSS' }]"
+                    @click="activeVueTab = 'CSS'"
+                  >
+                    CSS
+                  </button>
+                  <button
+                    type="button"
+                    :class="['pane-tab', { active: activeVueTab === 'Preview' }]"
+                    @click="onVueTabChange('Preview')"
+                  >
+                    Preview
+                  </button>
+                </template>
+              </div>
+
+              <!-- General tab -->
+              <div
+                v-show="activeVueTab === 'General'"
+                class="vue-general-panel"
+              >
+                <!-- Component identifier (always shown; read-only for existing widgets) -->
+                <div class="field-group">
+                  <label class="field-label">Component</label>
+                  <input
+                    v-model="vueComponentConfig.component_name"
+                    class="field-input field-input--mono"
+                    type="text"
+                    :disabled="!isNew && !!vueComponentConfig.component_name"
+                    placeholder="e.g. ghrm-breadcrumb"
+                  >
+                  <p
+                    v-if="isNew"
+                    class="editor-pane__hint"
+                  >
+                    Identifier used by the fe-user plugin to mount this component.
+                  </p>
+                </div>
+
+                <!-- Breadcrumbs widget config fields -->
+                <template v-if="vueComponentConfig.component_name === 'CmsBreadcrumb'">
+                  <div class="meta-fields" style="grid-template-columns: 80px 1fr 1fr 100px 1fr">
+                    <div class="field-group">
+                      <label class="field-label">Separator</label>
+                      <input
+                        v-model="vueComponentConfig.separator"
+                        class="field-input field-input--sm"
+                        type="text"
+                        maxlength="4"
+                      >
+                    </div>
+                    <div class="field-group">
+                      <label class="field-label">Root label</label>
+                      <input
+                        v-model="vueComponentConfig.root_name"
+                        class="field-input"
+                        type="text"
+                      >
+                    </div>
+                    <div class="field-group">
+                      <label class="field-label">Root URL</label>
+                      <input
+                        v-model="vueComponentConfig.root_slug"
+                        class="field-input"
+                        type="text"
+                      >
+                    </div>
+                    <div class="field-group">
+                      <label class="field-label">Max length</label>
+                      <input
+                        v-model.number="vueComponentConfig.max_label_length"
+                        class="field-input field-input--sm"
+                        type="number"
+                        min="10"
+                        max="120"
+                      >
+                    </div>
+                    <div class="field-group checkbox-group">
+                      <label class="field-label">
+                        <input
+                          v-model="vueComponentConfig.show_category"
+                          type="checkbox"
+                        > Show category
+                      </label>
+                    </div>
+                  </div>
+                  <div class="meta-fields" style="grid-template-columns: 1fr 1fr; margin-top: 8px;">
+                    <div class="field-group">
+                      <label class="field-label">Category label</label>
+                      <input
+                        v-model="vueComponentConfig.category_label"
+                        class="field-input"
+                        type="text"
+                        placeholder="e.g. Software (auto from URL if blank)"
+                      >
+                      <p class="editor-pane__hint">
+                        Display name for the first URL segment. Leave blank to auto-title from the slug.
+                      </p>
+                    </div>
+                    <div class="field-group">
+                      <label class="field-label">Category URL</label>
+                      <input
+                        v-model="vueComponentConfig.category_slug"
+                        class="field-input"
+                        type="text"
+                        placeholder="e.g. /software (defaults to actual URL segment)"
+                      >
+                      <p class="editor-pane__hint">
+                        Where the first crumb links to. Set to <code>/software</code> if your catalog root differs from the URL slug.
+                      </p>
+                    </div>
+                  </div>
+                </template>
+              </div>
+
+              <!-- CSS tab (ghrm-breadcrumb only) -->
+              <div v-show="activeVueTab === 'CSS' && vueComponentConfig.component_name === 'CmsBreadcrumb'">
+                <CodeMirrorEditor
+                  v-model="vcCss"
+                  lang="css"
+                  min-height="380px"
+                />
+                <p class="editor-pane__hint">
+                  Scoped to <code>.ghrm-breadcrumb</code>. Overrides default styles.
+                </p>
+              </div>
+
+              <!-- Preview tab (ghrm-breadcrumb only) -->
+              <div v-show="activeVueTab === 'Preview' && vueComponentConfig.component_name === 'CmsBreadcrumb'">
+                <iframe
+                  ref="vuePreviewFrame"
+                  class="widget-preview-iframe"
+                  sandbox="allow-same-origin allow-scripts"
+                />
+              </div>
+            </div>
+          </div>
+        </template>
+
         <!-- Slideshow widget: image list -->
         <template v-else-if="form.widget_type === 'slideshow'">
           <label class="field-label">Slideshow Images</label>
@@ -285,13 +439,22 @@ const activeMenuTab = ref<'Visual' | 'CSS' | 'Preview'>('Visual');
 const menuPreviewFrame = ref<HTMLIFrameElement | null>(null);
 const menuCssContent = ref('');
 
+const activeVueTab = ref<'General' | 'CSS' | 'Preview'>('General');
+const vuePreviewFrame = ref<HTMLIFrameElement | null>(null);
+
 const form = ref({
   name: '',
   slug: '',
-  widget_type: 'html' as 'html' | 'menu' | 'slideshow',
+  widget_type: 'html' as 'html' | 'menu' | 'slideshow' | 'vue-component',
   sort_order: 0,
   is_active: true,
 });
+
+/** Config object for vue-component widgets (e.g. ghrm-breadcrumb). */
+const vueComponentConfig = ref<Record<string, unknown>>({ component_name: '' });
+
+/** CSS string for CodeMirror — synced into vueComponentConfig.css on save. */
+const vcCss = ref('');
 
 /** Decoded HTML content for the editor (plain text, not base64). */
 const htmlContent = ref('');
@@ -363,6 +526,36 @@ async function onMenuTabChange(tab: 'Visual' | 'CSS' | 'Preview') {
   }
 }
 
+function updateVuePreview() {
+  const frame = vuePreviewFrame.value;
+  if (!frame) return;
+  const cfg = vueComponentConfig.value;
+  const sep = (cfg.separator as string) || '/';
+  const rootName = (cfg.root_name as string) || 'Home';
+  const showCat = cfg.show_category !== false;
+  const css = vcCss.value;
+  const html = `<nav class="ghrm-breadcrumb" aria-label="breadcrumb">
+  <a href="#" class="ghrm-breadcrumb__link">${rootName}</a>
+  ${showCat ? `<span class="ghrm-breadcrumb__separator" aria-hidden="true">${sep}</span>
+  <a href="#" class="ghrm-breadcrumb__link">Category</a>` : ''}
+  <span class="ghrm-breadcrumb__separator" aria-hidden="true">${sep}</span>
+  <span class="ghrm-breadcrumb__current">Package Name</span>
+</nav>`;
+  const doc = frame.contentDocument;
+  if (!doc) return;
+  doc.open();
+  doc.write(`<!DOCTYPE html><html><head><style>*{box-sizing:border-box}body{margin:20px;font-family:system-ui,sans-serif;background:#fff}${css}</style></head><body>${html}</body></html>`);
+  doc.close();
+}
+
+async function onVueTabChange(tab: 'General' | 'CSS' | 'Preview') {
+  activeVueTab.value = tab;
+  if (tab === 'Preview') {
+    await nextTick();
+    updateVuePreview();
+  }
+}
+
 function onImageSelected(url: string, alt: string) {
   if (form.value.widget_type === 'slideshow') {
     slideshowImages.value.push({ url, alt, caption: '' });
@@ -389,6 +582,11 @@ async function save() {
     payload.source_css = menuCssContent.value || null;
   } else if (form.value.widget_type === 'slideshow') {
     payload.content_json = { images: slideshowImages.value };
+    payload.source_css = null;
+  } else if (form.value.widget_type === 'vue-component') {
+    const componentName = (vueComponentConfig.value.component_name as string) || '';
+    payload.content_json = componentName ? { component: componentName } : null;
+    payload.config = { ...vueComponentConfig.value, css: vcCss.value };
     payload.source_css = null;
   }
 
@@ -422,7 +620,7 @@ onMounted(async () => {
       form.value = {
         name: w.name,
         slug: w.slug,
-        widget_type: w.widget_type,
+        widget_type: w.widget_type as 'html' | 'menu' | 'slideshow' | 'vue-component',
         sort_order: w.sort_order,
         is_active: w.is_active,
       };
@@ -442,6 +640,14 @@ onMounted(async () => {
         menuCssContent.value = (w as any).source_css ?? '';
         if (w.menu_items) menuItems.value = w.menu_items;
       }
+      if (w.widget_type === 'vue-component') {
+        const componentName = (w.content_json as any)?.component
+          ?? (w.config as any)?.component_name
+          ?? '';
+        vueComponentConfig.value = { component_name: componentName, ...(w.config ?? {}) };
+        vcCss.value = (w.config?.css as string) ?? '';
+      }
+
       if (w.widget_type === 'slideshow' && w.content_json?.images) {
         slideshowImages.value = (w.content_json.images as any[]).map(i => ({
           url: i.url ?? '', alt: i.alt ?? '', caption: i.caption ?? '',
@@ -464,6 +670,8 @@ onMounted(async () => {
 .checkbox-group { padding-top: 1.5rem; }
 
 .type-editor { min-height: 200px; min-width: 0; overflow: hidden; }
+.type-editor :deep(.cm-editor) { min-width: 0; max-width: 100%; }
+.type-editor :deep(.cm-scroller) { overflow-x: auto; }
 
 /* Editor toolbar (above HTML CodeMirror) */
 .editor-toolbar { display: flex; gap: 0.5rem; padding: 4px 8px; background: #1e2030; border-bottom: 1px solid #374151; }
@@ -473,6 +681,7 @@ onMounted(async () => {
 /* HTML widget tab layout */
 .widget-preview-iframe { width: 100%; height: 420px; border: none; border-radius: 0 0 6px 6px; background: #fff; }
 .html-widget-editors { display: flex; flex-direction: column; gap: 0; min-width: 0; overflow: hidden; }
+.editor-pane { min-width: 0; overflow: hidden; width: 100%; }
 .editor-pane__tabs { display: flex; gap: 0; border-bottom: 1px solid #374151; margin-bottom: 0; background: #1e2030; border-radius: 6px 6px 0 0; overflow: hidden; }
 .pane-tab { padding: 0.5rem 1.25rem; background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; font-size: 0.85rem; color: #9ca3af; }
 .pane-tab.active { color: #60a5fa; border-bottom-color: #60a5fa; background: #1a1a2e; }
@@ -499,4 +708,7 @@ onMounted(async () => {
 .btn--sm { font-size: 0.8rem; padding: 0.35rem 0.65rem; }
 .btn--xs { font-size: 0.75rem; padding: 0.2rem 0.5rem; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.vue-component-hint { font-size: 0.85rem; color: #6b7280; margin: 0 0 1.25rem; }
+.vue-general-panel { padding: 1rem 0 0.5rem; }
 </style>

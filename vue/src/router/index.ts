@@ -164,6 +164,11 @@ const routes: RouteRecordRaw[] = [
         path: 'profile',
         name: 'profile',
         component: () => import('@/views/Profile.vue')
+      },
+      {
+        path: 'cms/routing-rules',
+        name: 'routing-rules',
+        component: () => import('@/views/RoutingRules.vue')
       }
     ]
   }

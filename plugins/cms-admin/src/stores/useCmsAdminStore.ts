@@ -93,7 +93,7 @@ export interface CmsWidget {
   id: string;
   slug: string;
   name: string;
-  widget_type: 'html' | 'menu' | 'slideshow';
+  widget_type: 'html' | 'menu' | 'slideshow' | 'vue-component';
   content_json: Record<string, unknown> | null;
   content_html: string | null;
   config: Record<string, unknown> | null;

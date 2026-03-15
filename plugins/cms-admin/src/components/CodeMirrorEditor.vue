@@ -57,7 +57,7 @@ onMounted(() => {
         }),
         EditorView.theme({
           '&': { minHeight: props.minHeight ?? '260px' },
-          '.cm-scroller': { fontFamily: "'JetBrains Mono', 'Fira Code', ui-monospace, monospace" },
+          '.cm-scroller': { fontFamily: "'JetBrains Mono', 'Fira Code', ui-monospace, monospace", overflowX: 'auto' },
         }),
       ],
     }),
@@ -93,11 +93,15 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .cm-wrap {
+  width: 100%;
+  min-width: 0;
   border: 1px solid #374151;
   border-radius: 6px;
   overflow: hidden;
 }
 .cm-wrap :deep(.cm-editor) {
+  min-width: 0;
+  width: 100%;
   font-size: 0.8rem;
 }
 .cm-wrap :deep(.cm-gutters) {
