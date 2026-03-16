@@ -257,10 +257,10 @@ vbwd-fe-core/          # git submodule — shared component library
 | Plugin | Repository | Description |
 |--------|-----------|-------------|
 | analytics-widget | [vbwd-fe-admin-plugin-analytics-widget](https://github.com/VBWD-platform/vbwd-fe-admin-plugin-analytics-widget) | Dashboard analytics chart widget |
-| cms-admin | [vbwd-fe-admin-plugin-cms-admin](https://github.com/VBWD-platform/vbwd-fe-admin-plugin-cms-admin) | CMS pages/categories/layouts/widgets/styles admin |
-| email-admin | [vbwd-fe-admin-plugin-email-admin](https://github.com/VBWD-platform/vbwd-fe-admin-plugin-email-admin) | Email template list and editor (HTML/Text/Preview) |
-| ghrm-admin | [vbwd-fe-admin-plugin-ghrm-admin](https://github.com/VBWD-platform/vbwd-fe-admin-plugin-ghrm-admin) | GHRM package management tab in admin |
-| taro-admin | [vbwd-fe-admin-plugin-taro-admin](https://github.com/VBWD-platform/vbwd-fe-admin-plugin-taro-admin) | Tarot session section in user detail |
+| cms-admin | [vbwd-fe-admin-plugin-cms](https://github.com/VBWD-platform/vbwd-fe-admin-plugin-cms) | CMS pages/categories/layouts/widgets/styles admin |
+| email-admin | [vbwd-fe-admin-plugin-email](https://github.com/VBWD-platform/vbwd-fe-admin-plugin-email) | Email template list and editor (HTML/Text/Preview) |
+| ghrm-admin | [vbwd-fe-admin-plugin-ghrm](https://github.com/VBWD-platform/vbwd-fe-admin-plugin-ghrm) | GHRM package management tab in admin |
+| taro-admin | [vbwd-fe-admin-plugin-taro](https://github.com/VBWD-platform/vbwd-fe-admin-plugin-taro) | Tarot session section in user detail |
 
 ---
 
