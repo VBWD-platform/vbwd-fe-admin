@@ -108,21 +108,17 @@
         <div class="tpl-tab-body">
           <!-- HTML tab -->
           <div v-show="activeTab === 'html'">
-            <textarea
+            <CodeEditor
               v-model="form.html_body"
-              class="tpl-code-editor"
-              spellcheck="false"
-              placeholder="Enter HTML template…"
+              language="html"
             />
           </div>
 
           <!-- Plain text tab -->
           <div v-show="activeTab === 'text'">
-            <textarea
+            <CodeEditor
               v-model="form.text_body"
-              class="tpl-code-editor tpl-code-editor--text"
-              spellcheck="false"
-              placeholder="Enter plain text template…"
+              language="text"
             />
           </div>
 
@@ -229,6 +225,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useEmailStore } from '../stores/useEmailStore'
+import CodeEditor from '../components/CodeEditor.vue'
 
 const route = useRoute()
 const router = useRouter()

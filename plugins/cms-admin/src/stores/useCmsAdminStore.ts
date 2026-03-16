@@ -500,5 +500,47 @@ export const useCmsAdminStore = defineStore('cms-admin', {
       await api.post<any>('/admin/cms/styles/import', payload);
       await this.fetchStyles();
     },
+
+    // ── CMS Import / Export ──────────────────────────────────────────────────
+
+    async exportCms(sections: string[]): Promise<void> {
+      const { useAuthStore } = await import('@/stores/auth');
+      const auth = useAuthStore();
+      const base = (import.meta.env.VITE_API_URL as string) || '/api/v1';
+      const res = await fetch(`${base}/admin/cms/export`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(auth.token ? { Authorization: `Bearer ${auth.token}` } : {}),
+        },
+        body: JSON.stringify({ sections }),
+      });
+      if (!res.ok) throw new Error(`Export failed: ${res.statusText}`);
+      const blob = await res.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'cms-export.zip';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    },
+
+    async importCms(file: File, strategy: string): Promise<{ imported: Record<string, number>; errors: string[] }> {
+      const { useAuthStore } = await import('@/stores/auth');
+      const auth = useAuthStore();
+      const base = (import.meta.env.VITE_API_URL as string) || '/api/v1';
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('strategy', strategy);
+      const res = await fetch(`${base}/admin/cms/import`, {
+        method: 'POST',
+        headers: {
+          ...(auth.token ? { Authorization: `Bearer ${auth.token}` } : {}),
+        },
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error ?? `Import failed: ${res.statusText}`);
+      return data;
+    },
   },
 });

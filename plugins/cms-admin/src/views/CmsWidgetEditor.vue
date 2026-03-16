@@ -190,11 +190,11 @@
           </div>
         </template>
 
-        <!-- Vue Component widget -->
+        <!-- Vue Component widget — widget-agnostic via descriptor registry -->
         <template v-else-if="form.widget_type === 'vue-component'">
           <div class="html-widget-editors">
             <div class="editor-pane">
-              <!-- Tabs: General / CSS / Preview (breadcrumb only) or just General for unknown components -->
+              <!-- Tabs: General / CSS / Preview — CSS+Preview only when a descriptor is registered -->
               <div class="editor-pane__tabs">
                 <button
                   type="button"
@@ -203,7 +203,7 @@
                 >
                   General
                 </button>
-                <template v-if="vueComponentConfig.component_name === 'CmsBreadcrumb'">
+                <template v-if="currentDescriptor">
                   <button
                     type="button"
                     :class="['pane-tab', { active: activeVueTab === 'CSS' }]"
@@ -234,7 +234,7 @@
                     class="field-input field-input--mono"
                     type="text"
                     :disabled="!isNew && !!vueComponentConfig.component_name"
-                    placeholder="e.g. ghrm-breadcrumb"
+                    placeholder="e.g. ContactForm"
                   >
                   <p
                     v-if="isNew"
@@ -244,96 +244,32 @@
                   </p>
                 </div>
 
-                <!-- Breadcrumbs widget config fields -->
-                <template v-if="vueComponentConfig.component_name === 'CmsBreadcrumb'">
-                  <div class="meta-fields" style="grid-template-columns: 80px 1fr 1fr 100px 1fr">
-                    <div class="field-group">
-                      <label class="field-label">Separator</label>
-                      <input
-                        v-model="vueComponentConfig.separator"
-                        class="field-input field-input--sm"
-                        type="text"
-                        maxlength="4"
-                      >
-                    </div>
-                    <div class="field-group">
-                      <label class="field-label">Root label</label>
-                      <input
-                        v-model="vueComponentConfig.root_name"
-                        class="field-input"
-                        type="text"
-                      >
-                    </div>
-                    <div class="field-group">
-                      <label class="field-label">Root URL</label>
-                      <input
-                        v-model="vueComponentConfig.root_slug"
-                        class="field-input"
-                        type="text"
-                      >
-                    </div>
-                    <div class="field-group">
-                      <label class="field-label">Max length</label>
-                      <input
-                        v-model.number="vueComponentConfig.max_label_length"
-                        class="field-input field-input--sm"
-                        type="number"
-                        min="10"
-                        max="120"
-                      >
-                    </div>
-                    <div class="field-group checkbox-group">
-                      <label class="field-label">
-                        <input
-                          v-model="vueComponentConfig.show_category"
-                          type="checkbox"
-                        > Show category
-                      </label>
-                    </div>
-                  </div>
-                  <div class="meta-fields" style="grid-template-columns: 1fr 1fr; margin-top: 8px;">
-                    <div class="field-group">
-                      <label class="field-label">Category label</label>
-                      <input
-                        v-model="vueComponentConfig.category_label"
-                        class="field-input"
-                        type="text"
-                        placeholder="e.g. Software (auto from URL if blank)"
-                      >
-                      <p class="editor-pane__hint">
-                        Display name for the first URL segment. Leave blank to auto-title from the slug.
-                      </p>
-                    </div>
-                    <div class="field-group">
-                      <label class="field-label">Category URL</label>
-                      <input
-                        v-model="vueComponentConfig.category_slug"
-                        class="field-input"
-                        type="text"
-                        placeholder="e.g. /software (defaults to actual URL segment)"
-                      >
-                      <p class="editor-pane__hint">
-                        Where the first crumb links to. Set to <code>/software</code> if your catalog root differs from the URL slug.
-                      </p>
-                    </div>
-                  </div>
-                </template>
+                <!-- Descriptor-provided General tab component -->
+                <component
+                  :is="currentDescriptor.generalTabComponent"
+                  v-if="currentDescriptor"
+                  :config="vueComponentConfig"
+                  @update:config="vueComponentConfig = $event"
+                />
               </div>
 
-              <!-- CSS tab (ghrm-breadcrumb only) -->
-              <div v-show="activeVueTab === 'CSS' && vueComponentConfig.component_name === 'CmsBreadcrumb'">
+              <!-- CSS tab -->
+              <div v-show="activeVueTab === 'CSS' && currentDescriptor">
                 <CodeMirrorEditor
                   v-model="vcCss"
                   lang="css"
                   min-height="380px"
                 />
-                <p class="editor-pane__hint">
-                  Scoped to <code>.ghrm-breadcrumb</code>. Overrides default styles.
-                </p>
+                <!-- eslint-disable-next-line vue/no-v-html -->
+                <p
+                  v-if="currentDescriptor?.cssHint"
+                  class="editor-pane__hint"
+                  v-html="currentDescriptor.cssHint"
+                />
               </div>
 
-              <!-- Preview tab (ghrm-breadcrumb only) -->
-              <div v-show="activeVueTab === 'Preview' && vueComponentConfig.component_name === 'CmsBreadcrumb'">
+              <!-- Preview tab -->
+              <div v-show="activeVueTab === 'Preview' && currentDescriptor">
                 <iframe
                   ref="vuePreviewFrame"
                   class="widget-preview-iframe"
@@ -415,31 +351,35 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue';
+import { ref, computed, onMounted, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useCmsAdminStore } from '../stores/useCmsAdminStore';
 import type { CmsMenuItemData } from '../stores/useCmsAdminStore';
 import CodeMirrorEditor from '../components/CodeMirrorEditor.vue';
 import CmsMenuTreeEditor from '../components/CmsMenuTreeEditor.vue';
 import CmsImagePicker from '../components/CmsImagePicker.vue';
+import { getWidgetEditor } from '../widgets/widgetEditorRegistry';
+import '../widgets/index'; // register all vue-component descriptors
 
-const route = useRoute();
+const route  = useRoute();
 const router = useRouter();
-const store = useCmsAdminStore();
+const store  = useCmsAdminStore();
 
-const id = route.params.id as string | undefined;
+const id    = route.params.id as string | undefined;
 const isNew = !id;
-const imagePickerOpen = ref(false);
+
+const imagePickerOpen     = ref(false);
 const htmlImagePickerOpen = ref(false);
-const activeHtmlTab = ref<'HTML' | 'CSS' | 'Preview'>('HTML');
+
+const activeHtmlTab      = ref<'HTML' | 'CSS' | 'Preview'>('HTML');
 const widgetPreviewFrame = ref<HTMLIFrameElement | null>(null);
-const htmlEditorRef = ref<InstanceType<typeof CodeMirrorEditor> | null>(null);
+const htmlEditorRef      = ref<InstanceType<typeof CodeMirrorEditor> | null>(null);
 
-const activeMenuTab = ref<'Visual' | 'CSS' | 'Preview'>('Visual');
+const activeMenuTab    = ref<'Visual' | 'CSS' | 'Preview'>('Visual');
 const menuPreviewFrame = ref<HTMLIFrameElement | null>(null);
-const menuCssContent = ref('');
+const menuCssContent   = ref('');
 
-const activeVueTab = ref<'General' | 'CSS' | 'Preview'>('General');
+const activeVueTab    = ref<'General' | 'CSS' | 'Preview'>('General');
 const vuePreviewFrame = ref<HTMLIFrameElement | null>(null);
 
 const form = ref({
@@ -450,18 +390,23 @@ const form = ref({
   is_active: true,
 });
 
-/** Config object for vue-component widgets (e.g. ghrm-breadcrumb). */
+/** Config object for vue-component widgets. Managed by the descriptor's tab component. */
 const vueComponentConfig = ref<Record<string, unknown>>({ component_name: '' });
 
-/** CSS string for CodeMirror — synced into vueComponentConfig.css on save. */
+/** Resolved descriptor for the currently selected component_name. */
+const currentDescriptor = computed(() =>
+  getWidgetEditor(vueComponentConfig.value.component_name as string)
+);
+
+/** CSS string for CodeMirror — merged into config.css on save. */
 const vcCss = ref('');
 
-/** Decoded HTML content for the editor (plain text, not base64). */
+/** Decoded HTML content for the HTML editor. */
 const htmlContent = ref('');
-/** CSS for this widget's structural classes. */
-const cssContent = ref('');
+/** CSS for HTML widget structural classes. */
+const cssContent  = ref('');
 
-const menuItems = ref<CmsMenuItemData[]>([]);
+const menuItems      = ref<CmsMenuItemData[]>([]);
 const slideshowImages = ref<{ url: string; alt: string; caption: string }[]>([]);
 
 function slugify(text: string) {
@@ -470,6 +415,8 @@ function slugify(text: string) {
 function autoSlug() {
   if (!form.value.slug) form.value.slug = slugify(form.value.name);
 }
+
+// ── HTML widget preview ────────────────────────────────────────────────────────
 
 function updateWidgetPreview() {
   const frame = widgetPreviewFrame.value;
@@ -488,6 +435,8 @@ async function onWidgetTabChange(tab: 'HTML' | 'CSS' | 'Preview') {
     updateWidgetPreview();
   }
 }
+
+// ── Menu widget preview ────────────────────────────────────────────────────────
 
 function buildMenuHtml(): string {
   function renderItems(items: CmsMenuItemData[], parentId: string | null = null): string {
@@ -526,25 +475,18 @@ async function onMenuTabChange(tab: 'Visual' | 'CSS' | 'Preview') {
   }
 }
 
+// ── Vue-component preview (delegated to descriptor) ────────────────────────────
+
 function updateVuePreview() {
   const frame = vuePreviewFrame.value;
-  if (!frame) return;
-  const cfg = vueComponentConfig.value;
-  const sep = (cfg.separator as string) || '/';
-  const rootName = (cfg.root_name as string) || 'Home';
-  const showCat = cfg.show_category !== false;
-  const css = vcCss.value;
-  const html = `<nav class="ghrm-breadcrumb" aria-label="breadcrumb">
-  <a href="#" class="ghrm-breadcrumb__link">${rootName}</a>
-  ${showCat ? `<span class="ghrm-breadcrumb__separator" aria-hidden="true">${sep}</span>
-  <a href="#" class="ghrm-breadcrumb__link">Category</a>` : ''}
-  <span class="ghrm-breadcrumb__separator" aria-hidden="true">${sep}</span>
-  <span class="ghrm-breadcrumb__current">Package Name</span>
-</nav>`;
+  const desc  = currentDescriptor.value;
+  if (!frame || !desc) return;
+  const { html, baseStyles = '' } = desc.buildPreview(vueComponentConfig.value);
+  const base = `*{box-sizing:border-box}body{margin:20px;font-family:system-ui,sans-serif;background:#fff}${baseStyles}`;
   const doc = frame.contentDocument;
   if (!doc) return;
   doc.open();
-  doc.write(`<!DOCTYPE html><html><head><style>*{box-sizing:border-box}body{margin:20px;font-family:system-ui,sans-serif;background:#fff}${css}</style></head><body>${html}</body></html>`);
+  doc.write(`<!DOCTYPE html><html><head><style>${base}${vcCss.value}</style></head><body>${html}</body></html>`);
   doc.close();
 }
 
@@ -555,6 +497,8 @@ async function onVueTabChange(tab: 'General' | 'CSS' | 'Preview') {
     updateVuePreview();
   }
 }
+
+// ── Image picker handlers ─────────────────────────────────────────────────────
 
 function onImageSelected(url: string, alt: string) {
   if (form.value.widget_type === 'slideshow') {
@@ -568,26 +512,27 @@ function onHtmlImageSelected(url: string, alt: string) {
   htmlImagePickerOpen.value = false;
 }
 
+// ── Save ──────────────────────────────────────────────────────────────────────
+
 async function save() {
   const payload: Record<string, unknown> = { ...form.value };
   if (id) payload.id = id;
 
   if (form.value.widget_type === 'html') {
-    // Encode HTML to base64; store CSS separately
     const b64 = btoa(unescape(encodeURIComponent(htmlContent.value)));
     payload.content_json = { content: b64 };
-    payload.source_css = cssContent.value;
+    payload.source_css   = cssContent.value;
   } else if (form.value.widget_type === 'menu') {
     payload.content_json = null;
-    payload.source_css = menuCssContent.value || null;
+    payload.source_css   = menuCssContent.value || null;
   } else if (form.value.widget_type === 'slideshow') {
     payload.content_json = { images: slideshowImages.value };
-    payload.source_css = null;
+    payload.source_css   = null;
   } else if (form.value.widget_type === 'vue-component') {
     const componentName = (vueComponentConfig.value.component_name as string) || '';
     payload.content_json = componentName ? { component: componentName } : null;
-    payload.config = { ...vueComponentConfig.value, css: vcCss.value };
-    payload.source_css = null;
+    payload.config       = { ...vueComponentConfig.value, css: vcCss.value };
+    payload.source_css   = null;
   }
 
   const saved = await store.saveWidget(payload as any);
@@ -602,6 +547,8 @@ async function save() {
   }
 }
 
+// ── Delete ────────────────────────────────────────────────────────────────────
+
 async function remove() {
   if (!id || !confirm('Delete this widget? It cannot be deleted if assigned to a layout.')) return;
   try {
@@ -612,26 +559,27 @@ async function remove() {
   }
 }
 
+// ── Load on mount ─────────────────────────────────────────────────────────────
+
 onMounted(async () => {
   if (!isNew) {
     await store.fetchWidget(id!);
     const w = store.currentWidget;
     if (w) {
       form.value = {
-        name: w.name,
-        slug: w.slug,
+        name:        w.name,
+        slug:        w.slug,
         widget_type: w.widget_type as 'html' | 'menu' | 'slideshow' | 'vue-component',
-        sort_order: w.sort_order,
-        is_active: w.is_active,
+        sort_order:  w.sort_order,
+        is_active:   w.is_active,
       };
 
       if (w.widget_type === 'html') {
-        // Decode base64 HTML from content_json.content
         const b64 = (w.content_json as any)?.content ?? '';
         try {
           htmlContent.value = b64 ? decodeURIComponent(escape(atob(b64))) : '';
         } catch {
-          htmlContent.value = b64; // fallback if not base64
+          htmlContent.value = b64;
         }
         cssContent.value = (w as any).source_css ?? '';
       }
@@ -640,6 +588,7 @@ onMounted(async () => {
         menuCssContent.value = (w as any).source_css ?? '';
         if (w.menu_items) menuItems.value = w.menu_items;
       }
+
       if (w.widget_type === 'vue-component') {
         const componentName = (w.content_json as any)?.component
           ?? (w.config as any)?.component_name
@@ -659,56 +608,62 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* ── Layout ───────────────────────────────────────────────────────────────── */
 .widget-editor { padding: 1rem; }
 .widget-editor__header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem; }
 .widget-editor__actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .widget-editor__error { background: #fee2e2; color: #991b1b; padding: 0.6rem 1rem; border-radius: 4px; margin-bottom: 1rem; }
 .widget-editor__body { display: flex; flex-direction: column; gap: 1.5rem; min-width: 0; }
 
+/* ── Meta-fields grid ─────────────────────────────────────────────────────── */
 .meta-fields { display: grid; grid-template-columns: 1fr 1fr 140px 100px 100px; gap: 0 1rem; align-items: start; }
-@media (max-width: 800px) { .meta-fields { grid-template-columns: 1fr 1fr; } }
 .checkbox-group { padding-top: 1.5rem; }
 
+/* tablet */
+@media (max-width: 800px) {
+  .meta-fields { grid-template-columns: 1fr 1fr; }
+  .checkbox-group { padding-top: 0; }
+}
+
+/* portrait phone */
+@media (max-width: 480px) {
+  .widget-editor { padding: 0.625rem; }
+  .meta-fields { grid-template-columns: 1fr; gap: 0; }
+  .widget-editor__header { flex-direction: column; align-items: stretch; }
+  .widget-editor__actions { justify-content: flex-end; }
+}
+
+/* ── Type editor + CodeMirror ─────────────────────────────────────────────── */
 .type-editor { min-height: 200px; min-width: 0; overflow: hidden; }
 .type-editor :deep(.cm-editor) { min-width: 0; max-width: 100%; }
 .type-editor :deep(.cm-scroller) { overflow-x: auto; }
 
-/* Editor toolbar (above HTML CodeMirror) */
+/* ── Editor toolbar (above HTML CodeMirror) ───────────────────────────────── */
 .editor-toolbar { display: flex; gap: 0.5rem; padding: 4px 8px; background: #1e2030; border-bottom: 1px solid #374151; }
 .toolbar-btn { padding: 2px 10px; font-size: 0.78rem; background: #374151; color: #d1d5db; border: 1px solid #4b5563; border-radius: 3px; cursor: pointer; }
 .toolbar-btn:hover { background: #4b5563; color: #f9fafb; }
 
-/* HTML widget tab layout */
-.widget-preview-iframe { width: 100%; height: 420px; border: none; border-radius: 0 0 6px 6px; background: #fff; }
+/* ── Pane tabs + iframe ───────────────────────────────────────────────────── */
 .html-widget-editors { display: flex; flex-direction: column; gap: 0; min-width: 0; overflow: hidden; }
 .editor-pane { min-width: 0; overflow: hidden; width: 100%; }
-.editor-pane__tabs { display: flex; gap: 0; border-bottom: 1px solid #374151; margin-bottom: 0; background: #1e2030; border-radius: 6px 6px 0 0; overflow: hidden; }
-.pane-tab { padding: 0.5rem 1.25rem; background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; font-size: 0.85rem; color: #9ca3af; }
+.editor-pane__tabs { display: flex; gap: 0; border-bottom: 1px solid #374151; margin-bottom: 0; background: #1e2030; border-radius: 6px 6px 0 0; overflow: hidden; overflow-x: auto; }
+.pane-tab { padding: 0.5rem 1.1rem; background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; font-size: 0.85rem; color: #9ca3af; white-space: nowrap; flex-shrink: 0; }
 .pane-tab.active { color: #60a5fa; border-bottom-color: #60a5fa; background: #1a1a2e; }
-.editor-pane__hint { margin-top: 0.5rem; font-size: 0.78rem; color: #6b7280; }
-.editor-pane__hint code { background: #f3f4f6; border-radius: 3px; padding: 0 3px; font-family: monospace; }
 
-/* Slideshow */
+.widget-preview-iframe { width: 100%; height: 420px; border: none; border-radius: 0 0 6px 6px; background: #fff; }
+
+@media (max-width: 480px) {
+  .widget-preview-iframe { height: 280px; }
+  .pane-tab { padding: 0.5rem 0.75rem; font-size: 0.8rem; }
+}
+
+/* ── Slideshow ────────────────────────────────────────────────────────────── */
 .slideshow-list { display: flex; flex-direction: column; gap: 0.75rem; }
 .slideshow-empty { color: #9ca3af; font-size: 0.875rem; padding: 0.5rem; }
-.slideshow-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 6px; }
-.slideshow-thumb { width: 80px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid #e5e7eb; }
-.slideshow-item__meta { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.slideshow-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 6px; flex-wrap: wrap; }
+.slideshow-thumb { width: 80px; height: 56px; object-fit: cover; border-radius: 4px; border: 1px solid #e5e7eb; flex-shrink: 0; }
+.slideshow-item__meta { flex: 1; min-width: 120px; display: flex; flex-direction: column; gap: 4px; }
 
-.field-group { margin-bottom: 1rem; }
-.field-label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; color: #374151; }
-.field-input { width: 100%; padding: 0.45rem 0.75rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.9rem; box-sizing: border-box; }
-.field-input--mono { font-family: monospace; }
-.field-input--sm { font-size: 0.8rem; padding: 0.3rem 0.5rem; }
-
-.btn { padding: 0.45rem 1rem; border: 1px solid #d1d5db; border-radius: 4px; background: #fff; cursor: pointer; font-size: 0.875rem; text-decoration: none; }
-.btn--ghost { color: #374151; display: inline-flex; align-items: center; }
-.btn--primary { background: #3b82f6; color: #fff; border-color: #3b82f6; }
-.btn--danger { background: #ef4444; color: #fff; border-color: #ef4444; }
-.btn--sm { font-size: 0.8rem; padding: 0.35rem 0.65rem; }
-.btn--xs { font-size: 0.75rem; padding: 0.2rem 0.5rem; }
-.btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-.vue-component-hint { font-size: 0.85rem; color: #6b7280; margin: 0 0 1.25rem; }
+/* field-group, field-label, field-input*, editor-pane__hint, btn* — see cms-admin.css */
 .vue-general-panel { padding: 1rem 0 0.5rem; }
 </style>

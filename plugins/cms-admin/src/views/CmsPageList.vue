@@ -50,6 +50,39 @@
           {{ $t('cms.draft') }}
         </option>
       </select>
+      <select
+        v-model="filterLanguage"
+        class="filter-select"
+        @change="load"
+      >
+        <option value="">
+          {{ $t('cms.allLanguages') }}
+        </option>
+        <option value="en">
+          EN
+        </option>
+        <option value="de">
+          DE
+        </option>
+        <option value="fr">
+          FR
+        </option>
+        <option value="es">
+          ES
+        </option>
+        <option value="ru">
+          RU
+        </option>
+        <option value="zh">
+          ZH
+        </option>
+        <option value="ja">
+          JA
+        </option>
+        <option value="th">
+          TH
+        </option>
+      </select>
     </div>
 
     <!-- Bulk toolbar -->
@@ -219,6 +252,7 @@ const store = useCmsAdminStore();
 const search = ref('');
 const filterCategory = ref('');
 const filterPublished = ref('');
+const filterLanguage = ref('');
 const currentPage = ref(1);
 const currentSort = ref('updated_at');
 const currentDir = ref<'asc' | 'desc'>('desc');
@@ -235,6 +269,7 @@ function load() {
   if (search.value) params.search = search.value;
   if (filterCategory.value) params.category_id = filterCategory.value;
   if (filterPublished.value !== '') params.is_published = filterPublished.value;
+  if (filterLanguage.value) params.language = filterLanguage.value;
   store.fetchPages(params);
 }
 

@@ -172,7 +172,7 @@ async function handleSaved(payload: RoutingRule) {
       await store.createRule(payload);
     }
     formVisible.value = false;
-  } catch (err) {
+  } catch {
     // error handled inside form
   }
 }

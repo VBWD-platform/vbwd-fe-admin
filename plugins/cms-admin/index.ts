@@ -31,6 +31,7 @@ const NAV_SECTIONS = [
       { label: 'Widgets', to: '/admin/cms/widgets' },
       { label: 'Styles', to: '/admin/cms/styles' },
       { label: 'Routing Rules', to: '/admin/cms/routing-rules' },
+      { label: 'Import / Export', to: '/admin/cms/import-export' },
     ],
   },
 ];
@@ -111,6 +112,12 @@ export const cmsAdminPlugin: IPlugin = {
       path: 'cms/widgets/:id/edit',
       name: 'cms-widget-edit',
       component: () => import('./src/views/CmsWidgetEditor.vue'),
+    });
+    // Import / Export
+    sdk.addRoute({
+      path: 'cms/import-export',
+      name: 'cms-import-export',
+      component: () => import('./src/views/CmsImportExport.vue'),
     });
     // Layouts
     sdk.addRoute({
