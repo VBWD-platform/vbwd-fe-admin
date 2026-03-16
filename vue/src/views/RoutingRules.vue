@@ -39,9 +39,15 @@
         class="rr-select"
         data-testid="layer-filter"
       >
-        <option value="">All layers</option>
-        <option value="middleware">Middleware</option>
-        <option value="nginx">Nginx</option>
+        <option value="">
+          All layers
+        </option>
+        <option value="middleware">
+          Middleware
+        </option>
+        <option value="nginx">
+          Nginx
+        </option>
       </select>
     </div>
 
@@ -85,7 +91,9 @@
           <td>{{ rule.priority }}</td>
           <td>{{ rule.name }}</td>
           <td><span class="rr-badge">{{ rule.match_type }}</span></td>
-          <td class="rr-value">{{ rule.match_value || '—' }}</td>
+          <td class="rr-value">
+            {{ rule.match_value || '—' }}
+          </td>
           <td>{{ rule.target_slug }}</td>
           <td>{{ rule.redirect_code }}</td>
           <td><span :class="`rr-layer rr-layer--${rule.layer}`">{{ rule.layer }}</span></td>

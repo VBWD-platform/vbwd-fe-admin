@@ -160,135 +160,135 @@
         v-else
         class="plans-table-wrap"
       >
-      <table
-        data-testid="plans-table"
-        class="plans-table"
-      >
-        <thead>
-          <tr>
-            <th class="checkbox-col">
-              <input
-                type="checkbox"
-                :checked="allVisibleSelected && sortedPlans.length > 0"
-                :indeterminate="selectedPlans.size > 0 && !allVisibleSelected"
-                data-testid="select-all-checkbox"
-                @change="toggleSelectAll"
+        <table
+          data-testid="plans-table"
+          class="plans-table"
+        >
+          <thead>
+            <tr>
+              <th class="checkbox-col">
+                <input
+                  type="checkbox"
+                  :checked="allVisibleSelected && sortedPlans.length > 0"
+                  :indeterminate="selectedPlans.size > 0 && !allVisibleSelected"
+                  data-testid="select-all-checkbox"
+                  @change="toggleSelectAll"
+                >
+              </th>
+              <th
+                class="sortable"
+                :class="{ sorted: sortColumn === 'name', 'sort-asc': sortColumn === 'name' && sortDirection === 'asc', 'sort-desc': sortColumn === 'name' && sortDirection === 'desc' }"
+                data-sortable="name"
+                @click="handleSort('name')"
               >
-            </th>
-            <th
-              class="sortable"
-              :class="{ sorted: sortColumn === 'name', 'sort-asc': sortColumn === 'name' && sortDirection === 'asc', 'sort-desc': sortColumn === 'name' && sortDirection === 'desc' }"
-              data-sortable="name"
-              @click="handleSort('name')"
-            >
-              {{ $t('plans.name') }}
-              <span class="sort-indicator">{{ getSortIndicator('name') }}</span>
-            </th>
-            <th
-              class="sortable"
-              :class="{ sorted: sortColumn === 'price', 'sort-asc': sortColumn === 'price' && sortDirection === 'asc', 'sort-desc': sortColumn === 'price' && sortDirection === 'desc' }"
-              data-sortable="price"
-              @click="handleSort('price')"
-            >
-              {{ $t('plans.price') }}
-              <span class="sort-indicator">{{ getSortIndicator('price') }}</span>
-            </th>
-            <th
-              class="sortable"
-              :class="{ sorted: sortColumn === 'billing_period', 'sort-asc': sortColumn === 'billing_period' && sortDirection === 'asc', 'sort-desc': sortColumn === 'billing_period' && sortDirection === 'desc' }"
-              data-sortable="billing_period"
-              @click="handleSort('billing_period')"
-            >
-              {{ $t('plans.billingPeriod') }}
-              <span class="sort-indicator">{{ getSortIndicator('billing_period') }}</span>
-            </th>
-            <th
-              class="sortable"
-              :class="{ sorted: sortColumn === 'subscriber_count', 'sort-asc': sortColumn === 'subscriber_count' && sortDirection === 'asc', 'sort-desc': sortColumn === 'subscriber_count' && sortDirection === 'desc' }"
-              data-sortable="subscriber_count"
-              @click="handleSort('subscriber_count')"
-            >
-              {{ $t('plans.subscribers') }}
-              <span class="sort-indicator">{{ getSortIndicator('subscriber_count') }}</span>
-            </th>
-            <th>{{ $t('plans.categories') }}</th>
-            <th
-              class="sortable"
-              :class="{ sorted: sortColumn === 'status', 'sort-asc': sortColumn === 'status' && sortDirection === 'asc', 'sort-desc': sortColumn === 'status' && sortDirection === 'desc' }"
-              data-sortable="status"
-              @click="handleSort('status')"
-            >
-              {{ $t('common.status') }}
-              <span class="sort-indicator">{{ getSortIndicator('status') }}</span>
-            </th>
-            <th>{{ $t('common.actions') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="plan in sortedPlans"
-            :key="plan.id"
-            :data-testid="`plan-row-${plan.id}`"
-            class="plan-row"
-            :class="{ selected: selectedPlans.has(plan.id) }"
-          >
-            <td
-              class="checkbox-col"
-              @click.stop
-            >
-              <input
-                type="checkbox"
-                :checked="selectedPlans.has(plan.id)"
-                :data-testid="`select-plan-${plan.id}`"
-                @change="togglePlan(plan.id)"
+                {{ $t('plans.name') }}
+                <span class="sort-indicator">{{ getSortIndicator('name') }}</span>
+              </th>
+              <th
+                class="sortable"
+                :class="{ sorted: sortColumn === 'price', 'sort-asc': sortColumn === 'price' && sortDirection === 'asc', 'sort-desc': sortColumn === 'price' && sortDirection === 'desc' }"
+                data-sortable="price"
+                @click="handleSort('price')"
               >
-            </td>
-            <td @click="navigateToPlan(plan.id)">
-              {{ plan.name }}
-            </td>
-            <td>{{ formatPrice(plan.price_float, typeof plan.price === 'object' ? plan.price?.currency_code : undefined) }}</td>
-            <td>{{ plan.billing_period }}</td>
-            <td>{{ plan.subscriber_count ?? 0 }}</td>
-            <td class="categories-cell">
-              <span
-                v-for="cat in (plan.categories || [])"
-                :key="cat.id"
-                class="category-slug"
-              >{{ cat.slug }}</span>
-              <span
-                v-if="!plan.categories || plan.categories.length === 0"
-                class="no-category"
-              >—</span>
-            </td>
-            <td>
-              <span
-                v-if="plan.is_active"
-                data-testid="status-active"
-                class="status-badge active"
+                {{ $t('plans.price') }}
+                <span class="sort-indicator">{{ getSortIndicator('price') }}</span>
+              </th>
+              <th
+                class="sortable"
+                :class="{ sorted: sortColumn === 'billing_period', 'sort-asc': sortColumn === 'billing_period' && sortDirection === 'asc', 'sort-desc': sortColumn === 'billing_period' && sortDirection === 'desc' }"
+                data-sortable="billing_period"
+                @click="handleSort('billing_period')"
               >
-                {{ $t('common.active') }}
-              </span>
-              <span
-                v-else
-                data-testid="status-inactive"
-                class="status-badge inactive"
+                {{ $t('plans.billingPeriod') }}
+                <span class="sort-indicator">{{ getSortIndicator('billing_period') }}</span>
+              </th>
+              <th
+                class="sortable"
+                :class="{ sorted: sortColumn === 'subscriber_count', 'sort-asc': sortColumn === 'subscriber_count' && sortDirection === 'asc', 'sort-desc': sortColumn === 'subscriber_count' && sortDirection === 'desc' }"
+                data-sortable="subscriber_count"
+                @click="handleSort('subscriber_count')"
               >
-                {{ $t('common.inactive') }}
-              </span>
-            </td>
-            <td @click.stop>
-              <button
-                v-if="plan.is_active"
-                :data-testid="`archive-plan-${plan.id}`"
-                class="action-btn archive"
-                @click="handleArchive(plan.id)"
+                {{ $t('plans.subscribers') }}
+                <span class="sort-indicator">{{ getSortIndicator('subscriber_count') }}</span>
+              </th>
+              <th>{{ $t('plans.categories') }}</th>
+              <th
+                class="sortable"
+                :class="{ sorted: sortColumn === 'status', 'sort-asc': sortColumn === 'status' && sortDirection === 'asc', 'sort-desc': sortColumn === 'status' && sortDirection === 'desc' }"
+                data-sortable="status"
+                @click="handleSort('status')"
               >
-                {{ $t('plans.archive') }}
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+                {{ $t('common.status') }}
+                <span class="sort-indicator">{{ getSortIndicator('status') }}</span>
+              </th>
+              <th>{{ $t('common.actions') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="plan in sortedPlans"
+              :key="plan.id"
+              :data-testid="`plan-row-${plan.id}`"
+              class="plan-row"
+              :class="{ selected: selectedPlans.has(plan.id) }"
+            >
+              <td
+                class="checkbox-col"
+                @click.stop
+              >
+                <input
+                  type="checkbox"
+                  :checked="selectedPlans.has(plan.id)"
+                  :data-testid="`select-plan-${plan.id}`"
+                  @change="togglePlan(plan.id)"
+                >
+              </td>
+              <td @click="navigateToPlan(plan.id)">
+                {{ plan.name }}
+              </td>
+              <td>{{ formatPrice(plan.price_float, typeof plan.price === 'object' ? plan.price?.currency_code : undefined) }}</td>
+              <td>{{ plan.billing_period }}</td>
+              <td>{{ plan.subscriber_count ?? 0 }}</td>
+              <td class="categories-cell">
+                <span
+                  v-for="cat in (plan.categories || [])"
+                  :key="cat.id"
+                  class="category-slug"
+                >{{ cat.slug }}</span>
+                <span
+                  v-if="!plan.categories || plan.categories.length === 0"
+                  class="no-category"
+                >—</span>
+              </td>
+              <td>
+                <span
+                  v-if="plan.is_active"
+                  data-testid="status-active"
+                  class="status-badge active"
+                >
+                  {{ $t('common.active') }}
+                </span>
+                <span
+                  v-else
+                  data-testid="status-inactive"
+                  class="status-badge inactive"
+                >
+                  {{ $t('common.inactive') }}
+                </span>
+              </td>
+              <td @click.stop>
+                <button
+                  v-if="plan.is_active"
+                  :data-testid="`archive-plan-${plan.id}`"
+                  class="action-btn archive"
+                  @click="handleArchive(plan.id)"
+                >
+                  {{ $t('plans.archive') }}
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </template>
   </div>

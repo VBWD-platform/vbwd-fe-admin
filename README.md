@@ -114,7 +114,7 @@ Clones, builds, and wires all repos including this one:
 ### Standalone (manual)
 
 ```bash
-git clone --recurse-submodules https://github.com/dantweb/vbwd-fe-admin.git
+git clone --recurse-submodules https://github.com/VBWD-platform/vbwd-fe-admin.git
 cd vbwd-fe-admin
 
 # Build the shared component library (submodule) first
@@ -249,6 +249,18 @@ vue/
         └── Login.vue
 vbwd-fe-core/          # git submodule — shared component library
 ```
+
+---
+
+## Plugin Directory
+
+| Plugin | Repository | Description |
+|--------|-----------|-------------|
+| analytics-widget | [vbwd-fe-admin-plugin-analytics-widget](https://github.com/VBWD-platform/vbwd-fe-admin-plugin-analytics-widget) | Dashboard analytics chart widget |
+| cms-admin | [vbwd-fe-admin-plugin-cms-admin](https://github.com/VBWD-platform/vbwd-fe-admin-plugin-cms-admin) | CMS pages/categories/layouts/widgets/styles admin |
+| email-admin | [vbwd-fe-admin-plugin-email-admin](https://github.com/VBWD-platform/vbwd-fe-admin-plugin-email-admin) | Email template list and editor (HTML/Text/Preview) |
+| ghrm-admin | [vbwd-fe-admin-plugin-ghrm-admin](https://github.com/VBWD-platform/vbwd-fe-admin-plugin-ghrm-admin) | GHRM package management tab in admin |
+| taro-admin | [vbwd-fe-admin-plugin-taro-admin](https://github.com/VBWD-platform/vbwd-fe-admin-plugin-taro-admin) | Tarot session section in user detail |
 
 ---
 

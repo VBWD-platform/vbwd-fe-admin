@@ -52,12 +52,24 @@
             class="rrf-select"
             data-testid="rule-match-type"
           >
-            <option value="default">Default (always matches)</option>
-            <option value="language">Language</option>
-            <option value="ip_range">IP Range</option>
-            <option value="country">Country Code</option>
-            <option value="path_prefix">Path Prefix</option>
-            <option value="cookie">Cookie</option>
+            <option value="default">
+              Default (always matches)
+            </option>
+            <option value="language">
+              Language
+            </option>
+            <option value="ip_range">
+              IP Range
+            </option>
+            <option value="country">
+              Country Code
+            </option>
+            <option value="path_prefix">
+              Path Prefix
+            </option>
+            <option value="cookie">
+              Cookie
+            </option>
           </select>
         </div>
 
