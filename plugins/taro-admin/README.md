@@ -6,9 +6,16 @@ Taro tarot reading platform — admin extension for user detail pages.
 
 Adds a "Taro Sessions" tab to the User Details page in the admin backoffice, showing session history, token usage, and arcana interpretation logs for each user.
 
-## Backend Counterpart
+---
 
-`vbwd-backend/plugins/taro/`
+## Related
+
+| | Repository |
+|-|------------|
+| 🖥 Backend | [vbwd-plugin-taro](https://github.com/VBWD-platform/vbwd-plugin-taro) |
+| 👤 Frontend (user) | [vbwd-fe-user-plugin-taro](https://github.com/VBWD-platform/vbwd-fe-user-plugin-taro) |
+
+**Core:** [vbwd-fe-admin](https://github.com/VBWD-platform/vbwd-fe-admin) · [vbwd-fe-core](https://github.com/VBWD-platform/vbwd-fe-core)
 
 ## Extension Point
 

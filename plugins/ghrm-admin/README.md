@@ -6,9 +6,16 @@ GitHub Repo Manager — admin interface for managing software packages and synci
 
 Adds admin UI for the GHRM plugin: create/edit/delete software packages, configure GitHub owner/repo, trigger sync, manage access keys, view per-package subscriber list.
 
-## Backend Counterpart
+---
 
-`vbwd-backend/plugins/ghrm/`
+## Related
+
+| | Repository |
+|-|------------|
+| 🖥 Backend | [vbwd-plugin-ghrm](https://github.com/VBWD-platform/vbwd-plugin-ghrm) |
+| 👤 Frontend (user) | [vbwd-fe-user-plugin-ghrm](https://github.com/VBWD-platform/vbwd-fe-user-plugin-ghrm) |
+
+**Core:** [vbwd-fe-admin](https://github.com/VBWD-platform/vbwd-fe-admin) · [vbwd-fe-core](https://github.com/VBWD-platform/vbwd-fe-core)
 
 ## Routes / Views
 

@@ -6,9 +6,15 @@ Dashboard analytics widget showing key platform metrics.
 
 Adds a summary analytics widget to the admin dashboard: active subscriptions, revenue this month, new signups, and token usage overview.
 
-## Backend Counterpart
+---
 
-`vbwd-backend/plugins/analytics/` (if present) or core `/api/v1/admin/analytics` endpoint.
+## Related
+
+| | Repository |
+|-|------------|
+| 🖥 Backend | [vbwd-plugin-analytics](https://github.com/VBWD-platform/vbwd-plugin-analytics) |
+
+**Core:** [vbwd-fe-admin](https://github.com/VBWD-platform/vbwd-fe-admin) · [vbwd-fe-core](https://github.com/VBWD-platform/vbwd-fe-core)
 
 ## Extension Point
 
