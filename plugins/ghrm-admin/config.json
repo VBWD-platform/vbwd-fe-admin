@@ -1,7 +1,0 @@
-{
-  "software_category_slugs": {
-    "type": "array",
-    "default": ["backend", "fe-user", "fe-admin"],
-    "description": "Category slugs that trigger the Software tab on tariff plan forms"
-  }
-}
