@@ -34,6 +34,12 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Install plugins
+        run: |
+          for plugin in analytics-widget cms-admin email-admin ghrm-admin taro-admin; do
+            git clone --depth=1 https://github.com/VBWD-platform/vbwd-fe-admin-plugin-${plugin}.git plugins/${plugin}
+          done
+
       - name: Run style checks
         run: ./bin/pre-commit-check.sh --style
 
@@ -62,6 +68,12 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Install plugins
+        run: |
+          for plugin in analytics-widget cms-admin email-admin ghrm-admin taro-admin; do
+            git clone --depth=1 https://github.com/VBWD-platform/vbwd-fe-admin-plugin-${plugin}.git plugins/${plugin}
+          done
+
       - name: Run unit tests
         run: ./bin/pre-commit-check.sh --unit
 
@@ -89,6 +101,12 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+
+      - name: Install plugins
+        run: |
+          for plugin in analytics-widget cms-admin email-admin ghrm-admin taro-admin; do
+            git clone --depth=1 https://github.com/VBWD-platform/vbwd-fe-admin-plugin-${plugin}.git plugins/${plugin}
+          done
 
       - name: Run integration tests
         run: ./bin/pre-commit-check.sh --integration
