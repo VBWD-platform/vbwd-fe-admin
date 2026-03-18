@@ -1,9 +1,11 @@
 import { createVbwdAdminApp } from './factory';
+import type { AdminExtensionMap } from './factory';
 import { getEnabledPlugins, getAdminExtensions } from '@/utils/pluginLoader';
+import type { IPlugin } from 'vbwd-view-component';
 
 (async () => {
   // Load plugins from local plugins/ directory (Vite glob)
-  let plugins = [];
+  let plugins: IPlugin[] = [];
   try {
     plugins = await getEnabledPlugins();
     console.log(`[Admin] Using ${plugins.length} enabled plugin(s)`);
@@ -12,7 +14,7 @@ import { getEnabledPlugins, getAdminExtensions } from '@/utils/pluginLoader';
   }
 
   // Load admin extensions from plugins
-  let adminExtensions = {};
+  let adminExtensions: AdminExtensionMap = {};
   try {
     adminExtensions = await getAdminExtensions();
   } catch (error) {
