@@ -36,8 +36,12 @@ jobs:
 
       - run: npm install
 
-      - name: Install plugin
-        run: git clone --depth=1 https://github.com/VBWD-platform/vbwd-fe-admin-plugin-${{ matrix.plugin }}.git plugins/${{ matrix.plugin }}
+      - name: Install ALL plugins (vue-tsc needs full project)
+        run: |
+          for entry in "analytics-widget:vbwd-fe-admin-plugin-analytics-widget" "cms-admin:vbwd-fe-admin-plugin-cms" "email-admin:vbwd-fe-admin-plugin-email" "ghrm-admin:vbwd-fe-admin-plugin-ghrm" "taro-admin:vbwd-fe-admin-plugin-taro" "booking:vbwd-fe-admin-plugin-booking"; do
+            name="${entry%%:*}"; repo="${entry##*:}"
+            git clone --depth=1 -q "https://github.com/VBWD-platform/${repo}.git" "plugins/$name" 2>/dev/null || echo "Skipping $name"
+          done
 
-      - name: Run pre-commit (style + unit)
+      - name: Run pre-commit (style + unit) for plugin
         run: ./bin/pre-commit-check.sh --plugin ${{ matrix.plugin }} --unit
