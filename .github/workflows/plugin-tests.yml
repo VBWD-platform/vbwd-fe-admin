@@ -9,40 +9,52 @@ on:
 
 jobs:
   unit:
-    name: Unit Tests — ${{ matrix.plugin }}
+    name: Unit — ${{ matrix.plugin }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        plugin:
-          - analytics-widget
-          - booking
-          - cms-admin
-          - email-admin
-          - ghrm-admin
-          - taro-admin
+        plugin: [analytics-widget, booking, cms-admin, email-admin, ghrm-admin, taro-admin]
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
+        with: { submodules: recursive }
       - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Build vbwd-fe-core submodule
+        with: { node-version: '20', cache: 'npm' }
+      - name: Build fe-core
         run: cd vbwd-fe-core && npm install && npm run build
-
       - run: npm install
-
-      - name: Install ALL plugins (vue-tsc needs full project)
+      - name: Install ALL plugins
         run: |
           for entry in "analytics-widget:vbwd-fe-admin-plugin-analytics-widget" "cms-admin:vbwd-fe-admin-plugin-cms" "email-admin:vbwd-fe-admin-plugin-email" "ghrm-admin:vbwd-fe-admin-plugin-ghrm" "taro-admin:vbwd-fe-admin-plugin-taro" "booking:vbwd-fe-admin-plugin-booking"; do
             name="${entry%%:*}"; repo="${entry##*:}"
             git clone --depth=1 -q "https://github.com/VBWD-platform/${repo}.git" "plugins/$name" 2>/dev/null || echo "Skipping $name"
           done
-
-      - name: Run pre-commit (style + unit) for plugin
+      - name: Run style + unit
         run: ./bin/pre-commit-check.sh --plugin ${{ matrix.plugin }} --unit
+
+  integration:
+    name: Integration — ${{ matrix.plugin }}
+    needs: unit
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        plugin: [booking, cms-admin, ghrm-admin, taro-admin]
+
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'npm' }
+      - name: Build fe-core
+        run: cd vbwd-fe-core && npm install && npm run build
+      - run: npm install
+      - name: Install ALL plugins
+        run: |
+          for entry in "analytics-widget:vbwd-fe-admin-plugin-analytics-widget" "cms-admin:vbwd-fe-admin-plugin-cms" "email-admin:vbwd-fe-admin-plugin-email" "ghrm-admin:vbwd-fe-admin-plugin-ghrm" "taro-admin:vbwd-fe-admin-plugin-taro" "booking:vbwd-fe-admin-plugin-booking"; do
+            name="${entry%%:*}"; repo="${entry##*:}"
+            git clone --depth=1 -q "https://github.com/VBWD-platform/${repo}.git" "plugins/$name" 2>/dev/null || echo "Skipping $name"
+          done
+      - name: Run integration tests
+        run: ./bin/pre-commit-check.sh --plugin ${{ matrix.plugin }} --integration
