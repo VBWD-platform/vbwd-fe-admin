@@ -169,4 +169,4 @@ This approach keeps core features simple while allowing extensibility for third-
 
 ## License
 
-CC0-1.0 Universal (Public Domain)
+BSL-1.1 Business Source License
