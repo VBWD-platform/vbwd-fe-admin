@@ -165,17 +165,25 @@ run_unit() {
 
     cd "$REPO_DIR"
 
-    local test_path="vue/tests/unit/ plugins/"
-    if [ -n "$PLUGIN_NAME" ]; then
-        test_path="plugins/$PLUGIN_NAME/tests/unit/"
-    fi
-
     echo "Running unit tests..."
-    if npx vitest run $test_path; then
-        print_success "Unit tests passed"
+    if [ -n "$PLUGIN_NAME" ]; then
+        if find "plugins/$PLUGIN_NAME/tests" -name "*.spec.ts" 2>/dev/null | head -1 | grep -q .; then
+            if npx vitest run "plugins/$PLUGIN_NAME/"; then
+                print_success "Unit tests passed"
+            else
+                print_error "Unit tests failed"
+                OVERALL_EXIT=1
+            fi
+        else
+            echo "No test files for plugin $PLUGIN_NAME — skipping"
+        fi
     else
-        print_error "Unit tests failed"
-        OVERALL_EXIT=1
+        if npx vitest run vue/tests/unit/ plugins/; then
+            print_success "Unit tests passed"
+        else
+            print_error "Unit tests failed"
+            OVERALL_EXIT=1
+        fi
     fi
 }
 
