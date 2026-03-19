@@ -144,4 +144,6 @@ class ExtensionRegistry {
   }
 }
 
-export const extensionRegistry = new ExtensionRegistry();
+// Re-export the singleton from vbwd-view-component so all code
+// (sidebar, plugins, main.ts) uses the SAME instance.
+export { extensionRegistry } from 'vbwd-view-component';
