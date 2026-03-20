@@ -114,7 +114,7 @@
 
       <!-- Config Tabs -->
       <div
-        v-if="plugin.adminConfig && plugin.adminConfig.tabs.length > 0"
+        v-if="plugin.adminConfig?.tabs?.length > 0"
         class="config-section"
       >
         <div

@@ -101,10 +101,20 @@ export async function getEnabledPlugins(): Promise<IPlugin[]> {
 
         // Dynamically load the module (only for enabled plugins)
         const pluginModule = await moduleLoader();
-        const plugin = pluginModule.default;
+        // Support both default and named exports
+        let plugin = pluginModule.default;
+        if (!plugin) {
+          // Fallback: find first named export with .install method
+          const namedExport = Object.values(pluginModule).find(
+            (exp: any) => exp && typeof exp === 'object' && typeof exp.install === 'function'
+          );
+          if (namedExport) {
+            plugin = namedExport;
+          }
+        }
 
         if (!plugin) {
-          console.warn(`[PluginRegistry] Plugin '${pluginName}' loaded but no default export found. Skipping.`);
+          console.warn(`[PluginRegistry] Plugin '${pluginName}' loaded but no export with install() found. Skipping.`);
           continue;
         }
 

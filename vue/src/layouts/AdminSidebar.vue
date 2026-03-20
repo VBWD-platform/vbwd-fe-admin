@@ -101,20 +101,22 @@
         class="nav-section"
       >
         <button
+          :id="`nav-section-${section.id}`"
           class="nav-section-header"
-          :class="{ expanded: expandedSections[section.id], 'has-active': isSectionActive(section) }"
+          :class="{ expanded: expandedSections[section.id] ?? true, 'has-active': isSectionActive(section) }"
           @click="toggleSection(section.id)"
         >
           <span>{{ section.label }}</span>
-          <span class="expand-arrow">{{ expandedSections[section.id] ? '▼' : '▶' }}</span>
+          <span class="expand-arrow">{{ (expandedSections[section.id] ?? true) ? '▼' : '▶' }}</span>
         </button>
         <div
-          v-show="expandedSections[section.id]"
+          v-show="expandedSections[section.id] ?? true"
           class="nav-submenu"
         >
           <router-link
             v-for="item in section.items"
             :key="item.to"
+            :id="`nav-item-${item.to.replace(/\//g, '-').replace(/^-/, '')}`"
             :to="item.to"
             class="nav-item nav-subitem"
             @click="closeNav"
