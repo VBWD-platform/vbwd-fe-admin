@@ -1,12 +1,10 @@
 <template>
-  <div class="routing-rules">
-    <div class="routing-rules__header">
-      <h1 class="routing-rules__title">
-        CMS Routing Rules
-      </h1>
-      <div class="routing-rules__actions">
+  <div class="plans-view">
+    <div class="plans-header">
+      <h2>CMS Routing Rules</h2>
+      <div class="plans-subheader" style="margin-bottom: 0;">
         <button
-          class="rr-btn rr-btn--secondary"
+          class="action-btn archive"
           :disabled="reloading"
           data-testid="reload-nginx-btn"
           @click="handleReload"
@@ -14,7 +12,7 @@
           {{ reloading ? 'Reloading…' : 'Apply & Reload Nginx' }}
         </button>
         <button
-          class="rr-btn rr-btn--primary"
+          class="create-btn"
           data-testid="add-rule-btn"
           @click="showForm()"
         >
@@ -25,18 +23,19 @@
 
     <p
       v-if="reloadMsg"
-      :class="reloadError ? 'rr-toast rr-toast--error' : 'rr-toast rr-toast--ok'"
+      :class="reloadError ? 'toast toast--error' : 'toast toast--ok'"
       data-testid="reload-toast"
     >
       {{ reloadMsg }}
     </p>
 
     <!-- Layer filter -->
-    <div class="routing-rules__filter">
-      <label class="rr-filter-label">Filter:</label>
+    <div class="plans-filters">
+      <label class="checkbox-label">Filter:</label>
       <select
         v-model="layerFilter"
-        class="rr-select"
+        class="search-input"
+        style="max-width: 180px;"
         data-testid="layer-filter"
       >
         <option value="">
@@ -53,85 +52,97 @@
 
     <div
       v-if="store.loading"
-      class="rr-loading"
+      class="loading-state"
     >
-      Loading…
+      <div class="spinner" />
+      <p>Loading…</p>
     </div>
     <div
       v-else-if="store.error"
-      class="rr-error"
+      class="error-state"
     >
       {{ store.error }}
     </div>
 
-    <table
+    <div
       v-else
-      class="rr-table"
+      class="plans-table-wrap"
     >
-      <thead>
-        <tr>
-          <th>Priority</th>
-          <th>Name</th>
-          <th>Match</th>
-          <th>Value</th>
-          <th>Target</th>
-          <th>Code</th>
-          <th>Layer</th>
-          <th>Active</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="rule in filteredRules"
-          :key="rule.id"
-          :class="{ 'rr-row--inactive': !rule.is_active }"
-          :data-testid="`rule-row-${rule.id}`"
-        >
-          <td>{{ rule.priority }}</td>
-          <td>{{ rule.name }}</td>
-          <td><span class="rr-badge">{{ rule.match_type }}</span></td>
-          <td class="rr-value">
-            {{ rule.match_value || '—' }}
-          </td>
-          <td>{{ rule.target_slug }}</td>
-          <td>{{ rule.redirect_code }}</td>
-          <td><span :class="`rr-layer rr-layer--${rule.layer}`">{{ rule.layer }}</span></td>
-          <td>
-            <input
-              type="checkbox"
-              :checked="rule.is_active"
-              :data-testid="`toggle-active-${rule.id}`"
-              @change="toggleActive(rule)"
-            >
-          </td>
-          <td class="rr-actions-cell">
-            <button
-              class="rr-btn-sm rr-btn-sm--edit"
-              :data-testid="`edit-btn-${rule.id}`"
-              @click="showForm(rule)"
-            >
-              Edit
-            </button>
-            <button
-              class="rr-btn-sm rr-btn-sm--delete"
-              :data-testid="`delete-btn-${rule.id}`"
-              @click="handleDelete(rule.id)"
-            >
-              Delete
-            </button>
-          </td>
-        </tr>
-        <tr v-if="filteredRules.length === 0">
-          <td
-            colspan="9"
-            class="rr-empty"
+      <table class="plans-table">
+        <thead>
+          <tr>
+            <th>Priority</th>
+            <th>Name</th>
+            <th>Match</th>
+            <th>Value</th>
+            <th>Target</th>
+            <th>Code</th>
+            <th>Layer</th>
+            <th>Active</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="rule in filteredRules"
+            :key="rule.id"
+            class="plan-row"
+            :data-testid="`rule-row-${rule.id}`"
           >
-            No routing rules yet.
-          </td>
-        </tr>
-      </tbody>
-    </table>
+            <td>{{ rule.priority }}</td>
+            <td>{{ rule.name }}</td>
+            <td><span class="category-slug">{{ rule.match_type }}</span></td>
+            <td class="rr-value">
+              {{ rule.match_value || '—' }}
+            </td>
+            <td>{{ rule.target_slug }}</td>
+            <td>{{ rule.redirect_code }}</td>
+            <td>
+              <span
+                class="status-badge"
+                :class="rule.layer === 'nginx' ? 'layer-nginx' : 'layer-middleware'"
+              >{{ rule.layer }}</span>
+            </td>
+            <td>
+              <span
+                class="status-badge"
+                :class="rule.is_active ? 'active' : 'inactive'"
+                style="cursor: pointer;"
+                :data-testid="`toggle-active-${rule.id}`"
+                @click="toggleActive(rule)"
+              >{{ rule.is_active ? 'Active' : 'Inactive' }}</span>
+            </td>
+            <td
+              class="rr-actions-cell"
+              @click.stop
+            >
+              <button
+                class="action-btn archive"
+                :data-testid="`edit-btn-${rule.id}`"
+                @click="showForm(rule)"
+              >
+                Edit
+              </button>
+              <button
+                class="action-btn delete"
+                :data-testid="`delete-btn-${rule.id}`"
+                @click="handleDelete(rule.id)"
+              >
+                Delete
+              </button>
+            </td>
+          </tr>
+          <tr v-if="filteredRules.length === 0">
+            <td
+              colspan="9"
+              class="empty-state"
+            >
+              No routing rules yet.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <RoutingRuleForm
       v-if="formVisible"
@@ -206,35 +217,51 @@ onMounted(() => store.fetchRules());
 </script>
 
 <style scoped>
-.routing-rules { max-width: 1100px; margin: 0 auto; padding: 28px 20px; }
-.routing-rules__header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
-.routing-rules__title { font-size: 1.4rem; color: #2c3e50; margin: 0; }
-.routing-rules__actions { display: flex; gap: 10px; }
-.routing-rules__filter { margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-.rr-filter-label { font-size: 13px; color: #6b7280; }
-.rr-select { padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; }
-.rr-btn { padding: 8px 18px; border-radius: 6px; border: none; cursor: pointer; font-size: 14px; font-weight: 500; }
-.rr-btn:disabled { opacity: .6; cursor: default; }
-.rr-btn--primary { background: #3498db; color: #fff; }
-.rr-btn--primary:hover:not(:disabled) { background: #2980b9; }
-.rr-btn--secondary { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; }
-.rr-btn--secondary:hover:not(:disabled) { background: #e5e7eb; }
-.rr-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-.rr-table th { text-align: left; padding: 10px 12px; border-bottom: 2px solid #e9ecef; font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: .04em; }
-.rr-table td { padding: 10px 12px; border-bottom: 1px solid #f3f4f6; vertical-align: middle; }
-.rr-row--inactive td { opacity: .5; }
-.rr-badge { background: #f3f4f6; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-family: monospace; }
+.plans-view { background: white; padding: 20px; border-radius: 8px; }
+.plans-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+.plans-header h2 { margin: 0; color: #2c3e50; }
+.plans-subheader { display: flex; gap: 10px; align-items: center; }
+.plans-filters { display: flex; gap: 15px; align-items: center; margin-bottom: 20px; }
+
+.create-btn { padding: 10px 20px; background: #27ae60; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 500; }
+.create-btn:hover { background: #1e8449; }
+
+.search-input { padding: 10px 15px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+.search-input:focus { outline: none; border-color: #3498db; }
+
+.checkbox-label { display: flex; align-items: center; gap: 8px; color: #666; font-size: 14px; }
+
+.loading-state, .error-state, .empty-state { text-align: center; padding: 40px; color: #666; }
+.spinner { width: 40px; height: 40px; border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+.plans-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.plans-table { width: 100%; border-collapse: collapse; }
+.plans-table th, .plans-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
+.plans-table th { background: #f8f9fa; font-weight: 600; color: #2c3e50; }
+
+.plan-row { transition: background-color 0.2s; }
+.plan-row:hover { background-color: #f8f9fa; }
+
+.status-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 500; }
+.status-badge.active { background: #d4edda; color: #155724; }
+.status-badge.inactive { background: #f8d7da; color: #721c24; }
+.status-badge.layer-nginx { background: #fef3c7; color: #92400e; }
+.status-badge.layer-middleware { background: #dbeafe; color: #1e40af; }
+
+.category-slug { display: inline-block; padding: 2px 7px; margin: 2px 2px 2px 0; background: #e3f2fd; color: #1565c0; border-radius: 10px; font-size: 0.75rem; font-family: monospace; white-space: nowrap; }
+
 .rr-value { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: monospace; font-size: 12px; }
-.rr-layer { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-.rr-layer--nginx { background: #fef3c7; color: #92400e; }
-.rr-layer--middleware { background: #dbeafe; color: #1e40af; }
 .rr-actions-cell { white-space: nowrap; }
-.rr-btn-sm { padding: 4px 10px; border-radius: 4px; border: none; cursor: pointer; font-size: 12px; margin-right: 4px; }
-.rr-btn-sm--edit { background: #e8f4fd; color: #1a73e8; }
-.rr-btn-sm--delete { background: #fee2e2; color: #dc2626; }
-.rr-loading, .rr-empty { text-align: center; padding: 40px; color: #9ca3af; }
-.rr-error { color: #dc2626; padding: 16px 0; }
-.rr-toast { padding: 10px 16px; border-radius: 6px; font-size: 13px; margin-bottom: 12px; }
-.rr-toast--ok { background: #d1fae5; color: #065f46; }
-.rr-toast--error { background: #fee2e2; color: #991b1b; }
+
+.action-btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; margin-right: 4px; }
+.action-btn.archive { background: #ffc107; color: #212529; }
+.action-btn.archive:hover { background: #e0a800; }
+.action-btn.delete { background: #f8d7da; color: #721c24; }
+.action-btn.delete:hover { background: #f5c6cb; }
+.action-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.toast { padding: 10px 16px; border-radius: 6px; font-size: 13px; margin-bottom: 12px; }
+.toast--ok { background: #d1fae5; color: #065f46; }
+.toast--error { background: #fee2e2; color: #991b1b; }
 </style>
