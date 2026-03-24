@@ -400,7 +400,7 @@ function itemTypeLabel(type?: string): string {
   return labels[type || ''] || type || 'Item';
 }
 
-function itemLink(item: { type?: string; item_id?: string; catalog_item_id?: string }): string | null {
+function itemLink(item: { type?: string; item_id?: string; catalog_item_id?: string; metadata?: Record<string, unknown> }): string | null {
   switch (item.type?.toUpperCase()) {
     case 'SUBSCRIPTION':
       return item.catalog_item_id ? `/admin/plans/${item.catalog_item_id}/edit` : null;
@@ -409,8 +409,14 @@ function itemLink(item: { type?: string; item_id?: string; catalog_item_id?: str
     case 'ADD_ON':
       return '/admin/add-ons';
     default:
-      return null;
+      break;
   }
+  // Plugin-based line items (e.g., booking)
+  if (item.type?.toLowerCase() === 'booking' && item.metadata) {
+    const bookingId = item.metadata.booking_id as string;
+    if (bookingId) return `/admin/booking/${bookingId}`;
+  }
+  return null;
 }
 
 onMounted(() => {
@@ -611,6 +617,11 @@ onMounted(() => {
 .type-badge.add_on {
   background: #fce4ec;
   color: #c62828;
+}
+
+.type-badge.booking {
+  background: #fff3e0;
+  color: #e65100;
 }
 
 .address p {
