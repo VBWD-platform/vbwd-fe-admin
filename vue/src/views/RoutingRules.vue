@@ -2,7 +2,10 @@
   <div class="plans-view">
     <div class="plans-header">
       <h2>CMS Routing Rules</h2>
-      <div class="plans-subheader" style="margin-bottom: 0;">
+      <div
+        class="plans-subheader"
+        style="margin-bottom: 0;"
+      >
         <button
           class="action-btn archive"
           :disabled="reloading"

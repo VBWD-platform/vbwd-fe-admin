@@ -115,8 +115,8 @@
         >
           <router-link
             v-for="item in section.items"
-            :key="item.to"
             :id="`nav-item-${item.to.replace(/\//g, '-').replace(/^-/, '')}`"
+            :key="item.to"
             :to="item.to"
             class="nav-item nav-subitem"
             @click="closeNav"
