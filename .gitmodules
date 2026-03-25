@@ -1,3 +1,6 @@
 [submodule "vbwd-fe-core"]
 	path = vbwd-fe-core
 	url = https://github.com/VBWD-platform/vbwd-fe-core.git
+[submodule "plugins/booking"]
+	path = plugins/booking
+	url = https://github.com/VBWD-platform/vbwd-fe-admin-plugin-booking.git
