@@ -15,6 +15,7 @@ test-results
 
 # Plugin dirs are hosted in individual repos (vbwd-fe-admin-plugin-*)
 plugins/analytics-widget/
+plugins/booking/
 plugins/cms-admin/
 plugins/email-admin/
 plugins/ghrm-admin/
