@@ -77,25 +77,27 @@ describe('analytics-widget plugin', () => {
 })
 
 describe('AnalyticsWidget component', () => {
+  const globalMocks = { global: { mocks: { $t: (key: string) => key } } }
+
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
   it('renders with data-testid', () => {
     vi.mocked(api.get).mockResolvedValue({ count: 0 })
-    const wrapper = mount(AnalyticsWidget)
+    const wrapper = mount(AnalyticsWidget, globalMocks)
     expect(wrapper.find('[data-testid="analytics-widget"]').exists()).toBe(true)
   })
 
   it('shows loading state initially', () => {
     vi.mocked(api.get).mockReturnValue(new Promise(() => {}))
-    const wrapper = mount(AnalyticsWidget)
+    const wrapper = mount(AnalyticsWidget, globalMocks)
     expect(wrapper.find('.stat-value').text()).toBe('...')
   })
 
   it('shows count after successful API call', async () => {
     vi.mocked(api.get).mockResolvedValue({ count: 42 })
-    const wrapper = mount(AnalyticsWidget)
+    const wrapper = mount(AnalyticsWidget, globalMocks)
 
     await flushPromises()
 
@@ -106,7 +108,7 @@ describe('AnalyticsWidget component', () => {
 
   it('calls the correct API endpoint', async () => {
     vi.mocked(api.get).mockResolvedValue({ count: 10 })
-    mount(AnalyticsWidget)
+    mount(AnalyticsWidget, globalMocks)
 
     await flushPromises()
 
@@ -115,7 +117,7 @@ describe('AnalyticsWidget component', () => {
 
   it('shows 0 when API call fails', async () => {
     vi.mocked(api.get).mockRejectedValue(new Error('Network error'))
-    const wrapper = mount(AnalyticsWidget)
+    const wrapper = mount(AnalyticsWidget, globalMocks)
 
     await flushPromises()
 
@@ -126,7 +128,7 @@ describe('AnalyticsWidget component', () => {
 
   it('shows 0 when API returns no count', async () => {
     vi.mocked(api.get).mockResolvedValue({})
-    const wrapper = mount(AnalyticsWidget)
+    const wrapper = mount(AnalyticsWidget, globalMocks)
 
     await flushPromises()
 
@@ -136,16 +138,16 @@ describe('AnalyticsWidget component', () => {
 
   it('displays "from plugin" label', async () => {
     vi.mocked(api.get).mockResolvedValue({ count: 5 })
-    const wrapper = mount(AnalyticsWidget)
+    const wrapper = mount(AnalyticsWidget, globalMocks)
 
     await flushPromises()
 
-    expect(wrapper.find('.stat-label').text()).toBe('from plugin')
+    expect(wrapper.find('.stat-label').text()).toBe('analytics.fromPlugin')
   })
 
   it('displays "Active Sessions" heading', () => {
     vi.mocked(api.get).mockResolvedValue({ count: 0 })
-    const wrapper = mount(AnalyticsWidget)
-    expect(wrapper.find('h3').text()).toBe('Active Sessions')
+    const wrapper = mount(AnalyticsWidget, globalMocks)
+    expect(wrapper.find('h3').text()).toBe('analytics.activeSessions')
   })
 })

@@ -51,26 +51,6 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/UserEdit.vue')
       },
       {
-        path: 'plans',
-        name: 'plans',
-        component: () => import('@/views/Plans.vue')
-      },
-      {
-        path: 'add-ons',
-        name: 'add-ons',
-        component: () => import('@/views/AddOns.vue')
-      },
-      {
-        path: 'add-ons/new',
-        name: 'addon-new',
-        component: () => import('@/views/AddonForm.vue')
-      },
-      {
-        path: 'add-ons/:id/edit',
-        name: 'addon-edit',
-        component: () => import('@/views/AddonForm.vue')
-      },
-      {
         path: 'payment-methods',
         name: 'payment-methods',
         component: () => import('@/views/PaymentMethods.vue')
@@ -84,41 +64,6 @@ const routes: RouteRecordRaw[] = [
         path: 'payment-methods/:id/edit',
         name: 'payment-method-edit',
         component: () => import('@/views/PaymentMethodForm.vue')
-      },
-      {
-        path: 'plans/new',
-        name: 'plan-new',
-        component: () => import('@/views/PlanForm.vue')
-      },
-      {
-        path: 'plans/:id/edit',
-        name: 'plan-edit',
-        component: () => import('@/views/PlanForm.vue')
-      },
-      {
-        path: 'plans/categories/new',
-        name: 'category-new',
-        component: () => import('@/views/CategoryForm.vue')
-      },
-      {
-        path: 'plans/categories/:id/edit',
-        name: 'category-edit',
-        component: () => import('@/views/CategoryForm.vue')
-      },
-      {
-        path: 'subscriptions',
-        name: 'subscriptions',
-        component: () => import('@/views/Subscriptions.vue')
-      },
-      {
-        path: 'subscriptions/create',
-        name: 'subscription-create',
-        component: () => import('@/views/SubscriptionCreate.vue')
-      },
-      {
-        path: 'subscriptions/:id',
-        name: 'subscription-details',
-        component: () => import('@/views/SubscriptionDetails.vue')
       },
       {
         path: 'invoices',

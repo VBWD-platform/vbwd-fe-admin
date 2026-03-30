@@ -30,7 +30,7 @@ const defaultConfig = {
 function mountConfig(config = defaultConfig) {
   return mount(GhrmBreadcrumbWidgetConfig, {
     props: { widgetId: config.id, initialConfig: config },
-    global: { stubs: { RouterLink: true } },
+    global: { stubs: { RouterLink: true }, mocks: { $t: (key: string) => key } },
   })
 }
 
@@ -39,9 +39,9 @@ describe('GhrmBreadcrumbWidgetConfig — tabs', () => {
     const w = mountConfig()
     const tabs = w.findAll('.ghrm-widget-config__tab')
     const labels = tabs.map((t) => t.text())
-    expect(labels).toContain('General')
-    expect(labels).toContain('CSS')
-    expect(labels).toContain('Preview')
+    expect(labels).toContain('ghrm.breadcrumbConfig.tabGeneral')
+    expect(labels).toContain('ghrm.breadcrumbConfig.tabCss')
+    expect(labels).toContain('ghrm.breadcrumbConfig.tabPreview')
   })
 
   it('shows General tab by default', () => {
@@ -51,14 +51,14 @@ describe('GhrmBreadcrumbWidgetConfig — tabs', () => {
 
   it('switches to CSS tab on click', async () => {
     const w = mountConfig()
-    const cssTab = w.findAll('.ghrm-widget-config__tab').find((t) => t.text() === 'CSS')!
+    const cssTab = w.findAll('.ghrm-widget-config__tab').find((t) => t.text() === 'ghrm.breadcrumbConfig.tabCss')!
     await cssTab.trigger('click')
     expect(w.find('[data-testid="css-textarea"]').exists()).toBe(true)
   })
 
   it('switches to Preview tab on click', async () => {
     const w = mountConfig()
-    const previewTab = w.findAll('.ghrm-widget-config__tab').find((t) => t.text() === 'Preview')!
+    const previewTab = w.findAll('.ghrm-widget-config__tab').find((t) => t.text() === 'ghrm.breadcrumbConfig.tabPreview')!
     await previewTab.trigger('click')
     expect(w.find('[data-testid="preview-stub"]').exists()).toBe(true)
   })

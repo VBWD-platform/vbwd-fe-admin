@@ -123,7 +123,17 @@
                     :class="item.type?.toLowerCase()"
                   >{{ itemTypeLabel(item.type) }}</span>
                 </td>
-                <td>{{ item.description }}</td>
+                <td>
+                  <router-link
+                    v-if="itemLink(item)"
+                    :to="itemLink(item)!"
+                    class="item-description-link"
+                    @click.stop
+                  >
+                    {{ item.description }}
+                  </router-link>
+                  <span v-else>{{ item.description }}</span>
+                </td>
                 <td>{{ item.quantity || 1 }}</td>
                 <td>{{ formatAmount(item.unit_price || item.amount, invoice.currency) }}</td>
                 <td>{{ formatAmount(item.amount, invoice.currency) }}</td>
@@ -411,8 +421,12 @@ function itemLink(item: { type?: string; item_id?: string; catalog_item_id?: str
     default:
       break;
   }
-  // Plugin-based line items (e.g., booking)
+  // Plugin-based line items (e.g., booking → resource schedule)
   if (item.type?.toLowerCase() === 'booking' && item.metadata) {
+    const resourceId = item.metadata.resource_id as string;
+    if (resourceId) {
+      return `/admin/booking/resources/${resourceId}/schedule`;
+    }
     const bookingId = item.metadata.booking_id as string;
     if (bookingId) return `/admin/booking/${bookingId}`;
   }
@@ -582,6 +596,14 @@ onMounted(() => {
 .line-items-table tfoot td {
   font-weight: 600;
   border-top: 2px solid #eee;
+}
+
+.item-description-link {
+  color: var(--admin-link, #3498db);
+  text-decoration: none;
+}
+.item-description-link:hover {
+  text-decoration: underline;
 }
 
 .total-label {

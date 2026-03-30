@@ -61,6 +61,55 @@ type PluginRegistryFile = {
 const registry = pluginsRegistry as PluginRegistryFile;
 const configs = savedConfigs as Record<string, Record<string, unknown>>;
 
+const PLUGIN_STATE_KEY = 'vbwd_admin_plugin_state';
+
+/**
+ * Persist plugin enabled/disabled state to localStorage.
+ * On reload, pluginLoader checks this before loading plugins.
+ */
+function _persistPluginState(name: string, enabled: boolean): void {
+  try {
+    const stored = JSON.parse(localStorage.getItem(PLUGIN_STATE_KEY) || '{}');
+    stored[name] = enabled;
+    localStorage.setItem(PLUGIN_STATE_KEY, JSON.stringify(stored));
+  } catch {
+    // localStorage unavailable
+  }
+}
+
+/**
+ * Get persisted plugin state overrides from localStorage.
+ */
+export function getPersistedPluginState(): Record<string, boolean> {
+  try {
+    return JSON.parse(localStorage.getItem(PLUGIN_STATE_KEY) || '{}');
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * Call a plugin's activate() or deactivate() lifecycle hook.
+ */
+function _callPluginLifecycle(name: string, method: 'activate' | 'deactivate'): void {
+  for (const [path, mod] of Object.entries(pluginIndexModules)) {
+    if (!path.includes(`/${name}/`)) continue;
+    for (const exportVal of Object.values(mod)) {
+      if (
+        exportVal &&
+        typeof exportVal === 'object' &&
+        'name' in exportVal &&
+        (exportVal as { name: string }).name === name &&
+        method in exportVal &&
+        typeof (exportVal as Record<string, unknown>)[method] === 'function'
+      ) {
+        (exportVal as unknown as Record<string, () => void>)[method]();
+        return;
+      }
+    }
+  }
+}
+
 // Dynamic imports for per-plugin config and admin-config JSON files
 const pluginConfigModules = import.meta.glob('@plugins/*/config.json', { eager: true }) as Record<string, { default: Record<string, PluginConfigField> }>;
 const pluginAdminConfigModules = import.meta.glob('@plugins/*/admin-config.json', { eager: true }) as Record<string, { default: { tabs: AdminConfigTab[] } }>;
@@ -208,6 +257,12 @@ export const usePluginsStore = defineStore('plugins', {
           this.currentPlugin.enabled = true;
           this.currentPlugin.status = 'active';
         }
+
+        // Call the actual plugin activate() lifecycle hook
+        _callPluginLifecycle(name, 'activate');
+
+        // Persist to localStorage so reload respects toggle
+        _persistPluginState(name, true);
       } catch (error) {
         this.error = (error as Error).message || 'Failed to activate plugin';
         throw error;
@@ -221,6 +276,9 @@ export const usePluginsStore = defineStore('plugins', {
       this.error = null;
 
       try {
+        // Call the actual plugin deactivate() lifecycle hook
+        _callPluginLifecycle(name, 'deactivate');
+
         if (registry.plugins[name]) {
           registry.plugins[name].enabled = false;
         }
@@ -233,6 +291,9 @@ export const usePluginsStore = defineStore('plugins', {
           this.currentPlugin.enabled = false;
           this.currentPlugin.status = 'inactive';
         }
+
+        // Persist to localStorage so reload respects toggle
+        _persistPluginState(name, false);
       } catch (error) {
         this.error = (error as Error).message || 'Failed to deactivate plugin';
         throw error;

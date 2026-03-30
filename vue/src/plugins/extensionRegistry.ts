@@ -4,9 +4,16 @@
  * Generic system for loading and accessing plugin extensions.
  * Keeps the core admin app agnostic to specific plugins.
  *
+ * Supports:
+ * - Plugin nav sections (standalone sidebar sections)
+ * - Section items (inject into core sections like Sales, Settings)
+ * - Hidden items (hide any core nav item by path)
+ * - Section components (inject Vue components into sections)
+ * - 3-level nav: L0 sections → L1 items → L2 children
+ *
  * The internal map is wrapped with Vue's reactive() so that any computed()
- * reading from getNavSections() / getUserDetailsSections() re-evaluates
- * automatically when plugins register or unregister.
+ * reading from getNavSections() / buildSidebar() re-evaluates automatically
+ * when plugins register or unregister.
  */
 
 import { reactive } from 'vue';
@@ -17,6 +24,15 @@ export interface NavItem {
   label: string;
   /** Absolute route path (e.g. '/admin/cms/pages') */
   to: string;
+  /** Optional ID for targeting by other plugins (e.g. 'invoices') */
+  id?: string;
+  /** Optional Level 2 children — renders as expandable sub-group */
+  children?: NavItem[];
+}
+
+export interface NavItemWithPosition extends NavItem {
+  /** Position hint: 'before:invoices', 'after:users', 'start', 'end' (default: 'end') */
+  position?: string;
 }
 
 export interface NavSection {
@@ -37,40 +53,40 @@ export interface PlanTabSection {
   requiredCategorySlugs?: string[];
 }
 
+export interface SectionComponent {
+  component: Component;
+  position?: 'before' | 'after';
+}
+
 export interface AdminExtension {
   userDetailsSections?: Component[];
   /** Nav sections added to the admin sidebar by this plugin */
   navSections?: NavSection[];
-  /** Items injected into the core Settings nav section */
+  /** Items injected into the core Settings nav section (deprecated — use sectionItems.settings) */
   settingsItems?: NavItem[];
   /** Plan edit page tab sections contributed by this plugin */
   planTabSections?: PlanTabSection[];
+  /** Inject items into core sections by section ID */
+  sectionItems?: Record<string, NavItemWithPosition[]>;
+  /** Hide core nav items by route path */
+  hiddenItems?: string[];
+  /** Inject Vue components into sections */
+  sectionComponents?: Record<string, SectionComponent[]>;
 }
 
 class ExtensionRegistry {
-  // reactive() makes computed() properties that read from this map
-  // re-evaluate whenever entries are added or removed.
   private extensions: Map<string, AdminExtension> = reactive(new Map());
 
-  /**
-   * Register a plugin's admin extension.
-   * Called from a plugin's install() or activate() hook.
-   */
   register(pluginName: string, extension: AdminExtension): void {
     this.extensions.set(pluginName, extension);
   }
 
-  /**
-   * Remove a plugin's admin extension.
-   * Call from a plugin's deactivate() hook so sidebar items disappear.
-   */
   unregister(pluginName: string): void {
     this.extensions.delete(pluginName);
   }
 
-  /**
-   * Get all user-detail sections contributed by plugins.
-   */
+  // ── Existing methods (unchanged API) ─────────────────────────────────
+
   getUserDetailsSections(): Component[] {
     const sections: Component[] = [];
     this.extensions.forEach((ext) => {
@@ -81,11 +97,6 @@ class ExtensionRegistry {
     return sections;
   }
 
-  /**
-   * Get all nav sections registered by plugins.
-   * Because extensions is reactive(), any computed() reading this
-   * will re-run when the map is mutated.
-   */
   getNavSections(): NavSection[] {
     const all: NavSection[] = [];
     this.extensions.forEach((ext) => {
@@ -96,9 +107,6 @@ class ExtensionRegistry {
     return all;
   }
 
-  /**
-   * Get all items to inject into the core Settings nav section.
-   */
   getSettingsItems(): NavItem[] {
     const items: NavItem[] = [];
     this.extensions.forEach((ext) => {
@@ -109,9 +117,6 @@ class ExtensionRegistry {
     return items;
   }
 
-  /**
-   * Get all plan tab sections contributed by plugins.
-   */
   getPlanTabSections(): PlanTabSection[] {
     const sections: PlanTabSection[] = [];
     this.extensions.forEach((ext) => {
@@ -122,25 +127,158 @@ class ExtensionRegistry {
     return sections;
   }
 
-  /**
-   * Get extension by plugin name.
-   */
   get(pluginName: string): AdminExtension | undefined {
     return this.extensions.get(pluginName);
   }
 
-  /**
-   * Check if extension exists.
-   */
   has(pluginName: string): boolean {
     return this.extensions.has(pluginName);
   }
 
-  /**
-   * Clear all extensions.
-   */
   clear(): void {
     this.extensions.clear();
+  }
+
+  // ── New: Section slot system ─────────────────────────────────────────
+
+  /**
+   * Get items injected into a specific core section by plugins.
+   */
+  getSectionItems(sectionId: string): NavItemWithPosition[] {
+    const items: NavItemWithPosition[] = [];
+    this.extensions.forEach((ext) => {
+      if (ext.sectionItems && ext.sectionItems[sectionId]) {
+        items.push(...ext.sectionItems[sectionId]);
+      }
+    });
+    return items;
+  }
+
+  /**
+   * Get all hidden item paths across all plugins.
+   */
+  getHiddenItems(): string[] {
+    const hidden: string[] = [];
+    this.extensions.forEach((ext) => {
+      if (ext.hiddenItems) {
+        hidden.push(...ext.hiddenItems);
+      }
+    });
+    return hidden;
+  }
+
+  /**
+   * Get components injected into a section.
+   */
+  getSectionComponents(sectionId: string): SectionComponent[] {
+    const components: SectionComponent[] = [];
+    this.extensions.forEach((ext) => {
+      if (ext.sectionComponents && ext.sectionComponents[sectionId]) {
+        components.push(...ext.sectionComponents[sectionId]);
+      }
+    });
+    return components;
+  }
+
+  /**
+   * Build complete sidebar model — merges core sections with plugin items.
+   *
+   * 1. Deep-clones core sections (never mutates original)
+   * 2. Injects sectionItems into matching sections with position control
+   * 3. Merges settingsItems into 'settings' section (backward compat)
+   * 4. Filters out hiddenItems
+   * 5. Appends plugin navSections after core sections
+   *
+   * @param coreSections - Core-defined sections (Sales, Settings, etc.)
+   * @returns Merged sidebar model ready for rendering
+   */
+  buildSidebar(coreSections: NavSection[]): NavSection[] {
+    // 1. Deep clone core sections
+    const sections: NavSection[] = coreSections.map((section) => ({
+      ...section,
+      items: section.items.map((item) => ({
+        ...item,
+        children: item.children ? [...item.children] : undefined,
+      })),
+    }));
+
+    // 2. Inject sectionItems into matching sections
+    for (const section of sections) {
+      const injectedItems = this.getSectionItems(section.id);
+      for (const item of injectedItems) {
+        this._insertItem(section.items, item);
+      }
+    }
+
+    // 3. Backward compat: merge settingsItems into 'settings' section
+    const settingsSection = sections.find((s) => s.id === 'settings');
+    if (settingsSection) {
+      const legacyItems = this.getSettingsItems();
+      for (const item of legacyItems) {
+        settingsSection.items.push({ ...item });
+      }
+    }
+
+    // 4. Filter hidden items
+    const hidden = new Set(this.getHiddenItems());
+    for (const section of sections) {
+      section.items = section.items.filter((item) => !hidden.has(item.to));
+    }
+
+    // 5. Append plugin standalone navSections
+    const pluginSections = this.getNavSections();
+    for (const pluginSection of pluginSections) {
+      sections.push({
+        ...pluginSection,
+        items: pluginSection.items.map((item) => ({
+          ...item,
+          children: item.children ? [...item.children] : undefined,
+        })),
+      });
+    }
+
+    return sections;
+  }
+
+  /**
+   * Insert an item into a section's items array based on position hint.
+   */
+  private _insertItem(items: NavItem[], newItem: NavItemWithPosition): void {
+    const position = newItem.position || 'end';
+    const itemToInsert: NavItem = {
+      label: newItem.label,
+      to: newItem.to,
+      id: newItem.id,
+      children: newItem.children,
+    };
+
+    if (position === 'start') {
+      items.unshift(itemToInsert);
+      return;
+    }
+
+    if (position === 'end') {
+      items.push(itemToInsert);
+      return;
+    }
+
+    // 'before:targetId' or 'after:targetId'
+    const [direction, targetId] = position.split(':');
+    const targetIndex = items.findIndex((item) => item.id === targetId);
+
+    if (targetIndex === -1) {
+      // Target not found — append at end
+      items.push(itemToInsert);
+      return;
+    }
+
+    if (direction === 'before') {
+      items.splice(targetIndex, 0, itemToInsert);
+    } else if (direction === 'after') {
+      items.splice(targetIndex + 1, 0, itemToInsert);
+    } else {
+      items.push(itemToInsert);
+    }
   }
 }
 

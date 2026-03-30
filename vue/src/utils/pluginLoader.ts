@@ -54,8 +54,21 @@ export async function getEnabledPlugins(): Promise<IPlugin[]> {
     const manifest: PluginManifest = pluginsManifest as PluginManifest;
     const enabledPlugins: IPlugin[] = [];
 
+    // Check localStorage for runtime toggle overrides
+    let stateOverrides: Record<string, boolean> = {};
+    try {
+      stateOverrides = JSON.parse(localStorage.getItem('vbwd_admin_plugin_state') || '{}');
+    } catch {
+      // ignore
+    }
+
     for (const [pluginName, pluginConfig] of Object.entries(manifest.plugins)) {
-      if (!pluginConfig.enabled) {
+      // localStorage override takes precedence over plugins.json
+      const isEnabled = pluginName in stateOverrides
+        ? stateOverrides[pluginName]
+        : pluginConfig.enabled;
+
+      if (!isEnabled) {
         console.debug(`[PluginRegistry] Skipping disabled plugin: ${pluginName}`);
         continue;
       }

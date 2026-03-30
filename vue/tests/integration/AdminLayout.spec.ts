@@ -118,7 +118,7 @@ describe('AdminLayout.vue', () => {
 
     expect(hrefs).toContain('/admin/dashboard');
     expect(hrefs).toContain('/admin/users');
-    expect(hrefs).toContain('/admin/plans');
+    expect(hrefs).toContain('/admin/invoices');
   });
 
   it('logs out when logout button is clicked', async () => {

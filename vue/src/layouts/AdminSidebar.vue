@@ -18,90 +18,15 @@
       >
         {{ $t('nav.dashboard') }}
       </router-link>
-      <!-- Sales Expandable Section -->
-      <div class="nav-section">
-        <button
-          class="nav-section-header"
-          :class="{ expanded: salesExpanded, 'has-active': isSalesActive }"
-          data-testid="nav-sales"
-          @click="toggleSales"
-        >
-          <span>{{ $t('nav.sales') }}</span>
-          <span class="expand-arrow">{{ salesExpanded ? '▼' : '▶' }}</span>
-        </button>
-        <div
-          v-show="salesExpanded"
-          class="nav-submenu"
-        >
-          <router-link
-            to="/admin/users"
-            class="nav-item nav-subitem"
-            data-testid="nav-users"
-            @click="closeNav"
-          >
-            {{ $t('nav.users') }}
-          </router-link>
-          <router-link
-            to="/admin/subscriptions"
-            class="nav-item nav-subitem"
-            data-testid="nav-subscriptions"
-            @click="closeNav"
-          >
-            {{ $t('nav.subscriptions') }}
-          </router-link>
-          <router-link
-            to="/admin/invoices"
-            class="nav-item nav-subitem"
-            data-testid="nav-invoices"
-            @click="closeNav"
-          >
-            {{ $t('nav.invoices') }}
-          </router-link>
-        </div>
-      </div>
 
-      <!-- Tarifs Expandable Section -->
-      <div class="nav-section">
-        <button
-          class="nav-section-header"
-          :class="{ expanded: tarifsExpanded, 'has-active': isTarifsActive }"
-          data-testid="nav-tarifs"
-          @click="toggleTarifs"
-        >
-          <span>{{ $t('nav.tarifs') }}</span>
-          <span class="expand-arrow">{{ tarifsExpanded ? '▼' : '▶' }}</span>
-        </button>
-        <div
-          v-show="tarifsExpanded"
-          class="nav-submenu"
-        >
-          <router-link
-            to="/admin/plans"
-            class="nav-item nav-subitem"
-            data-testid="nav-plans"
-            @click="closeNav"
-          >
-            {{ $t('nav.plans') }}
-          </router-link>
-          <router-link
-            to="/admin/add-ons"
-            class="nav-item nav-subitem"
-            data-testid="nav-addons"
-            @click="closeNav"
-          >
-            {{ $t('nav.addOns') }}
-          </router-link>
-        </div>
-      </div>
-
-      <!-- Plugin nav sections (registered via extensionRegistry) -->
+      <!-- All sections: core + plugin (built via extensionRegistry.buildSidebar) -->
       <div
-        v-for="section in pluginNavSections"
+        v-for="section in sidebarSections"
         :key="section.id"
         class="nav-section"
       >
         <button
-          :id="`nav-section-${section.id}`"
+          :data-testid="`nav-section-${section.id}`"
           class="nav-section-header"
           :class="{ expanded: expandedSections[section.id] ?? true, 'has-active': isSectionActive(section) }"
           @click="toggleSection(section.id)"
@@ -113,59 +38,65 @@
           v-show="expandedSections[section.id] ?? true"
           class="nav-submenu"
         >
-          <router-link
+          <template
             v-for="item in section.items"
-            :id="`nav-item-${item.to.replace(/\//g, '-').replace(/^-/, '')}`"
             :key="item.to"
-            :to="item.to"
-            class="nav-item nav-subitem"
-            @click="closeNav"
           >
-            {{ item.label }}
-          </router-link>
-        </div>
-      </div>
+            <!-- Level 1: regular link (no children) -->
+            <router-link
+              v-if="!item.children || item.children.length === 0"
+              :to="item.to"
+              :data-testid="`nav-item-${(item.id || item.to).replace(/\//g, '-').replace(/^-/, '')}`"
+              class="nav-item nav-subitem"
+              @click="closeNav"
+            >
+              {{ item.label }}
+            </router-link>
 
-      <!-- Settings Expandable Section -->
-      <div class="nav-section">
-        <button
-          class="nav-section-header"
-          :class="{ expanded: settingsExpanded, 'has-active': isSettingsActive }"
-          data-testid="nav-settings-section"
-          @click="toggleSettings"
-        >
-          <span>{{ $t('nav.settings') }}</span>
-          <span class="expand-arrow">{{ settingsExpanded ? '▼' : '▶' }}</span>
-        </button>
-        <div
-          v-show="settingsExpanded"
-          class="nav-submenu"
-        >
-          <router-link
-            to="/admin/settings"
-            class="nav-item nav-subitem"
-            data-testid="nav-settings"
-            @click="closeNav"
-          >
-            {{ $t('nav.settings') }}
-          </router-link>
-          <router-link
-            to="/admin/payment-methods"
-            class="nav-item nav-subitem"
-            data-testid="nav-payment-methods"
-            @click="closeNav"
-          >
-            {{ $t('nav.paymentMethods') }}
-          </router-link>
-          <router-link
-            v-for="item in pluginSettingsItems"
-            :key="item.to"
-            :to="item.to"
-            class="nav-item nav-subitem"
-            @click="closeNav"
-          >
-            {{ item.label }}
-          </router-link>
+            <!-- Level 1: parent with Level 2 children -->
+            <div
+              v-else
+              class="nav-subgroup"
+            >
+              <div class="nav-subgroup-header">
+                <router-link
+                  v-if="item.to"
+                  :to="item.to"
+                  class="nav-item nav-subitem nav-subgroup-label"
+                  @click="closeNav"
+                >
+                  {{ item.label }}
+                </router-link>
+                <span
+                  v-else
+                  class="nav-item nav-subitem nav-subgroup-label"
+                >
+                  {{ item.label }}
+                </span>
+                <button
+                  class="nav-subgroup-toggle"
+                  :data-testid="`nav-toggle-${(item.id || item.to || item.label).replace(/[\s/]/g, '-').toLowerCase()}`"
+                  @click="toggleLevel2(item.to || item.label)"
+                >
+                  {{ (expandedLevel2[item.to || item.label] ?? false) ? '▾' : '▸' }}
+                </button>
+              </div>
+              <div
+                v-show="expandedLevel2[item.to || item.label] ?? false"
+                class="nav-level2"
+              >
+                <router-link
+                  v-for="child in item.children"
+                  :key="child.to"
+                  :to="child.to"
+                  class="nav-item nav-subitem nav-level2-item"
+                  @click="closeNav"
+                >
+                  {{ child.label }}
+                </router-link>
+              </div>
+            </div>
+          </template>
         </div>
       </div>
     </nav>
@@ -208,80 +139,80 @@
 <script setup lang="ts">
 import { computed, ref, reactive } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/auth';
 import { extensionRegistry } from '@/plugins/extensionRegistry';
-import type { NavSection, NavItem } from '@/plugins/extensionRegistry';
+import type { NavSection } from '@/plugins/extensionRegistry';
 
 defineProps<{ showMobile?: boolean }>();
 const emit = defineEmits<{ close: [] }>();
+
+const { t } = useI18n();
+const router = useRouter();
+const route = useRoute();
+const authStore = useAuthStore();
 
 function closeNav() {
   emit('close');
 }
 
-const router = useRouter();
-const route = useRoute();
-const authStore = useAuthStore();
-
 const userMenuOpen = ref(false);
-const salesExpanded = ref(true);
-const tarifsExpanded = ref(true);
-const settingsExpanded = ref(true);
 
-// Plugin nav sections from extensionRegistry
-const pluginNavSections = computed((): NavSection[] => extensionRegistry.getNavSections());
+// Core sections — defines the named slots that plugins can inject into
+const coreSections = computed((): NavSection[] => [
+  {
+    id: 'sales',
+    label: t('nav.sales'),
+    items: [
+      { label: t('nav.users'), to: '/admin/users', id: 'users' },
+      { label: t('nav.invoices'), to: '/admin/invoices', id: 'invoices' },
+    ],
+  },
+  {
+    id: 'settings',
+    label: t('nav.settings'),
+    items: [
+      { label: t('nav.settings'), to: '/admin/settings', id: 'settings' },
+      { label: t('nav.paymentMethods'), to: '/admin/payment-methods', id: 'payment-methods' },
+    ],
+  },
+]);
 
-// Plugin items injected into the Settings section
-const pluginSettingsItems = computed((): NavItem[] => extensionRegistry.getSettingsItems());
+// Build complete sidebar: core sections + plugin injections + plugin sections
+const sidebarSections = computed((): NavSection[] => {
+  return extensionRegistry.buildSidebar(coreSections.value);
+});
 
 // Tracks expanded state per section id (default: expanded)
 const expandedSections = reactive<Record<string, boolean>>({});
+// Tracks expanded state for Level 2 sub-groups (default: collapsed)
+const expandedLevel2 = reactive<Record<string, boolean>>({});
 
-function toggleSection(id: string): void {
-  expandedSections[id] = !(expandedSections[id] ?? true);
+function toggleSection(sectionId: string): void {
+  expandedSections[sectionId] = !(expandedSections[sectionId] ?? true);
+}
+
+function toggleLevel2(itemKey: string): void {
+  expandedLevel2[itemKey] = !(expandedLevel2[itemKey] ?? false);
 }
 
 function isSectionActive(section: NavSection): boolean {
-  return section.items.some(item => route.path.startsWith(item.to));
+  const path = route.path;
+  return section.items.some((item) => {
+    if (path.startsWith(item.to)) return true;
+    if (item.children) {
+      return item.children.some((child) => path.startsWith(child.to));
+    }
+    return false;
+  });
 }
 
 const userEmail = computed((): string => {
   return authStore.user?.email || 'Admin';
 });
 
-// Check if current route is within Sales section
-const isSalesActive = computed((): boolean => {
-  const path = route.path;
-  return path.includes('/admin/users') || path.includes('/admin/subscriptions') || path.includes('/admin/invoices');
-});
-
-// Check if current route is within Tarifs section
-const isTarifsActive = computed((): boolean => {
-  const path = route.path;
-  return path.includes('/admin/plans') || path.includes('/admin/add-ons');
-});
-
-// Check if current route is within Settings section
-const isSettingsActive = computed((): boolean => {
-  const path = route.path;
-  if (path.includes('/admin/settings') || path.includes('/admin/payment-methods')) return true;
-  return pluginSettingsItems.value.some(item => path.startsWith(item.to));
-});
-
 function toggleUserMenu(): void {
   userMenuOpen.value = !userMenuOpen.value;
-}
-
-function toggleSales(): void {
-  salesExpanded.value = !salesExpanded.value;
-}
-
-function toggleTarifs(): void {
-  tarifsExpanded.value = !tarifsExpanded.value;
-}
-
-function toggleSettings(): void {
-  settingsExpanded.value = !settingsExpanded.value;
 }
 
 async function handleLogout(): Promise<void> {
@@ -310,39 +241,37 @@ async function handleLogout(): Promise<void> {
 
 .sidebar-brand h2 {
   margin: 0;
-  font-size: 1.4rem;
-  font-weight: 600;
+  font-size: 1.3rem;
 }
 
 .sidebar-nav {
   flex: 1;
-  padding: 15px 0;
   overflow-y: auto;
+  padding: 10px 0;
 }
 
 .nav-item {
   display: block;
-  padding: 12px 20px;
+  padding: 10px 20px;
   color: rgba(255, 255, 255, 0.7);
   text-decoration: none;
-  transition: all 0.2s ease;
-  border-left: 3px solid transparent;
+  transition: all 0.2s;
+  font-size: 0.9rem;
 }
 
 .nav-item:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.05);
   color: white;
 }
 
-.nav-item.router-link-active {
-  background-color: rgba(255, 255, 255, 0.1);
+.nav-item.router-link-active,
+.nav-item.router-link-exact-active {
+  background: rgba(255, 255, 255, 0.1);
   color: white;
-  border-left-color: #3498db;
 }
 
-/* Expandable Section */
 .nav-section {
-  margin: 0;
+  margin-top: 5px;
 }
 
 .nav-section-header {
@@ -350,131 +279,140 @@ async function handleLogout(): Promise<void> {
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  padding: 12px 20px;
+  padding: 10px 20px;
   background: none;
   border: none;
-  border-left: 3px solid transparent;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.5);
   cursor: pointer;
-  font-size: inherit;
-  font-family: inherit;
-  text-align: left;
-  transition: all 0.2s ease;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: color 0.2s;
 }
 
 .nav-section-header:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-  color: white;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .nav-section-header.has-active {
-  color: white;
-  border-left-color: #3498db;
-}
-
-.nav-section-header.expanded {
-  background-color: rgba(255, 255, 255, 0.03);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .expand-arrow {
-  font-size: 0.7rem;
-  opacity: 0.7;
+  font-size: 0.65rem;
 }
 
 .nav-submenu {
-  background-color: rgba(0, 0, 0, 0.15);
+  padding-left: 0;
 }
 
 .nav-subitem {
-  padding-left: 35px;
-  font-size: 0.95em;
+  padding-left: 30px;
+  font-size: 0.85rem;
 }
 
-.nav-subitem.router-link-active {
-  background-color: rgba(255, 255, 255, 0.08);
+/* Level 2 sub-group */
+.nav-subgroup {
+  margin: 0;
 }
 
-.sidebar-footer {
-  padding: 15px 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+.nav-subgroup-header {
+  display: flex;
+  align-items: center;
 }
 
-.user-info {
-  margin-bottom: 12px;
+.nav-subgroup-label {
+  flex: 1;
 }
 
-.user-email {
-  display: block;
-  font-size: 0.9rem;
-  color: white;
-  margin-bottom: 2px;
-}
-
-.user-role {
-  display: block;
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.logout-btn {
-  width: 100%;
-  padding: 10px;
-  background-color: #e74c3c;
-  color: white;
+.nav-subgroup-toggle {
+  background: none;
   border: none;
-  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.5);
   cursor: pointer;
-  font-size: 0.9rem;
-  transition: background-color 0.2s ease;
+  padding: 4px 12px;
+  font-size: 0.8rem;
 }
 
-.logout-btn:hover {
-  background-color: #c0392b;
+.nav-subgroup-toggle:hover {
+  color: white;
+}
+
+.nav-level2 {
+  padding-left: 0;
+}
+
+.nav-level2-item {
+  padding-left: 45px;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.nav-level2-item:hover {
+  color: white;
+}
+
+/* Footer */
+.sidebar-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 10px;
 }
 
 .user-menu {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  cursor: pointer;
+  align-items: center;
   padding: 10px;
-  margin: -10px;
+  cursor: pointer;
   border-radius: 4px;
-  transition: background-color 0.2s ease;
 }
 
 .user-menu:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-email {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.user-role {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
 }
 
 .menu-arrow {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   color: rgba(255, 255, 255, 0.5);
 }
 
 .user-dropdown {
-  margin-top: 10px;
-  background-color: rgba(0, 0, 0, 0.2);
+  margin-top: 5px;
+  background: rgba(0, 0, 0, 0.2);
   border-radius: 4px;
-  overflow: hidden;
 }
 
 .dropdown-item {
   display: block;
-  width: 100%;
-  padding: 10px 15px;
-  color: rgba(255, 255, 255, 0.8);
+  padding: 8px 15px;
+  color: rgba(255, 255, 255, 0.7);
   text-decoration: none;
+  font-size: 0.85rem;
+  width: 100%;
   text-align: left;
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 0.9rem;
-  transition: background-color 0.2s ease;
 }
 
 .dropdown-item:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
   color: white;
 }
 
@@ -483,35 +421,19 @@ async function handleLogout(): Promise<void> {
 }
 
 .logout-item:hover {
-  background-color: rgba(231, 76, 60, 0.2);
-  color: #e74c3c;
+  background: rgba(231, 76, 60, 0.1);
 }
 
-/* Mobile: slide-in sidebar */
-@media (max-width: 1024px) {
+/* Mobile */
+@media (max-width: 768px) {
   .admin-sidebar {
-    position: fixed;
-    left: 0;
-    top: 60px;
-    height: calc(100vh - 60px);
     transform: translateX(-100%);
-    transition: transform 0.3s ease;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s;
     z-index: 1000;
   }
 
   .admin-sidebar-mobile-open {
     transform: translateX(0);
-  }
-
-  .sidebar-brand {
-    display: none;
-  }
-}
-
-@media (max-width: 768px) {
-  .admin-sidebar {
-    width: 100%;
   }
 }
 </style>
