@@ -1,0 +1,7 @@
+{
+  "products_per_page": 25,
+  "orders_per_page": 25,
+  "show_sku_column": true,
+  "show_weight_column": true,
+  "default_product_sort": "created_at_desc"
+}

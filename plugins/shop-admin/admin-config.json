@@ -1,0 +1,20 @@
+{
+  "tabs": [
+    {
+      "id": "display",
+      "label": "Display",
+      "fields": [
+        { "key": "products_per_page", "label": "Products Per Page", "component": "input", "inputType": "number", "min": 10, "max": 100 },
+        { "key": "orders_per_page", "label": "Orders Per Page", "component": "input", "inputType": "number", "min": 10, "max": 100 },
+        { "key": "show_sku_column", "label": "Show SKU Column", "component": "checkbox" },
+        { "key": "show_weight_column", "label": "Show Weight Column", "component": "checkbox" },
+        { "key": "default_product_sort", "label": "Default Sort", "component": "select", "options": [
+          { "value": "created_at_desc", "label": "Newest First" },
+          { "value": "name_asc", "label": "Name A-Z" },
+          { "value": "price_asc", "label": "Price Low-High" },
+          { "value": "price_desc", "label": "Price High-Low" }
+        ]}
+      ]
+    }
+  ]
+}

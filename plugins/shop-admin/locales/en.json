@@ -1,0 +1,60 @@
+{
+  "shop": {
+    "products": {
+      "title": "Products",
+      "create": "New Product",
+      "edit": "Edit Product",
+      "name": "Name",
+      "slug": "Slug",
+      "sku": "SKU",
+      "price": "Price",
+      "currency": "Currency",
+      "description": "Description",
+      "status": "Status",
+      "active": "Active",
+      "draft": "Draft",
+      "digital": "Digital Product",
+      "weight": "Weight (kg)",
+      "taxClass": "Tax Class",
+      "noProducts": "No products yet.",
+      "deleteConfirm": "Delete this product?",
+      "created": "Product created",
+      "updated": "Product updated",
+      "deleted": "Product deleted"
+    },
+    "categories": {
+      "title": "Product Categories"
+    },
+    "orders": {
+      "title": "Orders",
+      "orderNumber": "Order #",
+      "status": "Status",
+      "total": "Total",
+      "date": "Date",
+      "ship": "Ship",
+      "complete": "Complete",
+      "trackingNumber": "Tracking Number",
+      "trackingUrl": "Tracking URL",
+      "shipped": "Order shipped",
+      "completed": "Order completed",
+      "statusPending": "Pending",
+      "statusConfirmed": "Confirmed",
+      "statusProcessing": "Processing",
+      "statusShipped": "Shipped",
+      "statusDelivered": "Delivered",
+      "statusCompleted": "Completed",
+      "statusCancelled": "Cancelled",
+      "statusRefunded": "Refunded"
+    },
+    "stock": {
+      "title": "Stock Overview"
+    },
+    "warehouses": {
+      "title": "Warehouses"
+    },
+    "dashboard": {
+      "revenue": "Shop Revenue",
+      "topProducts": "Top Products"
+    }
+  }
+}

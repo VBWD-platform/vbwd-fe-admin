@@ -646,6 +646,11 @@ onMounted(() => {
   color: #e65100;
 }
 
+.type-badge.shop {
+  background: #ede7f6;
+  color: #4527a0;
+}
+
 .address p {
   margin: 5px 0;
   color: #2c3e50;
