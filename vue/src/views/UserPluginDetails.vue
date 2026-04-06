@@ -69,7 +69,10 @@
         >
           {{ plugin.description }}
         </p>
-        <div class="plugin-actions">
+        <div
+          v-if="canManage"
+          class="plugin-actions"
+        >
           <template v-if="plugin.status === 'uninstalled'">
             <button
               class="action-btn activate-btn"
@@ -227,7 +230,10 @@
             </div>
           </div>
 
-          <div class="form-actions">
+          <div
+            v-if="canManage"
+            class="form-actions"
+          >
             <button
               class="save-btn"
               :disabled="saving"
@@ -253,14 +259,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, watch } from 'vue';
+import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { useAuthStore } from '@/stores/auth';
 import { useUserPluginsStore } from '@/stores/userPlugins';
 
 const route = useRoute();
 const { t } = useI18n();
+const authStore = useAuthStore();
 const store = useUserPluginsStore();
+const canManage = computed(() => authStore.hasPermission('settings.system'));
 
 const loading = ref(true);
 const error = ref<string | null>(null);

@@ -103,7 +103,7 @@ describe('Login.vue', () => {
         id: '1',
         email: 'admin@test.com',
         name: 'Admin User',
-        roles: ['admin']
+        role: 'ADMIN'
       }
     });
 
@@ -131,7 +131,7 @@ describe('Login.vue', () => {
         id: '2',
         email: 'user@test.com',
         name: 'Regular User',
-        roles: ['user']  // No admin role
+        role: 'USER'  // No admin role
       }
     });
 
@@ -159,7 +159,7 @@ describe('Login.vue', () => {
         id: '1',
         email: 'admin@test.com',
         name: 'Admin User',
-        roles: ['admin']
+        role: 'ADMIN'
       }
     });
 
@@ -188,7 +188,7 @@ describe('Login.vue', () => {
         id: '1',
         email: 'admin@test.com',
         name: 'Admin User',
-        roles: ['admin']
+        role: 'ADMIN'
       }
     });
 
@@ -207,6 +207,6 @@ describe('Login.vue', () => {
     const authStore = useAuthStore();
     expect(authStore.isAuthenticated).toBe(true);
     expect(authStore.user?.email).toBe('admin@test.com');
-    expect(authStore.user?.roles).toContain('admin');
+    expect(authStore.user?.role).toBe('ADMIN');
   });
 });

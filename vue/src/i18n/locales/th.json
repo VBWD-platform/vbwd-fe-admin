@@ -52,7 +52,8 @@
     "settings": "การตั้งค่า",
     "profile": "โปรไฟล์",
     "logout": "ออกจากระบบ",
-    "sales": "ยอดขาย"
+    "sales": "ยอดขาย",
+    "accessLevels": "Access Levels"
   },
   "auth": {
     "login": "เข้าสู่ระบบ",
@@ -369,7 +370,8 @@
       "countries": "ประเทศ",
       "adminPlugins": "ปลั๊กอินแอดมิน",
       "backendPlugins": "ปลั๊กอินแบ็กเอนด์",
-      "userPlugins": "ปลั๊กอินผู้ใช้"
+      "userPlugins": "ปลั๊กอินผู้ใช้",
+      "tax": "ภาษี"
     },
     "coreSettings": {
       "title": "ข้อมูลผู้ให้บริการ",
@@ -402,6 +404,33 @@
       "title": "แพ็คเกจโทเค็น",
       "description": "จัดการแพ็คเกจโทเค็นสำหรับการซื้อ",
       "placeholder": "การจัดการแพ็คเกจโทเค็นจะอยู่ที่นี่"
+    },
+    "tax": {
+      "classesTitle": "ประเภทภาษี",
+      "addClass": "เพิ่มประเภท",
+      "className": "ชื่อ",
+      "classCode": "รหัส",
+      "defaultRate": "อัตราเริ่มต้น (%)",
+      "isDefault": "ค่าเริ่มต้น",
+      "noClasses": "ยังไม่มีประเภทภาษี",
+      "classSaved": "บันทึกประเภทภาษีสำเร็จ",
+      "confirmDeleteClass": "ลบประเภทภาษีนี้?",
+      "ratesTitle": "อัตราภาษี",
+      "addRate": "เพิ่มอัตรา",
+      "rateName": "ชื่อ",
+      "rateNamePlaceholder": "เช่น VAT เยอรมนี",
+      "rateCode": "รหัส",
+      "rateCodePlaceholder": "เช่น VAT_DE",
+      "ratePercent": "อัตรา (%)",
+      "country": "ประเทศ",
+      "countryPlaceholder": "เช่น DE",
+      "region": "ภูมิภาค",
+      "regionPlaceholder": "เช่น CA-BC",
+      "taxClass": "ประเภทภาษี",
+      "inclusive": "รวมภาษี",
+      "noRates": "ยังไม่มีอัตราภาษี",
+      "rateSaved": "บันทึกอัตราภาษีสำเร็จ",
+      "confirmDeleteRate": "ลบอัตราภาษีนี้?"
     }
   },
   "tokenBundles": {
@@ -623,5 +652,34 @@
       "configSaved": "บันทึกการตั้งค่าสำเร็จ",
       "noConfig": "ปลั๊กอินนี้ไม่มีตัวเลือกการตั้งค่า"
     }
+  },
+  "access": {
+    "title": "Access Levels",
+    "newLevel": "New Access Level",
+    "editLevel": "Edit Access Level",
+    "name": "Name",
+    "slug": "Slug",
+    "description": "Description",
+    "adminAccess": "Admin Access",
+    "grantsAdminAccess": "Grants admin panel access",
+    "permissions": "Permissions",
+    "permissionCount": "{count} permissions",
+    "system": "System",
+    "actions": "Actions",
+    "delete": "Delete",
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "export": "Export",
+    "import": "Import",
+    "noLevels": "No access levels defined.",
+    "deleteConfirm": "Delete access level \"{name}\"?",
+    "systemRoleWarning": "System roles cannot be deleted",
+    "selectAll": "Select all",
+    "deselectAll": "Deselect all",
+    "assignedUsers": "Assigned Users",
+    "revokeRole": "Revoke",
+    "yes": "Yes",
+    "no": "No"
   }
 }

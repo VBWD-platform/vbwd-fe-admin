@@ -233,6 +233,7 @@
 
         <div class="actions-section">
           <button
+            v-if="canManage"
             data-testid="duplicate-button"
             class="action-btn duplicate-btn"
             :disabled="processing"
@@ -241,6 +242,7 @@
             {{ processing ? $t('invoices.duplicating') : $t('invoices.duplicate') }}
           </button>
           <button
+            v-if="canManage"
             data-testid="resend-button"
             class="action-btn resend-btn"
             :disabled="processing"
@@ -249,7 +251,7 @@
             {{ processing ? $t('invoices.sending') : $t('invoices.resend') }}
           </button>
           <button
-            v-if="invoice.status === 'PENDING'"
+            v-if="canManage && invoice.status === 'PENDING'"
             data-testid="mark-paid-button"
             class="action-btn mark-paid-btn"
             :disabled="processing"
@@ -258,7 +260,7 @@
             {{ processing ? $t('common.processing') : $t('invoices.markAsPaid') }}
           </button>
           <button
-            v-if="invoice.status === 'PENDING'"
+            v-if="canManage && invoice.status === 'PENDING'"
             data-testid="void-button"
             class="action-btn void-btn"
             :disabled="processing"
@@ -267,7 +269,7 @@
             {{ processing ? $t('common.processing') : $t('invoices.void') }}
           </button>
           <button
-            v-if="invoice.status === 'PAID'"
+            v-if="canManage && invoice.status === 'PAID'"
             data-testid="refund-button"
             class="action-btn refund-btn"
             :disabled="processing"
@@ -286,11 +288,14 @@ import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useInvoicesStore } from '@/stores/invoices';
+import { useAuthStore } from '@/stores/auth';
 
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const invoicesStore = useInvoicesStore();
+const authStore = useAuthStore();
+const canManage = computed(() => authStore.hasPermission('invoices.manage'));
 
 const processing = ref(false);
 

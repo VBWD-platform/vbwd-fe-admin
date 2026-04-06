@@ -7,49 +7,62 @@ export const shopAdminPlugin: IPlugin = {
   description: 'Shop admin — products, categories, orders, stock, warehouses',
 
   install(sdk: IPlatformSDK) {
-    // Routes
     sdk.addRoute({
       path: 'shop/products',
       name: 'shop-products',
       component: () => import('./src/views/Products.vue'),
+      meta: { requiredPermission: 'shop.products.view' },
     });
     sdk.addRoute({
       path: 'shop/products/new',
       name: 'shop-product-new',
       component: () => import('./src/views/ProductForm.vue'),
+      meta: { requiredPermission: 'shop.products.manage' },
     });
     sdk.addRoute({
       path: 'shop/products/:id/edit',
       name: 'shop-product-edit',
       component: () => import('./src/views/ProductForm.vue'),
+      meta: { requiredPermission: 'shop.products.view' },
     });
     sdk.addRoute({
       path: 'shop/categories',
       name: 'shop-categories',
       component: () => import('./src/views/ProductCategories.vue'),
+      meta: { requiredPermission: 'shop.categories.manage' },
     });
     sdk.addRoute({
       path: 'shop/orders',
       name: 'shop-orders',
       component: () => import('./src/views/Orders.vue'),
+      meta: { requiredPermission: 'shop.orders.view' },
     });
     sdk.addRoute({
       path: 'shop/orders/:id',
       name: 'shop-order-detail',
       component: () => import('./src/views/OrderDetails.vue'),
+      meta: { requiredPermission: 'shop.orders.view' },
     });
     sdk.addRoute({
       path: 'shop/stock',
       name: 'shop-stock',
       component: () => import('./src/views/StockOverview.vue'),
+      meta: { requiredPermission: 'shop.stock.manage' },
     });
     sdk.addRoute({
       path: 'shop/warehouses',
       name: 'shop-warehouses',
       component: () => import('./src/views/Warehouses.vue'),
+      meta: { requiredPermission: 'shop.warehouses.manage' },
     });
 
-    // Dashboard widget
+    sdk.addRoute({
+      path: 'shop/shipping',
+      name: 'shop-shipping',
+      component: () => import('./src/views/ShippingMethods.vue'),
+      meta: { requiredPermission: 'shop.configure' },
+    });
+
     sdk.addComponent(
       'ShopRevenueWidget',
       () => import('./src/components/ShopRevenueWidget.vue') as Promise<{ default: unknown }>
@@ -64,12 +77,14 @@ export const shopAdminPlugin: IPlugin = {
             label: 'Shop',
             to: '/admin/shop/products',
             id: 'shop',
+            requiredPermission: 'shop.products.view',
             children: [
-              { label: 'Products', to: '/admin/shop/products' },
-              { label: 'Categories', to: '/admin/shop/categories' },
-              { label: 'Orders', to: '/admin/shop/orders' },
-              { label: 'Stock', to: '/admin/shop/stock' },
-              { label: 'Warehouses', to: '/admin/shop/warehouses' },
+              { label: 'Products', to: '/admin/shop/products', requiredPermission: 'shop.products.view' },
+              { label: 'Categories', to: '/admin/shop/categories', requiredPermission: 'shop.categories.manage' },
+              { label: 'Orders', to: '/admin/shop/orders', requiredPermission: 'shop.orders.view' },
+              { label: 'Stock', to: '/admin/shop/stock', requiredPermission: 'shop.stock.manage' },
+              { label: 'Warehouses', to: '/admin/shop/warehouses', requiredPermission: 'shop.warehouses.manage' },
+              { label: 'Shipping', to: '/admin/shop/shipping', requiredPermission: 'shop.configure' },
             ],
           },
         ],

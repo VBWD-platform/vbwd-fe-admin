@@ -6,6 +6,7 @@
     <div class="page-header">
       <h1>Product Categories</h1>
       <button
+        v-if="canManage"
         class="btn btn--primary"
         data-testid="create-category-btn"
         @click="showForm = !showForm"
@@ -61,6 +62,7 @@
           </select>
         </div>
         <button
+          v-if="canManage"
           class="btn btn--primary form-submit"
           data-testid="category-submit-btn"
           @click="handleSubmit"
@@ -112,6 +114,7 @@
           <td>{{ category.product_count ?? 0 }}</td>
           <td>
             <button
+              v-if="canManage"
               class="btn btn--sm btn--secondary"
               :data-testid="`edit-category-${category.id}`"
               @click="startEdit(category)"
@@ -119,6 +122,7 @@
               Edit
             </button>
             <button
+              v-if="canManage"
               class="btn btn--sm btn--danger"
               :data-testid="`delete-category-${category.id}`"
               @click="handleDelete(category.id)"
@@ -141,8 +145,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
+import { useAuthStore } from '@/stores/auth';
 import { api } from '@/api';
+
+const authStore = useAuthStore();
+const canManage = computed(() => authStore.hasPermission('shop.categories.manage'));
 
 interface ProductCategory {
   id: string;

@@ -137,7 +137,7 @@
         data-testid="order-actions"
       >
         <button
-          v-if="order.status === 'confirmed'"
+          v-if="order.status === 'confirmed' && canManage"
           class="btn btn--primary"
           :disabled="store.loading"
           data-testid="ship-order-btn"
@@ -146,7 +146,7 @@
           Ship Order
         </button>
         <button
-          v-if="order.status === 'shipped'"
+          v-if="order.status === 'shipped' && canManage"
           class="btn btn--primary"
           :disabled="store.loading"
           data-testid="complete-order-btn"
@@ -163,9 +163,12 @@
 import { computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useOrderAdminStore } from '../stores/orderAdmin';
+import { useAuthStore } from '@/stores/auth';
 
 const route = useRoute();
 const store = useOrderAdminStore();
+const authStore = useAuthStore();
+const canManage = computed(() => authStore.hasPermission('shop.orders.manage'));
 
 const orderId = computed(() => route.params.id as string);
 const order = computed(() => store.selectedOrder);

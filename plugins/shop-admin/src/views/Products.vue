@@ -3,6 +3,7 @@
     <div class="page-header">
       <h1>{{ $t('shop.products.title') || 'Products' }}</h1>
       <router-link
+        v-if="canManage"
         to="/admin/shop/products/new"
         class="btn btn--primary"
         data-testid="create-product-btn"
@@ -23,6 +24,7 @@
         {{ selectedIds.size }} selected
       </span>
       <button
+        v-if="canManage"
         class="btn btn--sm btn--danger"
         data-testid="bulk-delete-btn"
         @click="handleBulkDelete"
@@ -30,6 +32,7 @@
         Delete Selected
       </button>
       <button
+        v-if="canManage"
         class="btn btn--sm btn--success"
         data-testid="bulk-activate-btn"
         @click="handleBulkActivate"
@@ -37,6 +40,7 @@
         Activate
       </button>
       <button
+        v-if="canManage"
         class="btn btn--sm btn--secondary"
         data-testid="bulk-deactivate-btn"
         @click="handleBulkDeactivate"
@@ -125,6 +129,7 @@
           </td>
           <td @click.stop>
             <button
+              v-if="canManage"
               class="btn btn--sm btn--danger"
               @click="handleDelete(product.id)"
             >
@@ -148,9 +153,12 @@
 <script setup lang="ts">
 import { reactive, computed, onMounted } from 'vue';
 import { useProductAdminStore } from '../stores/productAdmin';
+import { useAuthStore } from '@/stores/auth';
 import { api } from '@/api';
 
 const store = useProductAdminStore();
+const authStore = useAuthStore();
+const canManage = computed(() => authStore.hasPermission('shop.products.manage'));
 const selectedIds = reactive(new Set<string>());
 
 const allSelected = computed(() => {

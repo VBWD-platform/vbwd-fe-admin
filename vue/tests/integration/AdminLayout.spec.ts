@@ -60,7 +60,7 @@ describe('AdminLayout.vue', () => {
       id: '1',
       email: 'admin@test.com',
       name: 'Admin User',
-      roles: ['admin']
+      role: 'ADMIN'
     };
   });
 

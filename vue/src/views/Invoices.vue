@@ -49,7 +49,7 @@
 
     <!-- Bulk Actions -->
     <div
-      v-if="selectedInvoices.size > 0"
+      v-if="selectedInvoices.size > 0 && canManage"
       class="bulk-actions"
       data-testid="bulk-actions"
     >
@@ -267,11 +267,14 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useInvoicesStore } from '@/stores/invoices';
+import { useAuthStore } from '@/stores/auth';
 
 const { t } = useI18n();
 
 const router = useRouter();
 const invoicesStore = useInvoicesStore();
+const authStore = useAuthStore();
+const canManage = computed(() => authStore.hasPermission('invoices.manage'));
 
 const statusFilter = ref('');
 const searchQuery = ref('');

@@ -164,23 +164,38 @@ const coreSections = computed((): NavSection[] => [
     id: 'sales',
     label: t('nav.sales'),
     items: [
-      { label: t('nav.users'), to: '/admin/users', id: 'users' },
-      { label: t('nav.invoices'), to: '/admin/invoices', id: 'invoices' },
+      { label: t('nav.users'), to: '/admin/users', id: 'users', requiredPermission: 'users.view' },
+      { label: t('nav.invoices'), to: '/admin/invoices', id: 'invoices', requiredPermission: 'invoices.view' },
     ],
   },
   {
     id: 'settings',
     label: t('nav.settings'),
     items: [
-      { label: t('nav.settings'), to: '/admin/settings', id: 'settings' },
-      { label: t('nav.paymentMethods'), to: '/admin/payment-methods', id: 'payment-methods' },
+      { label: t('nav.settings'), to: '/admin/settings', id: 'settings', requiredPermission: 'settings.view' },
+      { label: t('nav.paymentMethods'), to: '/admin/payment-methods', id: 'payment-methods', requiredPermission: 'settings.manage' },
+      { label: t('nav.accessLevels'), to: '/admin/settings/access', id: 'access-levels', requiredPermission: 'settings.system' },
     ],
   },
 ]);
 
 // Build complete sidebar: core sections + plugin injections + plugin sections
+// Then filter by user permissions
 const sidebarSections = computed((): NavSection[] => {
-  return extensionRegistry.buildSidebar(coreSections.value);
+  const sections = extensionRegistry.buildSidebar(coreSections.value);
+
+  // Filter items by requiredPermission
+  return sections.map(section => ({
+    ...section,
+    items: section.items
+      .filter(item => !item.requiredPermission || authStore.hasPermission(item.requiredPermission))
+      .map(item => ({
+        ...item,
+        children: item.children?.filter(child =>
+          !child.requiredPermission || authStore.hasPermission(child.requiredPermission)
+        ),
+      })),
+  })).filter(section => section.items.length > 0);
 });
 
 // Tracks expanded state per section id (default: expanded)

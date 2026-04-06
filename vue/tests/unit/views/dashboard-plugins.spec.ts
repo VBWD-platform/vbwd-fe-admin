@@ -27,11 +27,27 @@ vi.mock('@/api', () => ({
   clearApiAuth: vi.fn()
 }))
 
-// Mock the plugins store to return empty plugins (no filtering)
+// Mock stores used by Dashboard (dynamically imported in onMounted)
 vi.mock('@/stores/plugins', () => ({
   usePluginsStore: () => ({
     plugins: [],
     fetchPlugins: vi.fn().mockResolvedValue([])
+  })
+}))
+
+vi.mock('@/stores/analytics', () => ({
+  useAnalyticsStore: () => ({
+    loading: false,
+    error: null,
+    dashboard: {
+      mrr: { total: 1000, change_percent: 5 },
+      revenue: { total: 5000, change_percent: 3 },
+      user_growth: { total: 100, change_percent: 10 },
+      churn: { total: 2.5, change_percent: -0.5 },
+      arpu: { total: 50, change_percent: 2 },
+      conversion: { total: 15, change_percent: 1 },
+    },
+    fetchDashboard: vi.fn().mockResolvedValue({}),
   })
 }))
 
@@ -86,6 +102,8 @@ describe('Dashboard Plugin Widgets', () => {
     await flushPromises()
     await nextTick()
     await flushPromises()
+    await nextTick()
+    await flushPromises()
 
     expect(wrapper.find('[data-testid="test-widget"]').exists()).toBe(true)
   })
@@ -106,6 +124,8 @@ describe('Dashboard Plugin Widgets', () => {
     sdk.addComponent('AnotherWidget', (() => Promise.resolve(AnotherWidget)) as unknown as ComponentDefinition)
 
     const wrapper = mountDashboard(sdk)
+    await flushPromises()
+    await nextTick()
     await flushPromises()
     await nextTick()
     await flushPromises()

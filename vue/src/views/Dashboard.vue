@@ -5,23 +5,24 @@
   >
     <h1>{{ $t('dashboard.title') }}</h1>
 
-    <div
-      v-if="analyticsStore.loading"
-      class="loading"
-    >
-      {{ $t('common.loading') }}
-    </div>
-    <div
-      v-else-if="analyticsStore.error"
-      class="error"
-    >
-      {{ analyticsStore.error }}
-    </div>
+    <template v-if="canViewAnalytics">
+      <div
+        v-if="!storesReady || analyticsStore?.loading"
+        class="loading"
+      >
+        {{ $t('common.loading') }}
+      </div>
+      <div
+        v-else-if="analyticsStore?.error"
+        class="error"
+      >
+        {{ analyticsStore.error }}
+      </div>
 
-    <div
-      v-else
-      class="stats-grid"
-    >
+      <div
+        v-else
+        class="stats-grid"
+      >
       <div class="stat-card">
         <h3>{{ $t('dashboard.mrr') }}</h3>
         <div class="stat-value">
@@ -101,6 +102,7 @@
         </div>
       </div>
     </div>
+    </template>
 
     <!-- Plugin Widgets (dynamically loaded via SDK) -->
     <div class="plugin-widgets">
@@ -114,25 +116,46 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, inject, defineAsyncComponent } from 'vue'
-import { useAnalyticsStore } from '../stores/analytics'
-import { usePluginsStore } from '../stores/plugins'
+import { ref, computed, onMounted, inject, defineAsyncComponent } from 'vue'
 import type { IPlatformSDK } from 'vbwd-view-component'
+import { useAuthStore } from '@/stores/auth'
 
-const analyticsStore = useAnalyticsStore()
-const pluginsStore = usePluginsStore()
+const authStore = useAuthStore()
+const canViewAnalytics = computed(() => authStore.hasPermission('analytics.view'))
+
+// Lazy-init stores to avoid Pinia timing issues during HMR
+let analyticsStore: ReturnType<typeof import('../stores/analytics').useAnalyticsStore> | null = null
+let pluginsStore: ReturnType<typeof import('../stores/plugins').usePluginsStore> | null = null
 const sdk = inject<IPlatformSDK>('platformSDK')
+const storesReady = ref(false)
+
+onMounted(async () => {
+  try {
+    const { useAnalyticsStore } = await import('../stores/analytics')
+    const { usePluginsStore } = await import('../stores/plugins')
+    analyticsStore = useAnalyticsStore()
+    pluginsStore = usePluginsStore()
+    storesReady.value = true
+    const fetches: Promise<unknown>[] = [pluginsStore.fetchPlugins()]
+    if (canViewAnalytics.value) {
+      fetches.push(analyticsStore.fetchDashboard())
+    }
+    await Promise.all(fetches)
+  } catch (error) {
+    console.error('Failed to load dashboard:', error)
+  }
+})
 
 // Only show widgets from enabled admin plugins
 const pluginWidgets = computed(() => {
-  if (!sdk) return []
+  if (!sdk || !storesReady.value || !pluginsStore) return []
   // Depend on reactive plugins list for re-evaluation
   const enabledPlugins = pluginsStore.plugins.filter(p => p.enabled)
   const enabledNorm = new Set(enabledPlugins.map(p => p.name.replace(/[-_]/g, '').toLowerCase()))
   return Object.entries(sdk.getComponents())
     .filter(([compName]) => {
       // If plugins not loaded yet, fall back to showing all
-      if (pluginsStore.plugins.length === 0) return true
+      if (!pluginsStore || pluginsStore.plugins.length === 0) return true
       const norm = compName.replace(/[-_]/g, '').toLowerCase()
       // Match component name to plugin name (AnalyticsWidget ↔ analytics-widget)
       for (const pn of enabledNorm) {
@@ -146,7 +169,7 @@ const pluginWidgets = computed(() => {
     }))
 })
 
-const dashboard = computed(() => analyticsStore.dashboard)
+const dashboard = computed(() => analyticsStore?.dashboard ?? null)
 
 function formatNumber(value: number): string {
   return value.toLocaleString('en-US', { maximumFractionDigits: 2 })
@@ -163,16 +186,7 @@ function changeClass(value: number): string {
   return 'neutral'
 }
 
-onMounted(async () => {
-  try {
-    await Promise.all([
-      analyticsStore.fetchDashboard(),
-      pluginsStore.fetchPlugins()
-    ])
-  } catch (error) {
-    console.error('Failed to load dashboard:', error)
-  }
-})
+// Data fetching handled in the first onMounted block above
 </script>
 
 <style scoped>

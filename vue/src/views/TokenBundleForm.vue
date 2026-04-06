@@ -144,6 +144,7 @@
           {{ $t('common.cancel') }}
         </button>
         <button
+          v-if="canManage"
           type="submit"
           data-testid="bundle-save-btn"
           class="submit-btn"
@@ -161,11 +162,14 @@ import { ref, reactive, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useTokenBundlesStore } from '@/stores/tokenBundles';
+import { useAuthStore } from '@/stores/auth';
 
 const route = useRoute();
 const router = useRouter();
 const { t } = useI18n();
 const tokenBundlesStore = useTokenBundlesStore();
+const authStore = useAuthStore();
+const canManage = computed(() => authStore.hasPermission('settings.manage'));
 
 const bundleId = computed(() => route.params.id as string | undefined);
 const isEdit = computed(() => !!bundleId.value && bundleId.value !== 'new');

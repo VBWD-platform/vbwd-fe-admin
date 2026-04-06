@@ -72,6 +72,9 @@ function setupApiMocks(overrides: Record<string, unknown> = {}) {
     if (url.includes('/admin/invoices')) {
       return Promise.resolve({ invoices: [], total: 0 });
     }
+    if (url.includes('/admin/access/levels')) {
+      return Promise.resolve({ levels: [] });
+    }
     return Promise.resolve({});
   });
 }

@@ -4,17 +4,28 @@
       <h1>403</h1>
       <h2>{{ $t('errors.forbidden') }}</h2>
       <p>{{ $t('errors.forbiddenMessage') }}</p>
+      <p
+        v-if="requiredPermission"
+        class="required-perm"
+      >
+        Required: <code>{{ requiredPermission }}</code>
+      </p>
       <router-link
-        to="/admin/login"
+        to="/admin/dashboard"
         class="btn-primary"
       >
-        {{ $t('errors.returnToLogin') }}
+        Back to Dashboard
       </router-link>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
+const requiredPermission = computed(() => route.query.required as string || '');
 </script>
 
 <style scoped>

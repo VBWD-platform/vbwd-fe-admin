@@ -52,7 +52,8 @@
     "settings": "Configuración",
     "profile": "Perfil",
     "logout": "Cerrar Sesión",
-    "sales": "Ventas"
+    "sales": "Ventas",
+    "accessLevels": "Access Levels"
   },
   "auth": {
     "login": "Iniciar Sesión",
@@ -369,7 +370,8 @@
       "countries": "Países",
       "adminPlugins": "Plugins de Admin",
       "backendPlugins": "Plugins de Backend",
-      "userPlugins": "Plugins de Usuario"
+      "userPlugins": "Plugins de Usuario",
+      "tax": "Impuestos"
     },
     "coreSettings": {
       "title": "Información del Proveedor de Servicios",
@@ -402,6 +404,33 @@
       "title": "Paquetes de Tokens",
       "description": "Administre los paquetes de tokens disponibles para compra",
       "placeholder": "La gestión de paquetes de tokens estará aquí"
+    },
+    "tax": {
+      "classesTitle": "Clases de Impuestos",
+      "addClass": "Añadir Clase",
+      "className": "Nombre",
+      "classCode": "Código",
+      "defaultRate": "Tasa predeterminada (%)",
+      "isDefault": "Predeterminado",
+      "noClasses": "No hay clases de impuestos configuradas.",
+      "classSaved": "Clase de impuesto guardada correctamente",
+      "confirmDeleteClass": "¿Eliminar esta clase de impuesto?",
+      "ratesTitle": "Tasas de Impuestos",
+      "addRate": "Añadir Tasa",
+      "rateName": "Nombre",
+      "rateNamePlaceholder": "ej. IVA Alemania",
+      "rateCode": "Código",
+      "rateCodePlaceholder": "ej. VAT_DE",
+      "ratePercent": "Tasa (%)",
+      "country": "País",
+      "countryPlaceholder": "ej. DE",
+      "region": "Región",
+      "regionPlaceholder": "ej. CA-BC",
+      "taxClass": "Clase de Impuesto",
+      "inclusive": "Impuesto incluido",
+      "noRates": "No hay tasas de impuestos configuradas.",
+      "rateSaved": "Tasa de impuesto guardada correctamente",
+      "confirmDeleteRate": "¿Eliminar esta tasa de impuesto?"
     }
   },
   "tokenBundles": {
@@ -627,5 +656,34 @@
       "configSaved": "Configuración guardada exitosamente",
       "noConfig": "Este plugin no tiene opciones de configuración."
     }
+  },
+  "access": {
+    "title": "Access Levels",
+    "newLevel": "New Access Level",
+    "editLevel": "Edit Access Level",
+    "name": "Name",
+    "slug": "Slug",
+    "description": "Description",
+    "adminAccess": "Admin Access",
+    "grantsAdminAccess": "Grants admin panel access",
+    "permissions": "Permissions",
+    "permissionCount": "{count} permissions",
+    "system": "System",
+    "actions": "Actions",
+    "delete": "Delete",
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "export": "Export",
+    "import": "Import",
+    "noLevels": "No access levels defined.",
+    "deleteConfirm": "Delete access level \"{name}\"?",
+    "systemRoleWarning": "System roles cannot be deleted",
+    "selectAll": "Select all",
+    "deselectAll": "Deselect all",
+    "assignedUsers": "Assigned Users",
+    "revokeRole": "Revoke",
+    "yes": "Yes",
+    "no": "No"
   }
 }

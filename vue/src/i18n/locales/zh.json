@@ -52,7 +52,8 @@
     "settings": "设置",
     "profile": "个人资料",
     "logout": "退出登录",
-    "sales": "销售"
+    "sales": "销售",
+    "accessLevels": "Access Levels"
   },
   "auth": {
     "login": "登录",
@@ -369,7 +370,8 @@
       "countries": "国家",
       "adminPlugins": "管理插件",
       "backendPlugins": "后端插件",
-      "userPlugins": "用户插件"
+      "userPlugins": "用户插件",
+      "tax": "税务"
     },
     "coreSettings": {
       "title": "服务提供商信息",
@@ -402,6 +404,33 @@
       "title": "代币包",
       "description": "管理可购买的代币包",
       "placeholder": "代币包管理将在此处显示"
+    },
+    "tax": {
+      "classesTitle": "税种",
+      "addClass": "添加税种",
+      "className": "名称",
+      "classCode": "代码",
+      "defaultRate": "默认税率 (%)",
+      "isDefault": "默认",
+      "noClasses": "暂无税种配置。",
+      "classSaved": "税种保存成功",
+      "confirmDeleteClass": "删除此税种？",
+      "ratesTitle": "税率",
+      "addRate": "添加税率",
+      "rateName": "名称",
+      "rateNamePlaceholder": "如：德国增值税",
+      "rateCode": "代码",
+      "rateCodePlaceholder": "如：VAT_DE",
+      "ratePercent": "税率 (%)",
+      "country": "国家",
+      "countryPlaceholder": "如：DE",
+      "region": "地区",
+      "regionPlaceholder": "如：CA-BC",
+      "taxClass": "税种",
+      "inclusive": "含税",
+      "noRates": "暂无税率配置。",
+      "rateSaved": "税率保存成功",
+      "confirmDeleteRate": "删除此税率？"
     }
   },
   "tokenBundles": {
@@ -625,5 +654,34 @@
       "configSaved": "配置保存成功",
       "noConfig": "此插件没有配置选项。"
     }
+  },
+  "access": {
+    "title": "Access Levels",
+    "newLevel": "New Access Level",
+    "editLevel": "Edit Access Level",
+    "name": "Name",
+    "slug": "Slug",
+    "description": "Description",
+    "adminAccess": "Admin Access",
+    "grantsAdminAccess": "Grants admin panel access",
+    "permissions": "Permissions",
+    "permissionCount": "{count} permissions",
+    "system": "System",
+    "actions": "Actions",
+    "delete": "Delete",
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "export": "Export",
+    "import": "Import",
+    "noLevels": "No access levels defined.",
+    "deleteConfirm": "Delete access level \"{name}\"?",
+    "systemRoleWarning": "System roles cannot be deleted",
+    "selectAll": "Select all",
+    "deselectAll": "Deselect all",
+    "assignedUsers": "Assigned Users",
+    "revokeRole": "Revoke",
+    "yes": "Yes",
+    "no": "No"
   }
 }

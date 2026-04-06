@@ -277,6 +277,7 @@
       <!-- Actions -->
       <div class="form-actions">
         <button
+          v-if="canManage"
           type="submit"
           class="btn btn-primary"
           :disabled="saving"
@@ -314,12 +315,15 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { usePaymentMethodsStore, type CreatePaymentMethodData, type UpdatePaymentMethodData } from '@/stores/paymentMethods';
+import { useAuthStore } from '@/stores/auth';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const store = usePaymentMethodsStore();
+const authStore = useAuthStore();
+const canManage = computed(() => authStore.hasPermission('settings.manage'));
 
 const loading = ref(false);
 const saving = ref(false);

@@ -33,77 +33,92 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'users',
         name: 'users',
-        component: () => import('@/views/Users.vue')
+        component: () => import('@/views/Users.vue'),
+        meta: { requiredPermission: 'users.view' }
       },
       {
         path: 'users/create',
         name: 'user-create',
-        component: () => import('@/views/UserCreate.vue')
+        component: () => import('@/views/UserCreate.vue'),
+        meta: { requiredPermission: 'users.manage' }
       },
       {
         path: 'users/:id',
         name: 'user-details',
-        component: () => import('@/views/UserDetails.vue')
+        component: () => import('@/views/UserDetails.vue'),
+        meta: { requiredPermission: 'users.view' }
       },
       {
         path: 'users/:id/edit',
         name: 'user-edit',
-        component: () => import('@/views/UserEdit.vue')
+        component: () => import('@/views/UserEdit.vue'),
+        meta: { requiredPermission: 'users.view' }
       },
       {
         path: 'payment-methods',
         name: 'payment-methods',
-        component: () => import('@/views/PaymentMethods.vue')
+        component: () => import('@/views/PaymentMethods.vue'),
+        meta: { requiredPermission: 'settings.manage' }
       },
       {
         path: 'payment-methods/new',
         name: 'payment-method-new',
-        component: () => import('@/views/PaymentMethodForm.vue')
+        component: () => import('@/views/PaymentMethodForm.vue'),
+        meta: { requiredPermission: 'settings.manage' }
       },
       {
         path: 'payment-methods/:id/edit',
         name: 'payment-method-edit',
-        component: () => import('@/views/PaymentMethodForm.vue')
+        component: () => import('@/views/PaymentMethodForm.vue'),
+        meta: { requiredPermission: 'settings.manage' }
       },
       {
         path: 'invoices',
         name: 'invoices',
-        component: () => import('@/views/Invoices.vue')
+        component: () => import('@/views/Invoices.vue'),
+        meta: { requiredPermission: 'invoices.view' }
       },
       {
         path: 'invoices/:id',
         name: 'invoice-details',
-        component: () => import('@/views/InvoiceDetails.vue')
+        component: () => import('@/views/InvoiceDetails.vue'),
+        meta: { requiredPermission: 'invoices.view' }
       },
       {
         path: 'settings',
         name: 'settings',
-        component: () => import('@/views/Settings.vue')
+        component: () => import('@/views/Settings.vue'),
+        meta: { requiredPermission: 'settings.view' }
       },
       {
         path: 'settings/token-bundles/new',
         name: 'token-bundle-new',
-        component: () => import('@/views/TokenBundleForm.vue')
+        component: () => import('@/views/TokenBundleForm.vue'),
+        meta: { requiredPermission: 'settings.manage' }
       },
       {
         path: 'settings/token-bundles/:id',
         name: 'token-bundle-edit',
-        component: () => import('@/views/TokenBundleForm.vue')
+        component: () => import('@/views/TokenBundleForm.vue'),
+        meta: { requiredPermission: 'settings.manage' }
       },
       {
         path: 'settings/plugins/:pluginName',
         name: 'plugin-details',
-        component: () => import('@/views/PluginDetails.vue')
+        component: () => import('@/views/PluginDetails.vue'),
+        meta: { requiredPermission: 'settings.system' }
       },
       {
         path: 'settings/backend-plugins/:pluginName',
         name: 'backend-plugin-details',
-        component: () => import('@/views/BackendPluginDetails.vue')
+        component: () => import('@/views/BackendPluginDetails.vue'),
+        meta: { requiredPermission: 'settings.system' }
       },
       {
         path: 'settings/user-plugins/:pluginName',
         name: 'user-plugin-details',
-        component: () => import('@/views/UserPluginDetails.vue')
+        component: () => import('@/views/UserPluginDetails.vue'),
+        meta: { requiredPermission: 'settings.system' }
       },
       {
         path: 'profile',
@@ -114,6 +129,24 @@ const routes: RouteRecordRaw[] = [
         path: 'cms/routing-rules',
         name: 'routing-rules',
         component: () => import('@/views/RoutingRules.vue')
+      },
+      {
+        path: 'settings/access',
+        name: 'access-levels',
+        component: () => import('@/views/AccessLevels.vue'),
+        meta: { requiredPermission: 'settings.system' }
+      },
+      {
+        path: 'settings/access/:id',
+        name: 'access-level-edit',
+        component: () => import('@/views/AccessLevelForm.vue'),
+        meta: { requiredPermission: 'settings.system' }
+      },
+      {
+        path: 'settings/access/new',
+        name: 'access-level-new',
+        component: () => import('@/views/AccessLevelForm.vue'),
+        meta: { requiredPermission: 'settings.system' }
       }
     ]
   }
@@ -142,6 +175,13 @@ router.beforeEach((to, _from, next) => {
   // Protected routes require authentication
   if (!authStore.isAuthenticated) {
     next({ name: 'login' });
+    return;
+  }
+
+  // Permission check — if route has requiredPermission meta
+  const requiredPermission = to.meta.requiredPermission as string | undefined;
+  if (requiredPermission && !authStore.hasPermission(requiredPermission)) {
+    next({ name: 'forbidden', query: { required: requiredPermission } });
     return;
   }
 

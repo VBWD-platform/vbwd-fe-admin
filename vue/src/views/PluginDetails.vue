@@ -69,7 +69,10 @@
         >
           {{ plugin.description }}
         </p>
-        <div class="plugin-actions">
+        <div
+          v-if="canManage"
+          class="plugin-actions"
+        >
           <button
             v-if="plugin.status === 'active'"
             class="action-btn deactivate-btn"
@@ -216,7 +219,10 @@
             </div>
           </div>
 
-          <div class="form-actions">
+          <div
+            v-if="canManage"
+            class="form-actions"
+          >
             <button
               class="save-btn"
               :disabled="saving"
@@ -233,9 +239,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, inject, onMounted, watch } from 'vue';
+import { ref, reactive, computed, inject, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { useAuthStore } from '@/stores/auth';
 import { usePluginsStore } from '@/stores/plugins';
 import type { PluginDetail } from '@/stores/plugins';
 import type { PluginRegistry } from 'vbwd-view-component';
@@ -243,7 +250,9 @@ import type { PluginRegistry } from 'vbwd-view-component';
 const route = useRoute();
 const router = useRouter();
 const { t } = useI18n();
+const authStore = useAuthStore();
 const pluginsStore = usePluginsStore();
+const canManage = computed(() => authStore.hasPermission('settings.system'));
 
 const loading = ref(true);
 const error = ref<string | null>(null);

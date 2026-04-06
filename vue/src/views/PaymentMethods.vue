@@ -6,6 +6,7 @@
     <div class="page-header">
       <h2>{{ $t('paymentMethods.title') }}</h2>
       <router-link
+        v-if="canManage"
         to="/admin/payment-methods/new"
         class="btn btn-primary"
         data-testid="create-payment-method"
@@ -40,6 +41,7 @@
     >
       <p>{{ $t('paymentMethods.noMethods') }}</p>
       <router-link
+        v-if="canManage"
         to="/admin/payment-methods/new"
         class="btn btn-primary"
       >
@@ -49,7 +51,7 @@
 
     <!-- Bulk Actions -->
     <div
-      v-if="selectedMethods.size > 0"
+      v-if="canManage && selectedMethods.size > 0"
       class="bulk-actions"
       data-testid="bulk-actions"
     >
@@ -181,7 +183,7 @@
             </router-link>
 
             <button
-              v-if="method.is_active && !method.is_default"
+              v-if="canManage && method.is_active && !method.is_default"
               class="btn btn-sm btn-warning"
               :disabled="actionLoading === method.id"
               @click="handleDeactivate(method.id)"
@@ -189,7 +191,7 @@
               {{ $t('paymentMethods.deactivate') }}
             </button>
             <button
-              v-else-if="!method.is_active"
+              v-else-if="canManage && !method.is_active"
               class="btn btn-sm btn-success"
               :disabled="actionLoading === method.id"
               @click="handleActivate(method.id)"
@@ -198,7 +200,7 @@
             </button>
 
             <button
-              v-if="!method.is_default && method.is_active"
+              v-if="canManage && !method.is_default && method.is_active"
               class="btn btn-sm btn-info"
               :disabled="actionLoading === method.id"
               @click="handleSetDefault(method.id)"
@@ -207,7 +209,7 @@
             </button>
 
             <button
-              v-if="!method.is_default"
+              v-if="canManage && !method.is_default"
               class="btn btn-sm btn-danger"
               :disabled="actionLoading === method.id"
               @click="handleDelete(method)"
@@ -231,10 +233,13 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { usePaymentMethodsStore, type PaymentMethod } from '@/stores/paymentMethods';
+import { useAuthStore } from '@/stores/auth';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 const store = usePaymentMethodsStore();
+const authStore = useAuthStore();
+const canManage = computed(() => authStore.hasPermission('settings.manage'));
 
 const loading = ref(false);
 const error = ref<string | null>(null);

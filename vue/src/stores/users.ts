@@ -1,12 +1,19 @@
 import { defineStore } from 'pinia';
 import { api } from '@/api';
 
+export interface AccessLevel {
+  id: string;
+  slug: string;
+  name: string;
+}
+
 export interface User {
   id: string;
   email: string;
   name: string;
   is_active: boolean;
-  roles: string[];
+  role: string;
+  access_levels?: AccessLevel[];
   subscription_plan?: string;
   created_at?: string;
 }
@@ -216,23 +223,24 @@ export const useUsersStore = defineStore('users', {
       }
     },
 
-    async updateUserRoles(userId: string, roles: string[]): Promise<void> {
+    async updateUserAccessLevels(userId: string, accessLevelSlugs: string[]): Promise<void> {
       this.loading = true;
       this.error = null;
 
       try {
-        await api.put(`/admin/users/${userId}/roles`, { roles });
+        await api.put(`/admin/users/${userId}/roles`, { roles: accessLevelSlugs });
 
-        // Update local state
+        // Update local state — convert slug strings to access level objects
+        const accessLevelObjects = accessLevelSlugs.map(slug => ({ id: '', slug, name: slug }));
         if (this.selectedUser?.id === userId) {
-          this.selectedUser.roles = roles;
+          this.selectedUser.access_levels = accessLevelObjects;
         }
         const index = this.users.findIndex(u => u.id === userId);
         if (index !== -1) {
-          this.users[index].roles = roles;
+          this.users[index].access_levels = accessLevelObjects;
         }
       } catch (error) {
-        this.error = (error as Error).message || 'Failed to update roles';
+        this.error = (error as Error).message || 'Failed to update access levels';
         throw error;
       } finally {
         this.loading = false;

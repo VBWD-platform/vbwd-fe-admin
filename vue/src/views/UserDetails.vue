@@ -79,16 +79,8 @@
               <span>{{ formatDate(user.created_at) }}</span>
             </div>
             <div class="info-item">
-              <label>{{ $t('users.rolesLabel') }}</label>
-              <div class="roles-list">
-                <span
-                  v-for="role in user.roles"
-                  :key="role"
-                  class="role-badge"
-                >
-                  {{ role }}
-                </span>
-              </div>
+              <label>{{ $t('users.role') }}</label>
+              <span class="role-badge">{{ user.role }}</span>
             </div>
           </div>
         </div>
@@ -155,6 +147,7 @@
 
       <div class="user-actions">
         <button
+          v-if="canManage"
           data-testid="edit-button"
           class="action-btn primary"
           @click="goToEdit"
@@ -162,7 +155,7 @@
           {{ $t('users.editUser') }}
         </button>
         <button
-          v-if="user.is_active"
+          v-if="canManage && user.is_active"
           data-testid="suspend-button"
           class="action-btn danger"
           @click="handleSuspend"
@@ -170,7 +163,7 @@
           {{ $t('users.suspendUser') }}
         </button>
         <button
-          v-else
+          v-else-if="canManage && !user.is_active"
           data-testid="activate-button"
           class="action-btn success"
           @click="handleActivate"
@@ -186,11 +179,14 @@
 import { computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useUsersStore } from '@/stores/users';
+import { useAuthStore } from '@/stores/auth';
 import { extensionRegistry } from '@/plugins/extensionRegistry';
 
 const route = useRoute();
 const router = useRouter();
 const usersStore = useUsersStore();
+const authStore = useAuthStore();
+const canManage = computed(() => authStore.hasPermission('users.manage'));
 
 const user = computed(() => usersStore.selectedUser);
 const loading = computed(() => usersStore.loading);

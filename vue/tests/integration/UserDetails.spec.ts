@@ -27,7 +27,8 @@ describe('UserDetails.vue', () => {
     email: 'user@test.com',
     name: 'Test User',
     is_active: true,
-    roles: ['user', 'editor'],
+    role: 'ADMIN',
+    access_levels: [{id: '1', slug: 'editor', name: 'Editor'}],
     created_at: '2025-01-01T10:00:00Z',
     subscription: {
       plan: 'Pro',
@@ -126,7 +127,7 @@ describe('UserDetails.vue', () => {
     await flushPromises();
 
     expect(wrapper.text()).toContain('user');
-    expect(wrapper.text()).toContain('editor');
+    expect(wrapper.text()).toContain('ADMIN');
   });
 
   it('shows active status badge for active user', async () => {

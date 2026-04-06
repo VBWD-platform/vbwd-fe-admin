@@ -125,7 +125,7 @@ describe('UsersStore', () => {
 
     vi.mocked(api.put).mockResolvedValue({ message: 'Roles updated' });
 
-    await store.updateUserRoles('1', ['admin', 'user']);
+    await store.updateUserAccessLevels('1', ['admin', 'user']);
 
     expect(api.put).toHaveBeenCalledWith('/admin/users/1/roles', { roles: ['admin', 'user'] });
   });
@@ -152,8 +152,8 @@ describe('UsersStore', () => {
 
   it('resets store state', () => {
     const store = useUsersStore();
-    store.users = [{ id: '1', email: 'test@test.com', name: 'Test', is_active: true, roles: [] }];
-    store.selectedUser = { id: '1', email: 'test@test.com', name: 'Test', is_active: true, roles: [] };
+    store.users = [{ id: '1', email: 'test@test.com', name: 'Test', is_active: true, role: 'USER' }];
+    store.selectedUser = { id: '1', email: 'test@test.com', name: 'Test', is_active: true, role: 'USER' };
     store.error = 'Some error';
 
     store.reset();

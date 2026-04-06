@@ -52,7 +52,8 @@
     "settings": "設定",
     "profile": "プロフィール",
     "logout": "ログアウト",
-    "sales": "売上"
+    "sales": "売上",
+    "accessLevels": "Access Levels"
   },
   "auth": {
     "login": "ログイン",
@@ -369,7 +370,8 @@
       "countries": "国",
       "adminPlugins": "管理プラグイン",
       "backendPlugins": "バックエンドプラグイン",
-      "userPlugins": "ユーザープラグイン"
+      "userPlugins": "ユーザープラグイン",
+      "tax": "税金"
     },
     "coreSettings": {
       "title": "サービスプロバイダー情報",
@@ -402,6 +404,33 @@
       "title": "トークンバンドル",
       "description": "購入可能なトークンバンドルを管理",
       "placeholder": "トークンバンドル管理はここに表示されます"
+    },
+    "tax": {
+      "classesTitle": "税区分",
+      "addClass": "区分追加",
+      "className": "名前",
+      "classCode": "コード",
+      "defaultRate": "デフォルト率 (%)",
+      "isDefault": "デフォルト",
+      "noClasses": "税区分が設定されていません。",
+      "classSaved": "税区分が保存されました",
+      "confirmDeleteClass": "この税区分を削除しますか？",
+      "ratesTitle": "税率",
+      "addRate": "税率追加",
+      "rateName": "名前",
+      "rateNamePlaceholder": "例: ドイツVAT",
+      "rateCode": "コード",
+      "rateCodePlaceholder": "例: VAT_DE",
+      "ratePercent": "税率 (%)",
+      "country": "国",
+      "countryPlaceholder": "例: DE",
+      "region": "地域",
+      "regionPlaceholder": "例: CA-BC",
+      "taxClass": "税区分",
+      "inclusive": "税込み",
+      "noRates": "税率が設定されていません。",
+      "rateSaved": "税率が保存されました",
+      "confirmDeleteRate": "この税率を削除しますか？"
     }
   },
   "tokenBundles": {
@@ -625,5 +654,34 @@
       "configSaved": "設定が正常に保存されました",
       "noConfig": "このプラグインには設定オプションがありません。"
     }
+  },
+  "access": {
+    "title": "Access Levels",
+    "newLevel": "New Access Level",
+    "editLevel": "Edit Access Level",
+    "name": "Name",
+    "slug": "Slug",
+    "description": "Description",
+    "adminAccess": "Admin Access",
+    "grantsAdminAccess": "Grants admin panel access",
+    "permissions": "Permissions",
+    "permissionCount": "{count} permissions",
+    "system": "System",
+    "actions": "Actions",
+    "delete": "Delete",
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "export": "Export",
+    "import": "Import",
+    "noLevels": "No access levels defined.",
+    "deleteConfirm": "Delete access level \"{name}\"?",
+    "systemRoleWarning": "System roles cannot be deleted",
+    "selectAll": "Select all",
+    "deselectAll": "Deselect all",
+    "assignedUsers": "Assigned Users",
+    "revokeRole": "Revoke",
+    "yes": "Yes",
+    "no": "No"
   }
 }

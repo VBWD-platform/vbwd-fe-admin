@@ -55,7 +55,8 @@
     "countries": "Länder",
     "profile": "Profil",
     "logout": "Abmelden",
-    "sales": "Verkauf"
+    "sales": "Verkauf",
+    "accessLevels": "Access Levels"
   },
   "auth": {
     "login": "Anmelden",
@@ -377,7 +378,8 @@
       "countries": "Länder",
       "adminPlugins": "Admin-Plugins",
       "backendPlugins": "Backend-Plugins",
-      "userPlugins": "Benutzer-Plugins"
+      "userPlugins": "Benutzer-Plugins",
+      "tax": "Steuern"
     },
     "coreSettings": {
       "title": "Dienstanbieter-Informationen",
@@ -410,6 +412,33 @@
       "title": "Token-Pakete",
       "description": "Verwalten Sie Token-Pakete zum Kauf",
       "placeholder": "Token-Paket-Verwaltung wird hier verfügbar sein"
+    },
+    "tax": {
+      "classesTitle": "Steuerklassen",
+      "addClass": "Klasse hinzufügen",
+      "className": "Name",
+      "classCode": "Code",
+      "defaultRate": "Standardsatz (%)",
+      "isDefault": "Standard",
+      "noClasses": "Keine Steuerklassen konfiguriert.",
+      "classSaved": "Steuerklasse erfolgreich gespeichert",
+      "confirmDeleteClass": "Diese Steuerklasse löschen?",
+      "ratesTitle": "Steuersätze",
+      "addRate": "Satz hinzufügen",
+      "rateName": "Name",
+      "rateNamePlaceholder": "z.B. MwSt Deutschland",
+      "rateCode": "Code",
+      "rateCodePlaceholder": "z.B. VAT_DE",
+      "ratePercent": "Satz (%)",
+      "country": "Land",
+      "countryPlaceholder": "z.B. DE",
+      "region": "Region",
+      "regionPlaceholder": "z.B. CA-BC",
+      "taxClass": "Steuerklasse",
+      "inclusive": "Steuer inklusiv",
+      "noRates": "Keine Steuersätze konfiguriert.",
+      "rateSaved": "Steuersatz erfolgreich gespeichert",
+      "confirmDeleteRate": "Diesen Steuersatz löschen?"
     }
   },
   "tokenBundles": {
@@ -643,5 +672,34 @@
       "configSaved": "Konfiguration erfolgreich gespeichert",
       "noConfig": "Dieses Plugin hat keine Konfigurationsoptionen."
     }
+  },
+  "access": {
+    "title": "Access Levels",
+    "newLevel": "New Access Level",
+    "editLevel": "Edit Access Level",
+    "name": "Name",
+    "slug": "Slug",
+    "description": "Description",
+    "adminAccess": "Admin Access",
+    "grantsAdminAccess": "Grants admin panel access",
+    "permissions": "Permissions",
+    "permissionCount": "{count} permissions",
+    "system": "System",
+    "actions": "Actions",
+    "delete": "Delete",
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "export": "Export",
+    "import": "Import",
+    "noLevels": "No access levels defined.",
+    "deleteConfirm": "Delete access level \"{name}\"?",
+    "systemRoleWarning": "System roles cannot be deleted",
+    "selectAll": "Select all",
+    "deselectAll": "Deselect all",
+    "assignedUsers": "Assigned Users",
+    "revokeRole": "Revoke",
+    "yes": "Yes",
+    "no": "No"
   }
 }

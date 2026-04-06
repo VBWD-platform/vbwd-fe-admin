@@ -28,6 +28,8 @@ export interface NavItem {
   id?: string;
   /** Optional Level 2 children — renders as expandable sub-group */
   children?: NavItem[];
+  /** Permission required to see this nav item (checked by AdminSidebar) */
+  requiredPermission?: string;
 }
 
 export interface NavItemWithPosition extends NavItem {
@@ -249,6 +251,7 @@ class ExtensionRegistry {
       label: newItem.label,
       to: newItem.to,
       id: newItem.id,
+      requiredPermission: newItem.requiredPermission,
       children: newItem.children,
     };
 

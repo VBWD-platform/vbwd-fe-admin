@@ -134,6 +134,7 @@
                   name="status"
                   data-testid="status-select"
                   class="form-select"
+                  :disabled="!canManage"
                 >
                   <option :value="true">
                     {{ $t('users.active') }}
@@ -146,23 +147,35 @@
 
               <div class="form-group">
                 <label for="role">{{ $t('users.role') }}</label>
-                <select
-                  id="role"
-                  v-model="selectedRole"
-                  name="role"
-                  data-testid="role-select"
-                  class="form-select"
-                >
-                  <option value="USER">
-                    {{ $t('users.roles.user') }}
-                  </option>
-                  <option value="ADMIN">
-                    {{ $t('users.roles.admin') }}
-                  </option>
-                  <option value="VENDOR">
-                    {{ $t('users.roles.vendor') }}
-                  </option>
-                </select>
+                <span class="role-display">{{ usersStore.selectedUser?.role || '-' }}</span>
+              </div>
+            </div>
+
+            <div
+              v-if="availableRoles.length > 0 && usersStore.selectedUser?.role === 'ADMIN'"
+              class="form-row"
+            >
+              <div class="form-group">
+                <label>Access Levels</label>
+                <div class="role-checkboxes">
+                  <label
+                    v-for="role in availableRoles"
+                    :key="role.id"
+                    class="role-checkbox"
+                  >
+                    <input
+                      type="checkbox"
+                      :checked="assignedRoleIds.has(role.id)"
+                      :disabled="!canManage"
+                      @change="toggleRole(role.id)"
+                    >
+                    <span>{{ role.name }}</span>
+                    <span
+                      v-if="role.is_system"
+                      class="role-badge"
+                    >system</span>
+                  </label>
+                </div>
               </div>
             </div>
 
@@ -176,6 +189,7 @@
                 data-testid="new-password-input"
                 :placeholder="$t('users.newPasswordPlaceholder')"
                 class="form-input"
+                :disabled="!canManage"
               >
               <small
                 class="help-text"
@@ -330,6 +344,7 @@
                 min="0"
                 data-testid="balance-input"
                 class="form-input balance-input"
+                :disabled="!canManage"
               >
               <small class="help-text">
                 {{ $t('users.tokenBalanceHelp') }}
@@ -358,6 +373,7 @@
               {{ $t('common.cancel') }}
             </button>
             <button
+              v-if="canManage"
               type="submit"
               data-testid="submit-button"
               class="submit-btn"
@@ -652,12 +668,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, reactive } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useUsersStore } from '@/stores/users';
 import { useSubscriptionsStore, type Subscription } from '@/stores/subscriptions';
 import { useInvoicesStore, type Invoice } from '@/stores/invoices';
+import { useAuthStore } from '@/stores/auth';
 import { extensionRegistry } from '@/plugins/extensionRegistry';
 import { api } from '@/api';
 
@@ -665,6 +682,8 @@ const route = useRoute();
 const router = useRouter();
 const { t } = useI18n();
 const usersStore = useUsersStore();
+const authStore = useAuthStore();
+const canManage = computed(() => authStore.hasPermission('users.manage'));
 const subscriptionsStore = useSubscriptionsStore();
 const invoicesStore = useInvoicesStore();
 
@@ -715,6 +734,36 @@ const formData = ref<FormData>({
 // Role is handled separately as a single value
 const selectedRole = ref<string>('user');
 const originalRole = ref<string>('user');
+
+// RBAC roles
+interface RbacRole {
+  id: string;
+  name: string;
+  slug: string;
+  is_system: boolean;
+  is_admin: boolean;
+}
+const availableRoles = ref<RbacRole[]>([]);
+const assignedRoleIds = reactive(new Set<string>());
+
+async function loadRoles() {
+  try {
+    const res = await api.get('/admin/access/levels') as { levels: RbacRole[] };
+    availableRoles.value = res.levels;
+  } catch {
+    // Access API may not be available
+  }
+}
+
+function toggleRole(roleId: string) {
+  if (assignedRoleIds.has(roleId)) {
+    assignedRoleIds.delete(roleId);
+    api.delete(`/admin/access/users/${userId}/roles/${roleId}`).catch(() => {});
+  } else {
+    assignedRoleIds.add(roleId);
+    api.post(`/admin/access/users/${userId}/roles`, { role_id: roleId }).catch(() => {});
+  }
+}
 
 const userId = route.params.id as string;
 
@@ -807,14 +856,23 @@ async function fetchUser(): Promise<void> {
   try {
     const user = await usersStore.fetchUser(userId);
 
-    // Handle role - get first role from array or use single role value
-    const userRole = Array.isArray(user.roles)
-      ? user.roles[0]
-      : ((user as unknown as { role?: string }).role || 'user');
+    // Handle role - use the enum role string directly
+    const userRole = user.role || 'USER';
 
     // Store original role to detect changes later
     originalRole.value = userRole;
     selectedRole.value = userRole;
+
+    // Load RBAC access level assignments
+    const userAccessLevels = Array.isArray(user.access_levels) ? user.access_levels : [];
+    const userAccessLevelSlugs = userAccessLevels.map(level => level.slug);
+    if (availableRoles.value.length > 0) {
+      for (const role of availableRoles.value) {
+        if (userAccessLevelSlugs.includes(role.slug)) {
+          assignedRoleIds.add(role.id);
+        }
+      }
+    }
 
     // Get details and token balance
     const details = (user as unknown as { details?: Record<string, unknown> }).details || {};
@@ -901,9 +959,9 @@ async function handleSubmit(): Promise<void> {
 
     await usersStore.updateUser(userId, updatePayload);
 
-    // Update role separately if changed
+    // Update access levels separately if changed
     if (originalRole.value !== selectedRole.value) {
-      await usersStore.updateUserRoles(userId, [selectedRole.value]);
+      await usersStore.updateUserAccessLevels(userId, [selectedRole.value]);
     }
 
     router.push('/admin/users');
@@ -1033,6 +1091,7 @@ function formatAmount(amount: number, currency?: string): string {
 
 onMounted(() => {
   fetchUser();
+  loadRoles();
 });
 </script>
 
@@ -1380,5 +1439,40 @@ onMounted(() => {
 
 .invoice-link:hover {
   text-decoration: underline;
+}
+
+.role-display {
+  display: inline-block;
+  padding: 4px 10px;
+  background: #e9ecef;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #495057;
+}
+.role-checkboxes {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.role-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.role-checkbox:hover {
+  background: #f9fafb;
+}
+.role-badge {
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: #cce5ff;
+  color: #004085;
 }
 </style>

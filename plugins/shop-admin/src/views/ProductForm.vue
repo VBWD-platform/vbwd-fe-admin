@@ -148,6 +148,7 @@
         </div>
         <div class="form-actions">
           <button
+            v-if="canManage"
             type="submit"
             class="btn btn--primary"
             data-testid="product-submit-btn"
@@ -171,11 +172,50 @@
         </p>
         <div v-else>
           <h3>Stock Levels</h3>
+
+          <!-- Add stock for a warehouse -->
+          <div
+            v-if="availableWarehouses.length > 0"
+            class="stock-add-row"
+          >
+            <select
+              v-model="newStockWarehouseId"
+              class="stock-select"
+            >
+              <option value="">
+                — Select warehouse —
+              </option>
+              <option
+                v-for="wh in availableWarehouses"
+                :key="wh.id"
+                :value="wh.id"
+              >
+                {{ wh.name }}
+              </option>
+            </select>
+            <input
+              v-model.number="newStockQuantity"
+              type="number"
+              min="0"
+              placeholder="Quantity"
+              class="stock-input"
+            >
+            <button
+              v-if="canManage"
+              type="button"
+              class="btn btn--primary btn--sm"
+              :disabled="!newStockWarehouseId || newStockQuantity < 0"
+              @click="addStock"
+            >
+              Add Stock
+            </button>
+          </div>
+
           <p
             v-if="stockItems.length === 0"
             class="hint"
           >
-            No stock records. Add stock via Stock Overview.
+            No stock records yet.
           </p>
           <table
             v-else
@@ -187,6 +227,7 @@
                 <th>Quantity</th>
                 <th>Reserved</th>
                 <th>Available</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -195,9 +236,27 @@
                 :key="index"
               >
                 <td>{{ stock.warehouse_name || stock.warehouse_id }}</td>
-                <td>{{ stock.quantity }}</td>
-                <td>{{ stock.reserved }}</td>
-                <td>{{ stock.available }}</td>
+                <td>
+                  <input
+                    v-model.number="stock.quantity"
+                    type="number"
+                    min="0"
+                    class="stock-inline-input"
+                    @change="updateStock(stock)"
+                  >
+                </td>
+                <td>{{ stock.reserved || 0 }}</td>
+                <td>{{ Number(stock.quantity || 0) - Number(stock.reserved || 0) }}</td>
+                <td>
+                  <button
+                    type="button"
+                    class="btn btn--sm"
+                    :disabled="stockSaving"
+                    @click="updateStock(stock)"
+                  >
+                    {{ stockSaving ? '...' : 'Save' }}
+                  </button>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -323,6 +382,7 @@
 import { ref, computed, onMounted, reactive } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useProductAdminStore } from '../stores/productAdmin';
+import { useAuthStore } from '@/stores/auth';
 import { api } from '@/api';
 import { extensionRegistry } from '../../../../vue/src/plugins/extensionRegistry';
 import ProductImageGallery from '../components/ProductImageGallery.vue';
@@ -330,6 +390,8 @@ import ProductImageGallery from '../components/ProductImageGallery.vue';
 const route = useRoute();
 const router = useRouter();
 const store = useProductAdminStore();
+const authStore = useAuthStore();
+const canManage = computed(() => authStore.hasPermission('shop.products.manage'));
 
 const productId = computed(() => route.params.id as string | undefined);
 const isEditMode = computed(() => !!productId.value && productId.value !== 'new');
@@ -350,6 +412,60 @@ const form = reactive({
 
 // Stock data
 const stockItems = ref<Array<Record<string, unknown>>>([]);
+const allWarehouses = ref<Array<{ id: string; name: string }>>([]);
+const newStockWarehouseId = ref('');
+const newStockQuantity = ref(0);
+const stockSaving = ref(false);
+
+const availableWarehouses = computed(() => {
+  const usedIds = new Set(stockItems.value.map(s => String(s.warehouse_id)));
+  return allWarehouses.value.filter(w => !usedIds.has(w.id));
+});
+
+async function loadWarehouses() {
+  try {
+    const response = await api.get('/admin/shop/warehouses') as { warehouses: Array<{ id: string; name: string }> };
+    allWarehouses.value = response.warehouses || [];
+  } catch {
+    // Not critical
+  }
+}
+
+async function updateStock(stock: Record<string, unknown>) {
+  stockSaving.value = true;
+  try {
+    await api.put(`/admin/shop/stock/${productId.value}`, {
+      warehouse_id: stock.warehouse_id,
+      quantity: stock.quantity,
+    });
+  } catch {
+    // Revert on failure
+  } finally {
+    stockSaving.value = false;
+  }
+}
+
+async function addStock() {
+  if (!newStockWarehouseId.value || !productId.value) return;
+  stockSaving.value = true;
+  try {
+    await api.put(`/admin/shop/stock/${productId.value}`, {
+      warehouse_id: newStockWarehouseId.value,
+      quantity: newStockQuantity.value,
+    });
+    // Reload stock
+    const stockResponse = await api.get('/admin/shop/stock') as { stock: Array<Record<string, unknown>> };
+    stockItems.value = stockResponse.stock.filter(
+      (s: Record<string, unknown>) => s.product_id === productId.value
+    );
+    newStockWarehouseId.value = '';
+    newStockQuantity.value = 0;
+  } catch {
+    // Error
+  } finally {
+    stockSaving.value = false;
+  }
+}
 
 // Categories
 interface CategoryOption {
@@ -462,6 +578,7 @@ async function handleSubmit() {
 onMounted(() => {
   fetchCategories();
   fetchProduct();
+  loadWarehouses();
 });
 </script>
 
@@ -582,4 +699,11 @@ onMounted(() => {
   font-size: 13px;
   padding: 20px 0;
 }
+
+/* Stock editing */
+.stock-add-row { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; }
+.stock-select { padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 13px; min-width: 180px; }
+.stock-input { padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 13px; width: 100px; }
+.stock-inline-input { padding: 4px 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 13px; width: 80px; text-align: right; }
+.btn--sm { padding: 4px 10px; font-size: 12px; }
 </style>

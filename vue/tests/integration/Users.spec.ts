@@ -23,9 +23,9 @@ describe('Users.vue', () => {
   let router: ReturnType<typeof createRouter>;
 
   const mockUsers = [
-    { id: '1', email: 'user1@test.com', name: 'User One', is_active: true, roles: ['user'], created_at: '2025-01-01' },
-    { id: '2', email: 'user2@test.com', name: 'User Two', is_active: false, roles: ['admin'], created_at: '2025-01-02' },
-    { id: '3', email: 'user3@test.com', name: 'User Three', is_active: true, roles: ['user'], created_at: '2025-01-03' }
+    { id: '1', email: 'user1@test.com', name: 'User One', is_active: true, role: 'USER', created_at: '2025-01-01' },
+    { id: '2', email: 'user2@test.com', name: 'User Two', is_active: false, role: 'ADMIN', created_at: '2025-01-02' },
+    { id: '3', email: 'user3@test.com', name: 'User Three', is_active: true, role: 'USER', created_at: '2025-01-03' }
   ];
 
   beforeEach(() => {

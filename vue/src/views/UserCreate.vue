@@ -107,6 +107,9 @@
               <option value="VENDOR">
                 {{ $t('users.roles.vendor') }}
               </option>
+              <option value="SUPER_ADMIN">
+                {{ $t('users.roles.superAdmin') }}
+              </option>
             </select>
           </div>
         </div>
@@ -253,6 +256,7 @@
           {{ $t('common.cancel') }}
         </button>
         <button
+          v-if="canManage"
           type="submit"
           data-testid="submit-button"
           class="submit-btn"
@@ -266,14 +270,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useUsersStore, type CreateUserData } from '@/stores/users';
+import { useAuthStore } from '@/stores/auth';
 
 const router = useRouter();
 const usersStore = useUsersStore();
 const { t } = useI18n();
+const authStore = useAuthStore();
+const canManage = computed(() => authStore.hasPermission('users.manage'));
 
 const validationError = ref<string | null>(null);
 const submitError = ref<string | null>(null);

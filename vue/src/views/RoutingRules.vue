@@ -3,6 +3,7 @@
     <div class="plans-header">
       <h2>CMS Routing Rules</h2>
       <div
+        v-if="canManage"
         class="plans-subheader"
         style="margin-bottom: 0;"
       >
@@ -82,7 +83,7 @@
             <th>Code</th>
             <th>Layer</th>
             <th>Active</th>
-            <th>Actions</th>
+            <th v-if="canManage">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -110,12 +111,13 @@
               <span
                 class="status-badge"
                 :class="rule.is_active ? 'active' : 'inactive'"
-                style="cursor: pointer;"
+                :style="canManage ? 'cursor: pointer;' : ''"
                 :data-testid="`toggle-active-${rule.id}`"
-                @click="toggleActive(rule)"
+                @click="canManage && toggleActive(rule)"
               >{{ rule.is_active ? 'Active' : 'Inactive' }}</span>
             </td>
             <td
+              v-if="canManage"
               class="rr-actions-cell"
               @click.stop
             >
@@ -158,10 +160,13 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { useAuthStore } from '@/stores/auth';
 import { useRoutingRulesStore, type RoutingRule } from '@/stores/routingRules';
 import RoutingRuleForm from './RoutingRuleForm.vue';
 
+const authStore = useAuthStore();
 const store = useRoutingRulesStore();
+const canManage = computed(() => authStore.hasPermission('cms.configure'));
 const formVisible = ref(false);
 const editingRule = ref<RoutingRule | undefined>(undefined);
 const layerFilter = ref('');

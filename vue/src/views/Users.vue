@@ -12,6 +12,7 @@
         >{{ total }} {{ $t('common.entries') }}</span>
       </div>
       <button
+        v-if="canManage"
         data-testid="create-user-button"
         class="create-btn"
         @click="navigateToCreate"
@@ -49,7 +50,7 @@
 
     <!-- Bulk Actions -->
     <div
-      v-if="selectedUsers.size > 0"
+      v-if="selectedUsers.size > 0 && canManage"
       class="bulk-actions"
       data-testid="bulk-actions"
     >
@@ -77,6 +78,31 @@
         @click="handleBulkDelete"
       >
         {{ $t('users.bulkDelete') }}
+      </button>
+      <span class="bulk-separator" />
+      <select
+        v-model="bulkRoleId"
+        class="bulk-role-select"
+        data-testid="bulk-role-select"
+      >
+        <option value="">
+          — Assign Access Level —
+        </option>
+        <option
+          v-for="role in availableRoles"
+          :key="role.id"
+          :value="role.id"
+        >
+          {{ role.name }}
+        </option>
+      </select>
+      <button
+        class="bulk-btn assign-role"
+        :disabled="processingBulk || !bulkRoleId"
+        data-testid="bulk-assign-role-btn"
+        @click="handleBulkAssignRole"
+      >
+        Apply
       </button>
     </div>
 
@@ -222,13 +248,7 @@
             </span>
           </td>
           <td>
-            <span
-              v-for="role in (user.roles || ['user'])"
-              :key="role"
-              class="role-badge"
-            >
-              {{ role }}
-            </span>
+            <span class="role-badge">{{ user.role }}</span>
           </td>
           <td>{{ formatDate(user.created_at) }}</td>
         </tr>
@@ -265,9 +285,13 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUsersStore } from '@/stores/users';
+import { useAuthStore } from '@/stores/auth';
+import { api } from '@/api';
 
 const router = useRouter();
 const usersStore = useUsersStore();
+const authStore = useAuthStore();
+const canManage = computed(() => authStore.hasPermission('users.manage'));
 
 const searchQuery = ref('');
 const statusFilter = ref('');
@@ -277,6 +301,15 @@ const selectedUsers = ref(new Set<string>());
 const processingBulk = ref(false);
 const bulkSuccessMessage = ref('');
 const bulkErrorMessage = ref('');
+const bulkRoleId = ref('');
+
+// Access levels for bulk assignment
+interface AccessRole {
+  id: string;
+  name: string;
+  slug: string;
+}
+const availableRoles = ref<AccessRole[]>([]);
 
 // Sorting state
 type SortColumn = 'email' | 'name' | 'status' | 'created_at' | null;
@@ -575,8 +608,46 @@ async function handleBulkDelete(): Promise<void> {
 }
 
 
+async function loadRoles() {
+  try {
+    const res = await api.get('/admin/access/levels') as { levels: AccessRole[] };
+    availableRoles.value = res.levels;
+  } catch {
+    // Access API may not be available
+  }
+}
+
+async function handleBulkAssignRole(): Promise<void> {
+  if (selectedUsers.value.size === 0 || !bulkRoleId.value) return;
+
+  processingBulk.value = true;
+  bulkErrorMessage.value = '';
+  bulkSuccessMessage.value = '';
+
+  try {
+    const userIds = Array.from(selectedUsers.value);
+    for (const userId of userIds) {
+      await api.post(`/admin/access/users/${userId}/roles`, { role_id: bulkRoleId.value });
+    }
+
+    const roleName = availableRoles.value.find(r => r.id === bulkRoleId.value)?.name || '';
+    bulkSuccessMessage.value = `Assigned "${roleName}" to ${userIds.length} user(s)`;
+    selectedUsers.value.clear();
+    bulkRoleId.value = '';
+
+    setTimeout(() => {
+      bulkSuccessMessage.value = '';
+    }, 3000);
+  } catch (err) {
+    bulkErrorMessage.value = (err as Error).message || 'Failed to assign role';
+  } finally {
+    processingBulk.value = false;
+  }
+}
+
 onMounted(() => {
   fetchUsers();
+  loadRoles();
 });
 </script>
 
@@ -850,6 +921,30 @@ onMounted(() => {
 
 .bulk-btn.delete:hover:not(:disabled) {
   background: #f5c6cb;
+}
+
+.bulk-separator {
+  width: 1px;
+  height: 24px;
+  background: #d1d5db;
+  margin: 0 4px;
+}
+
+.bulk-role-select {
+  padding: 4px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 12px;
+  background: white;
+}
+
+.bulk-btn.assign-role {
+  background: #ede7f6;
+  color: #4527a0;
+}
+
+.bulk-btn.assign-role:hover:not(:disabled) {
+  background: #d1c4e9;
 }
 
 .checkbox-col {

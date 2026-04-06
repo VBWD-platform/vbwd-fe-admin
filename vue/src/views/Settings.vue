@@ -34,6 +34,14 @@
         {{ $t('settings.tabs.countries') }}
       </button>
       <button
+        data-testid="tab-tax"
+        class="tab-btn"
+        :class="{ active: activeTab === 'tax' }"
+        @click="activeTab = 'tax'"
+      >
+        {{ $t('settings.tabs.tax') }}
+      </button>
+      <button
         data-testid="tab-admin-plugins"
         class="tab-btn"
         :class="{ active: activeTab === 'adminPlugins' }"
@@ -263,6 +271,7 @@
 
         <div class="form-actions">
           <button
+            v-if="canManage"
             type="button"
             data-testid="save-core-settings-button"
             class="save-btn"
@@ -289,6 +298,7 @@
               </p>
             </div>
             <router-link
+              v-if="canManage"
               to="/admin/settings/token-bundles/new"
               class="create-btn"
               data-testid="create-bundle-btn"
@@ -392,7 +402,7 @@
                       {{ $t('common.edit') }}
                     </router-link>
                     <button
-                      v-if="bundle.is_active"
+                      v-if="canManage && bundle.is_active"
                       class="action-btn deactivate-btn"
                       data-testid="deactivate-bundle-btn"
                       @click="handleDeactivate(bundle.id)"
@@ -400,7 +410,7 @@
                       {{ $t('tokenBundles.deactivate') }}
                     </button>
                     <button
-                      v-else
+                      v-else-if="canManage && !bundle.is_active"
                       class="action-btn activate-btn"
                       data-testid="activate-bundle-btn"
                       @click="handleActivate(bundle.id)"
@@ -408,6 +418,7 @@
                       {{ $t('tokenBundles.activate') }}
                     </button>
                     <button
+                      v-if="canManage"
                       class="action-btn delete-btn"
                       data-testid="delete-bundle-btn"
                       @click="handleDelete(bundle.id)"
@@ -520,6 +531,7 @@
                 <span class="country-name">{{ country.name }}</span>
                 <span class="country-code">{{ country.code }}</span>
                 <button
+                  v-if="canManage"
                   class="action-btn deactivate-btn"
                   :disabled="countryActionLoading === country.code"
                   :title="$t('countriesConfig.disable')"
@@ -570,6 +582,7 @@
                 <span class="country-name">{{ country.name }}</span>
                 <span class="country-code">{{ country.code }}</span>
                 <button
+                  v-if="canManage"
                   class="action-btn activate-btn"
                   :disabled="countryActionLoading === country.code"
                   :title="$t('countriesConfig.enable')"
@@ -580,6 +593,372 @@
               </li>
             </ul>
           </div>
+        </div>
+      </div>
+
+      <!-- Tax Tab -->
+      <div
+        v-show="activeTab === 'tax'"
+        data-testid="tax-content"
+        class="tax-tab"
+      >
+        <!-- Tax Classes Section -->
+        <div class="form-section">
+          <div class="section-header">
+            <h3>{{ $t('settings.tax.classesTitle') }}</h3>
+            <button
+              v-if="canManage"
+              class="create-btn"
+              data-testid="add-tax-class-btn"
+              @click="showTaxClassForm = true; editingTaxClass = null; Object.assign(taxClassForm, { name: '', code: '', description: '', default_rate: '0', is_default: false })"
+            >
+              {{ $t('settings.tax.addClass') }}
+            </button>
+          </div>
+
+          <!-- Tax Class Form -->
+          <div
+            v-if="showTaxClassForm"
+            class="inline-form"
+            data-testid="tax-class-form"
+          >
+            <div class="form-row">
+              <div class="form-group">
+                <label>{{ $t('settings.tax.className') }}</label>
+                <input
+                  v-model="taxClassForm.name"
+                  type="text"
+                  class="form-input"
+                  data-testid="tax-class-name-input"
+                >
+              </div>
+              <div class="form-group">
+                <label>{{ $t('settings.tax.classCode') }}</label>
+                <input
+                  v-model="taxClassForm.code"
+                  type="text"
+                  class="form-input"
+                  data-testid="tax-class-code-input"
+                >
+              </div>
+              <div class="form-group">
+                <label>{{ $t('settings.tax.defaultRate') }}</label>
+                <input
+                  v-model="taxClassForm.default_rate"
+                  type="number"
+                  step="0.01"
+                  class="form-input"
+                  data-testid="tax-class-rate-input"
+                >
+              </div>
+              <div class="form-group form-group--checkbox">
+                <label>
+                  <input
+                    v-model="taxClassForm.is_default"
+                    type="checkbox"
+                    data-testid="tax-class-default-input"
+                  >
+                  {{ $t('settings.tax.isDefault') }}
+                </label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>{{ $t('common.description') }}</label>
+              <input
+                v-model="taxClassForm.description"
+                type="text"
+                class="form-input"
+                data-testid="tax-class-desc-input"
+              >
+            </div>
+            <div class="form-actions-inline">
+              <button
+                class="save-btn"
+                data-testid="save-tax-class-btn"
+                :disabled="taxLoading"
+                @click="handleSaveTaxClass"
+              >
+                {{ editingTaxClass ? $t('common.save') : $t('common.create') }}
+              </button>
+              <button
+                class="cancel-btn"
+                @click="showTaxClassForm = false"
+              >
+                {{ $t('common.cancel') }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Tax Classes Table -->
+          <table
+            v-if="taxClasses.length > 0"
+            class="data-table"
+            data-testid="tax-classes-table"
+          >
+            <thead>
+              <tr>
+                <th>{{ $t('settings.tax.className') }}</th>
+                <th>{{ $t('settings.tax.classCode') }}</th>
+                <th>{{ $t('settings.tax.defaultRate') }}</th>
+                <th>{{ $t('settings.tax.isDefault') }}</th>
+                <th>{{ $t('common.actions') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="taxClass in taxClasses"
+                :key="taxClass.id"
+              >
+                <td>{{ taxClass.name }}</td>
+                <td><code>{{ taxClass.code }}</code></td>
+                <td>{{ taxClass.default_rate }}%</td>
+                <td>
+                  <span
+                    class="badge"
+                    :class="taxClass.is_default ? 'badge--green' : 'badge--gray'"
+                  >
+                    {{ taxClass.is_default ? $t('common.yes') : $t('common.no') }}
+                  </span>
+                </td>
+                <td>
+                  <button
+                    v-if="canManage"
+                    class="btn btn--sm"
+                    @click="handleEditTaxClass(taxClass)"
+                  >
+                    {{ $t('common.edit') }}
+                  </button>
+                  <button
+                    v-if="canManage"
+                    class="btn btn--sm btn--danger"
+                    @click="handleDeleteTaxClass(taxClass.id)"
+                  >
+                    {{ $t('common.delete') }}
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <p
+            v-else-if="!taxLoading"
+            class="empty-state"
+          >
+            {{ $t('settings.tax.noClasses') }}
+          </p>
+        </div>
+
+        <!-- Tax Rates Section -->
+        <div class="form-section">
+          <div class="section-header">
+            <h3>{{ $t('settings.tax.ratesTitle') }}</h3>
+            <button
+              v-if="canManage"
+              class="create-btn"
+              data-testid="add-tax-rate-btn"
+              @click="showTaxRateForm = true; editingTaxRate = null; Object.assign(taxRateForm, { name: '', code: '', rate: '0', country_code: '', region_code: '', tax_class_id: '', is_active: true, is_inclusive: false, description: '' })"
+            >
+              {{ $t('settings.tax.addRate') }}
+            </button>
+          </div>
+
+          <!-- Tax Rate Form -->
+          <div
+            v-if="showTaxRateForm"
+            class="inline-form"
+            data-testid="tax-rate-form"
+          >
+            <div class="form-row">
+              <div class="form-group">
+                <label>{{ $t('settings.tax.rateName') }}</label>
+                <input
+                  v-model="taxRateForm.name"
+                  type="text"
+                  class="form-input"
+                  data-testid="tax-rate-name-input"
+                  :placeholder="$t('settings.tax.rateNamePlaceholder')"
+                >
+              </div>
+              <div class="form-group">
+                <label>{{ $t('settings.tax.rateCode') }}</label>
+                <input
+                  v-model="taxRateForm.code"
+                  type="text"
+                  class="form-input"
+                  data-testid="tax-rate-code-input"
+                  :placeholder="$t('settings.tax.rateCodePlaceholder')"
+                >
+              </div>
+              <div class="form-group">
+                <label>{{ $t('settings.tax.ratePercent') }}</label>
+                <input
+                  v-model="taxRateForm.rate"
+                  type="number"
+                  step="0.01"
+                  class="form-input"
+                  data-testid="tax-rate-rate-input"
+                >
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>{{ $t('settings.tax.country') }}</label>
+                <input
+                  v-model="taxRateForm.country_code"
+                  type="text"
+                  maxlength="2"
+                  class="form-input"
+                  data-testid="tax-rate-country-input"
+                  :placeholder="$t('settings.tax.countryPlaceholder')"
+                >
+              </div>
+              <div class="form-group">
+                <label>{{ $t('settings.tax.region') }}</label>
+                <input
+                  v-model="taxRateForm.region_code"
+                  type="text"
+                  class="form-input"
+                  data-testid="tax-rate-region-input"
+                  :placeholder="$t('settings.tax.regionPlaceholder')"
+                >
+              </div>
+              <div class="form-group">
+                <label>{{ $t('settings.tax.taxClass') }}</label>
+                <select
+                  v-model="taxRateForm.tax_class_id"
+                  class="form-input"
+                  data-testid="tax-rate-class-select"
+                >
+                  <option value="">
+                    {{ $t('common.none') }}
+                  </option>
+                  <option
+                    v-for="taxClass in taxClasses"
+                    :key="taxClass.id"
+                    :value="taxClass.id"
+                  >
+                    {{ taxClass.name }}
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group form-group--checkbox">
+                <label>
+                  <input
+                    v-model="taxRateForm.is_active"
+                    type="checkbox"
+                    data-testid="tax-rate-active-input"
+                  >
+                  {{ $t('common.active') }}
+                </label>
+              </div>
+              <div class="form-group form-group--checkbox">
+                <label>
+                  <input
+                    v-model="taxRateForm.is_inclusive"
+                    type="checkbox"
+                    data-testid="tax-rate-inclusive-input"
+                  >
+                  {{ $t('settings.tax.inclusive') }}
+                </label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>{{ $t('common.description') }}</label>
+              <input
+                v-model="taxRateForm.description"
+                type="text"
+                class="form-input"
+              >
+            </div>
+            <div class="form-actions-inline">
+              <button
+                class="save-btn"
+                data-testid="save-tax-rate-btn"
+                :disabled="taxLoading"
+                @click="handleSaveTaxRate"
+              >
+                {{ editingTaxRate ? $t('common.save') : $t('common.create') }}
+              </button>
+              <button
+                class="cancel-btn"
+                @click="showTaxRateForm = false"
+              >
+                {{ $t('common.cancel') }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Tax Rates Table -->
+          <table
+            v-if="taxRates.length > 0"
+            class="data-table"
+            data-testid="tax-rates-table"
+          >
+            <thead>
+              <tr>
+                <th>{{ $t('settings.tax.rateName') }}</th>
+                <th>{{ $t('settings.tax.rateCode') }}</th>
+                <th>{{ $t('settings.tax.country') }}</th>
+                <th>{{ $t('settings.tax.region') }}</th>
+                <th>{{ $t('settings.tax.ratePercent') }}</th>
+                <th>{{ $t('settings.tax.taxClass') }}</th>
+                <th>{{ $t('common.status') }}</th>
+                <th>{{ $t('common.actions') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="rate in taxRates"
+                :key="rate.id"
+              >
+                <td>{{ rate.name }}</td>
+                <td><code>{{ rate.code }}</code></td>
+                <td>{{ rate.country_code || '—' }}</td>
+                <td>{{ rate.region_code || '—' }}</td>
+                <td>{{ rate.rate }}%</td>
+                <td>{{ getTaxClassName(rate.tax_class_id) }}</td>
+                <td>
+                  <span
+                    class="badge"
+                    :class="rate.is_active ? 'badge--green' : 'badge--gray'"
+                  >
+                    {{ rate.is_active ? $t('common.active') : $t('common.inactive') }}
+                  </span>
+                </td>
+                <td>
+                  <button
+                    v-if="canManage"
+                    class="btn btn--sm"
+                    @click="handleEditTaxRate(rate)"
+                  >
+                    {{ $t('common.edit') }}
+                  </button>
+                  <button
+                    v-if="canManage"
+                    class="btn btn--sm btn--danger"
+                    @click="handleDeleteTaxRate(rate.id)"
+                  >
+                    {{ $t('common.delete') }}
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <p
+            v-else-if="!taxLoading"
+            class="empty-state"
+          >
+            {{ $t('settings.tax.noRates') }}
+          </p>
+        </div>
+
+        <div
+          v-if="taxLoading"
+          class="loading-state"
+        >
+          <div class="spinner" />
+          <p>{{ $t('common.loading') }}</p>
         </div>
       </div>
 
@@ -1091,21 +1470,28 @@
 import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { api } from '@/api';
+import { useAuthStore } from '@/stores/auth';
 import { useTokenBundlesStore } from '@/stores/tokenBundles';
 import { useCountriesStore } from '@/stores/countries';
 import { usePluginsStore } from '@/stores/plugins';
 import type { PluginEntry } from '@/stores/plugins';
 import { useUserPluginsStore } from '@/stores/userPlugins';
 import type { UserPluginEntry } from '@/stores/userPlugins';
+import { useTaxAdminStore } from '@/stores/taxAdmin';
+import type { TaxRate, TaxClass } from '@/stores/taxAdmin';
 
 const { t } = useI18n();
+const authStore = useAuthStore();
 const tokenBundlesStore = useTokenBundlesStore();
 const countriesStore = useCountriesStore();
 const pluginsStore = usePluginsStore();
 const userPluginsStore = useUserPluginsStore();
+const taxAdminStore = useTaxAdminStore();
+
+const canManage = computed(() => authStore.hasPermission('settings.manage'));
 
 // Tab state
-type MainTab = 'core' | 'tokens' | 'countries' | 'adminPlugins' | 'backendPlugins' | 'userPlugins';
+type MainTab = 'core' | 'tokens' | 'countries' | 'tax' | 'adminPlugins' | 'backendPlugins' | 'userPlugins';
 
 const activeTab = ref<MainTab>('core');
 
@@ -1604,6 +1990,175 @@ function handleUserPluginSort(key: string): void {
   }
 }
 
+// Tax
+const taxLoading = ref(false);
+const taxLoaded = ref(false);
+const showTaxClassForm = ref(false);
+const showTaxRateForm = ref(false);
+const editingTaxClass = ref<TaxClass | null>(null);
+const editingTaxRate = ref<TaxRate | null>(null);
+
+const taxClasses = computed(() => taxAdminStore.classes);
+const taxRates = computed(() => taxAdminStore.rates);
+
+interface TaxClassFormData {
+  name: string;
+  code: string;
+  description: string;
+  default_rate: string;
+  is_default: boolean;
+}
+
+interface TaxRateFormData {
+  name: string;
+  code: string;
+  rate: string;
+  country_code: string;
+  region_code: string;
+  tax_class_id: string;
+  is_active: boolean;
+  is_inclusive: boolean;
+  description: string;
+}
+
+const taxClassForm = reactive<TaxClassFormData>({
+  name: '',
+  code: '',
+  description: '',
+  default_rate: '0',
+  is_default: false,
+});
+
+const taxRateForm = reactive<TaxRateFormData>({
+  name: '',
+  code: '',
+  rate: '0',
+  country_code: '',
+  region_code: '',
+  tax_class_id: '',
+  is_active: true,
+  is_inclusive: false,
+  description: '',
+});
+
+async function loadTaxData(): Promise<void> {
+  taxLoading.value = true;
+  try {
+    await Promise.all([
+      taxAdminStore.fetchClasses(),
+      taxAdminStore.fetchRates(),
+    ]);
+    taxLoaded.value = true;
+  } catch (error) {
+    saveError.value = (error as Error).message || 'Failed to load tax data';
+  } finally {
+    taxLoading.value = false;
+  }
+}
+
+function getTaxClassName(classId: string | null): string {
+  if (!classId) return '—';
+  const taxClass = taxClasses.value.find(c => c.id === classId);
+  return taxClass ? taxClass.name : '—';
+}
+
+function handleEditTaxClass(taxClass: TaxClass): void {
+  editingTaxClass.value = taxClass;
+  taxClassForm.name = taxClass.name;
+  taxClassForm.code = taxClass.code;
+  taxClassForm.description = taxClass.description || '';
+  taxClassForm.default_rate = taxClass.default_rate;
+  taxClassForm.is_default = taxClass.is_default;
+  showTaxClassForm.value = true;
+}
+
+async function handleSaveTaxClass(): Promise<void> {
+  if (!taxClassForm.name || !taxClassForm.code) return;
+  try {
+    if (editingTaxClass.value) {
+      await taxAdminStore.updateClass(editingTaxClass.value.id, {
+        name: taxClassForm.name,
+        code: taxClassForm.code,
+        description: taxClassForm.description,
+        default_rate: taxClassForm.default_rate,
+        is_default: taxClassForm.is_default,
+      } as Partial<TaxClass>);
+    } else {
+      await taxAdminStore.createClass({
+        name: taxClassForm.name,
+        code: taxClassForm.code,
+        description: taxClassForm.description,
+        default_rate: taxClassForm.default_rate,
+        is_default: taxClassForm.is_default,
+      } as Partial<TaxClass>);
+    }
+    showTaxClassForm.value = false;
+    successMessage.value = t('settings.tax.classSaved');
+    setTimeout(() => { successMessage.value = null; }, 3000);
+  } catch (error) {
+    saveError.value = (error as Error).message;
+  }
+}
+
+async function handleDeleteTaxClass(classId: string): Promise<void> {
+  if (!confirm(t('settings.tax.confirmDeleteClass'))) return;
+  try {
+    await taxAdminStore.deleteClass(classId);
+  } catch (error) {
+    saveError.value = (error as Error).message;
+  }
+}
+
+function handleEditTaxRate(rate: TaxRate): void {
+  editingTaxRate.value = rate;
+  taxRateForm.name = rate.name;
+  taxRateForm.code = rate.code;
+  taxRateForm.rate = rate.rate;
+  taxRateForm.country_code = rate.country_code || '';
+  taxRateForm.region_code = rate.region_code || '';
+  taxRateForm.tax_class_id = rate.tax_class_id || '';
+  taxRateForm.is_active = rate.is_active;
+  taxRateForm.is_inclusive = rate.is_inclusive;
+  taxRateForm.description = rate.description || '';
+  showTaxRateForm.value = true;
+}
+
+async function handleSaveTaxRate(): Promise<void> {
+  if (!taxRateForm.name || !taxRateForm.code) return;
+  try {
+    const payload = {
+      name: taxRateForm.name,
+      code: taxRateForm.code,
+      rate: taxRateForm.rate,
+      country_code: taxRateForm.country_code || null,
+      region_code: taxRateForm.region_code || null,
+      tax_class_id: taxRateForm.tax_class_id || null,
+      is_active: taxRateForm.is_active,
+      is_inclusive: taxRateForm.is_inclusive,
+      description: taxRateForm.description,
+    };
+    if (editingTaxRate.value) {
+      await taxAdminStore.updateRate(editingTaxRate.value.id, payload as Partial<TaxRate>);
+    } else {
+      await taxAdminStore.createRate(payload as Partial<TaxRate>);
+    }
+    showTaxRateForm.value = false;
+    successMessage.value = t('settings.tax.rateSaved');
+    setTimeout(() => { successMessage.value = null; }, 3000);
+  } catch (error) {
+    saveError.value = (error as Error).message;
+  }
+}
+
+async function handleDeleteTaxRate(rateId: string): Promise<void> {
+  if (!confirm(t('settings.tax.confirmDeleteRate'))) return;
+  try {
+    await taxAdminStore.deleteRate(rateId);
+  } catch (error) {
+    saveError.value = (error as Error).message;
+  }
+}
+
 // Lazy-load tab data
 watch(activeTab, (newTab) => {
   if (newTab === 'tokens' && !bundlesLoaded.value) {
@@ -1611,6 +2166,9 @@ watch(activeTab, (newTab) => {
   }
   if (newTab === 'countries' && !countriesLoaded.value) {
     loadCountries();
+  }
+  if (newTab === 'tax' && !taxLoaded.value) {
+    loadTaxData();
   }
   if (newTab === 'adminPlugins' && !pluginsLoaded.value) {
     loadPlugins();
@@ -2251,5 +2809,130 @@ onMounted(() => {
 .status-badge.status-error {
   background: #f8d7da;
   color: #721c24;
+}
+
+/* Tax Tab */
+.tax-tab .form-section {
+  margin-bottom: 30px;
+}
+
+.tax-tab .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.tax-tab .section-header h3 {
+  margin: 0;
+}
+
+.tax-tab .data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.tax-tab .data-table th,
+.tax-tab .data-table td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+}
+
+.tax-tab .data-table th {
+  background: #f8f9fa;
+  font-weight: 600;
+}
+
+.tax-tab .badge {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.tax-tab .badge--green {
+  background: #d4edda;
+  color: #155724;
+}
+
+.tax-tab .badge--gray {
+  background: #e9ecef;
+  color: #6c757d;
+}
+
+.tax-tab .btn {
+  padding: 6px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  background: white;
+}
+
+.tax-tab .btn--sm {
+  padding: 4px 8px;
+  font-size: 12px;
+  margin-right: 4px;
+}
+
+.tax-tab .btn--danger {
+  color: #dc3545;
+  border-color: #dc3545;
+}
+
+.tax-tab .btn--danger:hover {
+  background: #dc3545;
+  color: white;
+}
+
+.tax-tab .inline-form {
+  background: #f8f9fa;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.tax-tab .inline-form .form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.tax-tab .form-group--checkbox {
+  display: flex;
+  align-items: center;
+}
+
+.tax-tab .form-group--checkbox label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.tax-tab .form-actions-inline {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.tax-tab .cancel-btn {
+  padding: 8px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  background: white;
+}
+
+.tax-tab code {
+  background: #e9ecef;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 13px;
 }
 </style>
