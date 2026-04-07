@@ -4,6 +4,7 @@ import { setActivePinia, createPinia } from 'pinia';
 import { createRouter, createMemoryHistory } from 'vue-router';
 import Settings from '@/views/Settings.vue';
 import { api } from '@/api';
+import { configureAuthStore, useAuthStore } from '@/stores/auth';
 
 vi.mock('@/api', () => ({
   api: {
@@ -36,6 +37,15 @@ describe('Settings.vue', () => {
 
   beforeEach(() => {
     setActivePinia(createPinia());
+    configureAuthStore({
+      storageKey: 'test_token',
+      apiClient: { post: async () => ({}), get: async () => ({}), setToken: () => {}, clearToken: () => {} } as any,
+    });
+    const authStore = useAuthStore();
+    authStore.$patch({
+      user: { id: '1', email: 'admin@test.com', role: 'SUPER_ADMIN', permissions: ['*'] },
+      token: 'test-token',
+    });
     vi.clearAllMocks();
 
     router = createRouter({

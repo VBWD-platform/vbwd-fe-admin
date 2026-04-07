@@ -83,7 +83,9 @@
             <th>Code</th>
             <th>Layer</th>
             <th>Active</th>
-            <th v-if="canManage">Actions</th>
+            <th v-if="canManage">
+              Actions
+            </th>
           </tr>
         </thead>
         <tbody>

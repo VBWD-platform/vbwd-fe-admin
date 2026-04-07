@@ -4,6 +4,7 @@ import { setActivePinia, createPinia } from 'pinia';
 import { createRouter, createMemoryHistory } from 'vue-router';
 import Invoices from '@/views/Invoices.vue';
 import { api } from '@/api';
+import { configureAuthStore, useAuthStore } from '@/stores/auth';
 
 // Mock the API module
 vi.mock('@/api', () => ({
@@ -30,6 +31,15 @@ describe('Invoices.vue', () => {
 
   beforeEach(() => {
     setActivePinia(createPinia());
+    configureAuthStore({
+      storageKey: 'test_token',
+      apiClient: { post: async () => ({}), get: async () => ({}), setToken: () => {}, clearToken: () => {} } as any,
+    });
+    const authStore = useAuthStore();
+    authStore.$patch({
+      user: { id: '1', email: 'admin@test.com', role: 'SUPER_ADMIN', permissions: ['*'] },
+      token: 'test-token',
+    });
     vi.clearAllMocks();
 
     router = createRouter({
@@ -128,11 +138,12 @@ describe('Invoices.vue', () => {
     });
 
     const statusFilter = wrapper.find('[data-testid="status-filter"]');
-    await statusFilter.setValue('paid');
+    await statusFilter.setValue('PAID');
+    await statusFilter.trigger('change');
     await flushPromises();
 
     expect(api.get).toHaveBeenCalledWith('/admin/invoices', expect.objectContaining({
-      params: expect.objectContaining({ status: 'paid' })
+      params: expect.objectContaining({ status: 'PAID' })
     }));
   });
 

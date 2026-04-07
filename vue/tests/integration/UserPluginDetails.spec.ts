@@ -3,6 +3,7 @@ import { mount, flushPromises } from '@vue/test-utils';
 import { setActivePinia, createPinia } from 'pinia';
 import { createRouter, createMemoryHistory } from 'vue-router';
 import UserPluginDetails from '@/views/UserPluginDetails.vue';
+import { configureAuthStore, useAuthStore } from '@/stores/auth';
 
 // Mock the userPluginApi
 vi.mock('@/api/userPluginApi', () => ({
@@ -48,6 +49,15 @@ describe('UserPluginDetails.vue', () => {
 
   beforeEach(() => {
     setActivePinia(createPinia());
+    configureAuthStore({
+      storageKey: 'test_token',
+      apiClient: { post: async () => ({}), get: async () => ({}), setToken: () => {}, clearToken: () => {} } as any,
+    });
+    const authStore = useAuthStore();
+    authStore.$patch({
+      user: { id: '1', email: 'admin@test.com', role: 'SUPER_ADMIN', permissions: ['*'] },
+      token: 'test-token',
+    });
     vi.clearAllMocks();
 
     router = createRouter({

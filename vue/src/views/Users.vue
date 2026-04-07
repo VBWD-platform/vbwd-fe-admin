@@ -215,6 +215,7 @@
           :data-testid="`user-row-${user.id}`"
           class="user-row"
           :class="{ selected: selectedUsers.has(user.id) }"
+          @click="navigateToEdit(user.id)"
         >
           <td
             class="checkbox-col"

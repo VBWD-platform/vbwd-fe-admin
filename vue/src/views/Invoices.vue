@@ -205,6 +205,7 @@
           :data-testid="`invoice-row-${invoice.id}`"
           class="invoice-row"
           :class="{ selected: selectedInvoices.has(invoice.id) }"
+          @click="navigateToInvoice(invoice.id)"
         >
           <td
             class="checkbox-col"

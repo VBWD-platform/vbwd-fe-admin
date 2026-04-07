@@ -14,6 +14,7 @@ export interface User {
   is_active: boolean;
   role: string;
   access_levels?: AccessLevel[];
+  user_access_levels?: AccessLevel[];
   subscription_plan?: string;
   created_at?: string;
 }

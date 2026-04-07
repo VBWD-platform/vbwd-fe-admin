@@ -3,8 +3,18 @@
     <div class="page-header">
       <h1>{{ isNew ? 'New Coupon' : `Edit: ${form.code}` }}</h1>
       <div class="page-header__actions">
-        <router-link to="/admin/promotions/coupons" class="btn">Cancel</router-link>
-        <button v-if="canManage" class="btn btn--primary" :disabled="saving" @click="save">
+        <router-link
+          to="/admin/promotions/coupons"
+          class="btn"
+        >
+          Cancel
+        </router-link>
+        <button
+          v-if="canManage"
+          class="btn btn--primary"
+          :disabled="saving"
+          @click="save"
+        >
           {{ saving ? 'Saving...' : 'Save' }}
         </button>
       </div>
@@ -14,35 +24,78 @@
       <div class="form-group">
         <label>Code</label>
         <div class="code-input-row">
-          <input v-model="form.code" type="text" class="form-input mono" placeholder="SUMMER2026" @input="form.code = form.code.toUpperCase()">
-          <button v-if="canManage" type="button" class="btn btn--sm" @click="generateCode">Generate</button>
+          <input
+            v-model="form.code"
+            type="text"
+            class="form-input mono"
+            placeholder="SUMMER2026"
+            @input="form.code = form.code.toUpperCase()"
+          >
+          <button
+            v-if="canManage"
+            type="button"
+            class="btn btn--sm"
+            @click="generateCode"
+          >
+            Generate
+          </button>
         </div>
       </div>
       <div class="form-group">
         <label>Discount</label>
-        <select v-model="form.discount_id" class="form-input">
-          <option value="">— Select discount —</option>
-          <option v-for="d in discounts" :key="d.id" :value="d.id">{{ d.name }} ({{ d.discount_type }} {{ d.value }})</option>
+        <select
+          v-model="form.discount_id"
+          class="form-input"
+        >
+          <option value="">
+            — Select discount —
+          </option>
+          <option
+            v-for="d in discounts"
+            :key="d.id"
+            :value="d.id"
+          >
+            {{ d.name }} ({{ d.discount_type }} {{ d.value }})
+          </option>
         </select>
       </div>
       <div class="form-group">
         <label>Max Uses (empty = unlimited)</label>
-        <input v-model="form.max_uses" type="number" class="form-input">
+        <input
+          v-model="form.max_uses"
+          type="number"
+          class="form-input"
+        >
       </div>
       <div class="form-group">
         <label>Max Uses Per User</label>
-        <input v-model="form.max_uses_per_user" type="number" class="form-input">
+        <input
+          v-model="form.max_uses_per_user"
+          type="number"
+          class="form-input"
+        >
       </div>
       <div class="form-group">
         <label>Starts At</label>
-        <input v-model="form.starts_at" type="datetime-local" class="form-input">
+        <input
+          v-model="form.starts_at"
+          type="datetime-local"
+          class="form-input"
+        >
       </div>
       <div class="form-group">
         <label>Expires At</label>
-        <input v-model="form.expires_at" type="datetime-local" class="form-input">
+        <input
+          v-model="form.expires_at"
+          type="datetime-local"
+          class="form-input"
+        >
       </div>
       <div class="form-group">
-        <label><input v-model="form.is_active" type="checkbox"> Active</label>
+        <label><input
+          v-model="form.is_active"
+          type="checkbox"
+        > Active</label>
       </div>
     </div>
   </div>

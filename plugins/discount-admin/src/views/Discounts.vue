@@ -2,14 +2,26 @@
   <div class="discounts-view">
     <div class="page-header">
       <h1>Discounts</h1>
-      <router-link v-if="canManage" to="/admin/promotions/discounts/new" class="btn btn--primary">
+      <router-link
+        v-if="canManage"
+        to="/admin/promotions/discounts/new"
+        class="btn btn--primary"
+      >
         + New Discount
       </router-link>
     </div>
 
-    <div v-if="store.loading" class="loading">Loading...</div>
+    <div
+      v-if="store.loading"
+      class="loading"
+    >
+      Loading...
+    </div>
 
-    <table v-else-if="store.discounts.length > 0" class="data-table">
+    <table
+      v-else-if="store.discounts.length > 0"
+      class="data-table"
+    >
       <thead>
         <tr>
           <th>Name</th>
@@ -22,9 +34,15 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="discount in store.discounts" :key="discount.id">
+        <tr
+          v-for="discount in store.discounts"
+          :key="discount.id"
+        >
           <td>
-            <router-link :to="`/admin/promotions/discounts/${discount.id}/edit`" class="link">
+            <router-link
+              :to="`/admin/promotions/discounts/${discount.id}/edit`"
+              class="link"
+            >
               {{ discount.name }}
             </router-link>
           </td>
@@ -33,18 +51,32 @@
           <td>{{ discount.discount_type === 'PERCENTAGE' ? `${discount.value}%` : `${discount.value} ${discount.currency || 'EUR'}` }}</td>
           <td>{{ discount.current_uses }}{{ discount.max_uses ? ` / ${discount.max_uses}` : '' }}</td>
           <td>
-            <span class="badge" :class="discount.is_active ? 'badge--green' : 'badge--gray'">
+            <span
+              class="badge"
+              :class="discount.is_active ? 'badge--green' : 'badge--gray'"
+            >
               {{ discount.is_active ? 'Active' : 'Inactive' }}
             </span>
           </td>
           <td>
-            <button v-if="canManage" class="btn btn--sm btn--danger" @click="handleDelete(discount.id, discount.name)">Delete</button>
+            <button
+              v-if="canManage"
+              class="btn btn--sm btn--danger"
+              @click="handleDelete(discount.id, discount.name)"
+            >
+              Delete
+            </button>
           </td>
         </tr>
       </tbody>
     </table>
 
-    <p v-else class="empty">No discounts yet.</p>
+    <p
+      v-else
+      class="empty"
+    >
+      No discounts yet.
+    </p>
   </div>
 </template>
 

@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
-import { createPinia, setActivePinia } from 'pinia'
+import { createPinia, setActivePinia, getActivePinia } from 'pinia'
 import BackendPluginDetails from '@/views/BackendPluginDetails.vue'
+import { configureAuthStore, useAuthStore } from '@/stores/auth'
 
 // Mock the API module
 const mockGet = vi.fn()
@@ -69,7 +70,7 @@ const mockPluginDetail = {
 function mountComponent() {
   return mount(BackendPluginDetails, {
     global: {
-      plugins: [createPinia()],
+      plugins: [getActivePinia()!],
       stubs: {
         'router-link': {
           template: '<a><slot /></a>',
@@ -87,6 +88,15 @@ describe('BackendPluginDetails', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     setActivePinia(createPinia())
+    configureAuthStore({
+      storageKey: 'test_token',
+      apiClient: { post: async () => ({}), get: async () => ({}), setToken: () => {} } as any,
+    })
+    const authStore = useAuthStore()
+    authStore.$patch({
+      user: { id: '1', email: 'admin@test.com', role: 'SUPER_ADMIN', permissions: ['*'] },
+      token: 'test-token',
+    })
     mockGet.mockResolvedValue(mockPluginDetail)
     mockPut.mockResolvedValue({ message: 'Configuration saved' })
     mockPost.mockResolvedValue({ message: 'Plugin enabled', status: 'enabled' })

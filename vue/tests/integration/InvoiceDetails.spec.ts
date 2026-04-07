@@ -4,6 +4,7 @@ import { setActivePinia, createPinia } from 'pinia';
 import { createRouter, createMemoryHistory } from 'vue-router';
 import InvoiceDetails from '@/views/InvoiceDetails.vue';
 import { api } from '@/api';
+import { configureAuthStore, useAuthStore } from '@/stores/auth';
 
 // Mock the API module
 vi.mock('@/api', () => ({
@@ -31,7 +32,7 @@ describe('InvoiceDetails.vue', () => {
     subscription_id: 'sub-1',
     amount: 29.99,
     currency: 'USD',
-    status: 'paid',
+    status: 'PAID',
     due_date: '2025-01-15T00:00:00Z',
     paid_at: '2025-01-10T00:00:00Z',
     created_at: '2025-01-01T00:00:00Z',
@@ -49,6 +50,15 @@ describe('InvoiceDetails.vue', () => {
 
   beforeEach(() => {
     setActivePinia(createPinia());
+    configureAuthStore({
+      storageKey: 'test_token',
+      apiClient: { post: async () => ({}), get: async () => ({}), setToken: () => {}, clearToken: () => {} } as any,
+    });
+    const authStore = useAuthStore();
+    authStore.$patch({
+      user: { id: '1', email: 'admin@test.com', role: 'SUPER_ADMIN', permissions: ['*'] },
+      token: 'test-token',
+    });
     vi.clearAllMocks();
 
     router = createRouter({
@@ -161,7 +171,7 @@ describe('InvoiceDetails.vue', () => {
 
   it('can void open invoice', async () => {
     vi.mocked(api.get).mockResolvedValue({
-      invoice: { ...mockInvoice, status: 'pending' }
+      invoice: { ...mockInvoice, status: 'PENDING' }
     });
     vi.mocked(api.post).mockResolvedValue({ message: 'Invoice voided' });
 

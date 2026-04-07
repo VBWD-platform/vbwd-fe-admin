@@ -60,6 +60,26 @@ export interface SectionComponent {
   position?: 'before' | 'after';
 }
 
+export interface AccessLevelTab {
+  /** Unique tab ID */
+  id: string;
+  /** Tab label */
+  label: string;
+  /** Component to render as tab content */
+  component: Component;
+  /** Permission required to see this tab */
+  requiredPermission?: string;
+}
+
+export interface AccessLevelFormField {
+  /** Component to render as form field */
+  component: Component;
+  /** Only show on user access level forms (type=user) */
+  userOnly?: boolean;
+  /** Permission required to see this field */
+  requiredPermission?: string;
+}
+
 export interface AdminExtension {
   userDetailsSections?: Component[];
   /** Nav sections added to the admin sidebar by this plugin */
@@ -74,6 +94,10 @@ export interface AdminExtension {
   hiddenItems?: string[];
   /** Inject Vue components into sections */
   sectionComponents?: Record<string, SectionComponent[]>;
+  /** Additional tabs on the Access Levels page */
+  accessLevelTabs?: AccessLevelTab[];
+  /** Additional form fields on the Access Level form */
+  accessLevelFormFields?: AccessLevelFormField[];
 }
 
 class ExtensionRegistry {
@@ -127,6 +151,26 @@ class ExtensionRegistry {
       }
     });
     return sections;
+  }
+
+  getAccessLevelTabs(): AccessLevelTab[] {
+    const tabs: AccessLevelTab[] = [];
+    this.extensions.forEach((ext) => {
+      if (ext.accessLevelTabs) {
+        tabs.push(...ext.accessLevelTabs);
+      }
+    });
+    return tabs;
+  }
+
+  getAccessLevelFormFields(): AccessLevelFormField[] {
+    const fields: AccessLevelFormField[] = [];
+    this.extensions.forEach((ext) => {
+      if (ext.accessLevelFormFields) {
+        fields.push(...ext.accessLevelFormFields);
+      }
+    });
+    return fields;
   }
 
   get(pluginName: string): AdminExtension | undefined {

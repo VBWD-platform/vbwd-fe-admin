@@ -4,6 +4,7 @@ import { setActivePinia, createPinia } from 'pinia';
 import { createRouter, createMemoryHistory } from 'vue-router';
 import UserEdit from '@/views/UserEdit.vue';
 import { api } from '@/api';
+import { configureAuthStore, useAuthStore } from '@/stores/auth';
 
 // Mock the API module
 vi.mock('@/api', () => ({
@@ -75,6 +76,9 @@ function setupApiMocks(overrides: Record<string, unknown> = {}) {
     if (url.includes('/admin/access/levels')) {
       return Promise.resolve({ levels: [] });
     }
+    if (url.includes('/admin/access/user-levels')) {
+      return Promise.resolve({ levels: [] });
+    }
     return Promise.resolve({});
   });
 }
@@ -84,6 +88,15 @@ describe('UserEdit — Add-ons Tab', () => {
 
   beforeEach(async () => {
     setActivePinia(createPinia());
+    configureAuthStore({
+      storageKey: 'test_token',
+      apiClient: { post: async () => ({}), get: async () => ({}), setToken: () => {} } as any,
+    });
+    const authStore = useAuthStore();
+    authStore.$patch({
+      user: { id: '1', email: 'admin@test.com', role: 'SUPER_ADMIN', permissions: ['*'] },
+      token: 'test-token',
+    });
     vi.clearAllMocks();
 
     router = createRouter({

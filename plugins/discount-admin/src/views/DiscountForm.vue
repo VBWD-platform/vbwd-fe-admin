@@ -3,8 +3,18 @@
     <div class="page-header">
       <h1>{{ isNew ? 'New Discount' : `Edit: ${form.name}` }}</h1>
       <div class="page-header__actions">
-        <router-link to="/admin/promotions/discounts" class="btn">Cancel</router-link>
-        <button v-if="canManage" class="btn btn--primary" :disabled="saving" @click="save">
+        <router-link
+          to="/admin/promotions/discounts"
+          class="btn"
+        >
+          Cancel
+        </router-link>
+        <button
+          v-if="canManage"
+          class="btn btn--primary"
+          :disabled="saving"
+          @click="save"
+        >
           {{ saving ? 'Saving...' : 'Save' }}
         </button>
       </div>
@@ -13,71 +23,150 @@
     <div class="form-grid">
       <div class="form-group">
         <label>Name</label>
-        <input v-model="form.name" type="text" class="form-input">
+        <input
+          v-model="form.name"
+          type="text"
+          class="form-input"
+        >
       </div>
       <div class="form-group">
         <label>Slug</label>
-        <input v-model="form.slug" type="text" class="form-input mono">
+        <input
+          v-model="form.slug"
+          type="text"
+          class="form-input mono"
+        >
       </div>
       <div class="form-group">
         <label>Type</label>
-        <select v-model="form.discount_type" class="form-input">
-          <option value="PERCENTAGE">Percentage</option>
-          <option value="FIXED_AMOUNT">Fixed Amount</option>
-          <option value="FREE_SHIPPING">Free Shipping</option>
-          <option value="BUY_X_GET_Y">Buy X Get Y</option>
+        <select
+          v-model="form.discount_type"
+          class="form-input"
+        >
+          <option value="PERCENTAGE">
+            Percentage
+          </option>
+          <option value="FIXED_AMOUNT">
+            Fixed Amount
+          </option>
+          <option value="FREE_SHIPPING">
+            Free Shipping
+          </option>
+          <option value="BUY_X_GET_Y">
+            Buy X Get Y
+          </option>
         </select>
       </div>
       <div class="form-group">
         <label>Value</label>
-        <input v-model="form.value" type="number" step="0.01" class="form-input">
+        <input
+          v-model="form.value"
+          type="number"
+          step="0.01"
+          class="form-input"
+        >
       </div>
       <div class="form-group">
         <label>Scope</label>
-        <select v-model="form.scope" class="form-input">
-          <option value="GLOBAL">Global</option>
-          <option value="ECOMMERCE">Shop</option>
-          <option value="SUBSCRIPTION">Subscription</option>
-          <option value="BOOKING">Booking</option>
+        <select
+          v-model="form.scope"
+          class="form-input"
+        >
+          <option value="GLOBAL">
+            Global
+          </option>
+          <option value="ECOMMERCE">
+            Shop
+          </option>
+          <option value="SUBSCRIPTION">
+            Subscription
+          </option>
+          <option value="BOOKING">
+            Booking
+          </option>
         </select>
       </div>
-      <div class="form-group" v-if="form.discount_type === 'FIXED_AMOUNT'">
+      <div
+        v-if="form.discount_type === 'FIXED_AMOUNT'"
+        class="form-group"
+      >
         <label>Currency</label>
-        <input v-model="form.currency" type="text" class="form-input" placeholder="EUR">
+        <input
+          v-model="form.currency"
+          type="text"
+          class="form-input"
+          placeholder="EUR"
+        >
       </div>
       <div class="form-group">
         <label>Min Order Amount</label>
-        <input v-model="form.min_order_amount" type="number" step="0.01" class="form-input">
+        <input
+          v-model="form.min_order_amount"
+          type="number"
+          step="0.01"
+          class="form-input"
+        >
       </div>
       <div class="form-group">
         <label>Max Discount Amount</label>
-        <input v-model="form.max_discount_amount" type="number" step="0.01" class="form-input">
+        <input
+          v-model="form.max_discount_amount"
+          type="number"
+          step="0.01"
+          class="form-input"
+        >
       </div>
       <div class="form-group">
         <label>Max Uses (empty = unlimited)</label>
-        <input v-model="form.max_uses" type="number" class="form-input">
+        <input
+          v-model="form.max_uses"
+          type="number"
+          class="form-input"
+        >
       </div>
       <div class="form-group">
         <label>Max Uses Per User</label>
-        <input v-model="form.max_uses_per_user" type="number" class="form-input">
+        <input
+          v-model="form.max_uses_per_user"
+          type="number"
+          class="form-input"
+        >
       </div>
       <div class="form-group">
         <label>Priority (lower = higher)</label>
-        <input v-model="form.priority" type="number" class="form-input">
+        <input
+          v-model="form.priority"
+          type="number"
+          class="form-input"
+        >
       </div>
       <div class="form-group">
         <label>Starts At</label>
-        <input v-model="form.starts_at" type="datetime-local" class="form-input">
+        <input
+          v-model="form.starts_at"
+          type="datetime-local"
+          class="form-input"
+        >
       </div>
       <div class="form-group">
         <label>Expires At</label>
-        <input v-model="form.expires_at" type="datetime-local" class="form-input">
+        <input
+          v-model="form.expires_at"
+          type="datetime-local"
+          class="form-input"
+        >
       </div>
       <div class="form-group">
-        <label><input v-model="form.is_active" type="checkbox"> Active</label>
+        <label><input
+          v-model="form.is_active"
+          type="checkbox"
+        > Active</label>
       </div>
       <div class="form-group">
-        <label><input v-model="form.stackable" type="checkbox"> Stackable</label>
+        <label><input
+          v-model="form.stackable"
+          type="checkbox"
+        > Stackable</label>
       </div>
     </div>
   </div>

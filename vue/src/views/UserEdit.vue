@@ -179,6 +179,39 @@
               </div>
             </div>
 
+            <!-- User Access Levels (all users) -->
+            <div
+              v-if="availableUserLevels.length > 0"
+              class="form-row"
+            >
+              <div class="form-group">
+                <label>User Access Levels</label>
+                <div class="role-checkboxes">
+                  <label
+                    v-for="level in availableUserLevels"
+                    :key="level.id"
+                    class="role-checkbox"
+                  >
+                    <input
+                      type="checkbox"
+                      :checked="assignedUserLevelIds.has(level.id)"
+                      :disabled="!canManage"
+                      @change="toggleUserLevel(level.id)"
+                    >
+                    <span>{{ level.name }}</span>
+                    <span
+                      v-if="level.is_system"
+                      class="role-badge"
+                    >system</span>
+                    <span
+                      v-if="level.linked_plan_slug"
+                      class="role-badge role-badge--plan"
+                    >{{ level.linked_plan_slug }}</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
             <div class="form-group">
               <label for="newPassword">{{ $t('users.newPassword') }}</label>
               <input
@@ -746,12 +779,31 @@ interface RbacRole {
 const availableRoles = ref<RbacRole[]>([]);
 const assignedRoleIds = reactive(new Set<string>());
 
+interface UserLevel {
+  id: string;
+  name: string;
+  slug: string;
+  is_system: boolean;
+  linked_plan_slug: string | null;
+}
+const availableUserLevels = ref<UserLevel[]>([]);
+const assignedUserLevelIds = reactive(new Set<string>());
+
 async function loadRoles() {
   try {
     const res = await api.get('/admin/access/levels') as { levels: RbacRole[] };
     availableRoles.value = res.levels;
   } catch {
     // Access API may not be available
+  }
+}
+
+async function loadUserLevels() {
+  try {
+    const res = await api.get('/admin/access/user-levels') as { levels: UserLevel[] };
+    availableUserLevels.value = res.levels;
+  } catch {
+    // User access levels API may not be available
   }
 }
 
@@ -762,6 +814,16 @@ function toggleRole(roleId: string) {
   } else {
     assignedRoleIds.add(roleId);
     api.post(`/admin/access/users/${userId}/roles`, { role_id: roleId }).catch(() => {});
+  }
+}
+
+function toggleUserLevel(levelId: string) {
+  if (assignedUserLevelIds.has(levelId)) {
+    assignedUserLevelIds.delete(levelId);
+    api.delete(`/admin/access/users/${userId}/user-access-levels/${levelId}`).catch(() => {});
+  } else {
+    assignedUserLevelIds.add(levelId);
+    api.post(`/admin/access/users/${userId}/user-access-levels`, { level_id: levelId }).catch(() => {});
   }
 }
 
@@ -863,13 +925,24 @@ async function fetchUser(): Promise<void> {
     originalRole.value = userRole;
     selectedRole.value = userRole;
 
-    // Load RBAC access level assignments
+    // Load RBAC access level assignments (admin)
     const userAccessLevels = Array.isArray(user.access_levels) ? user.access_levels : [];
     const userAccessLevelSlugs = userAccessLevels.map(level => level.slug);
     if (availableRoles.value.length > 0) {
       for (const role of availableRoles.value) {
         if (userAccessLevelSlugs.includes(role.slug)) {
           assignedRoleIds.add(role.id);
+        }
+      }
+    }
+
+    // Load user access level assignments
+    const userUserLevels = Array.isArray(user.user_access_levels) ? user.user_access_levels : [];
+    const userUserLevelSlugs = userUserLevels.map((level: { slug: string }) => level.slug);
+    if (availableUserLevels.value.length > 0) {
+      for (const level of availableUserLevels.value) {
+        if (userUserLevelSlugs.includes(level.slug)) {
+          assignedUserLevelIds.add(level.id);
         }
       }
     }
@@ -1092,6 +1165,7 @@ function formatAmount(amount: number, currency?: string): string {
 onMounted(() => {
   fetchUser();
   loadRoles();
+  loadUserLevels();
 });
 </script>
 
@@ -1474,5 +1548,9 @@ onMounted(() => {
   border-radius: 8px;
   background: #cce5ff;
   color: #004085;
+}
+.role-badge--plan {
+  background: #d4edda;
+  color: #155724;
 }
 </style>

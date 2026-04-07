@@ -23,85 +23,85 @@
         v-else
         class="stats-grid"
       >
-      <div class="stat-card">
-        <h3>{{ $t('dashboard.mrr') }}</h3>
-        <div class="stat-value">
-          ${{ formatNumber(dashboard?.mrr?.total || 0) }}
+        <div class="stat-card">
+          <h3>{{ $t('dashboard.mrr') }}</h3>
+          <div class="stat-value">
+            ${{ formatNumber(dashboard?.mrr?.total || 0) }}
+          </div>
+          <div
+            v-if="dashboard?.mrr?.change_percent"
+            class="stat-change"
+            :class="changeClass(dashboard.mrr.change_percent)"
+          >
+            {{ formatPercent(dashboard.mrr.change_percent) }}
+          </div>
         </div>
-        <div
-          v-if="dashboard?.mrr?.change_percent"
-          class="stat-change"
-          :class="changeClass(dashboard.mrr.change_percent)"
-        >
-          {{ formatPercent(dashboard.mrr.change_percent) }}
+        <div class="stat-card">
+          <h3>{{ $t('dashboard.totalRevenue') }}</h3>
+          <div class="stat-value">
+            ${{ formatNumber(dashboard?.revenue?.total || 0) }}
+          </div>
+          <div
+            v-if="dashboard?.revenue?.change_percent"
+            class="stat-change"
+            :class="changeClass(dashboard.revenue.change_percent)"
+          >
+            {{ formatPercent(dashboard.revenue.change_percent) }}
+          </div>
+        </div>
+        <div class="stat-card">
+          <h3>{{ $t('dashboard.userGrowth') }}</h3>
+          <div class="stat-value">
+            {{ formatNumber(dashboard?.user_growth?.total || 0) }}
+          </div>
+          <div
+            v-if="dashboard?.user_growth?.change_percent"
+            class="stat-change"
+            :class="changeClass(dashboard.user_growth.change_percent)"
+          >
+            {{ formatPercent(dashboard.user_growth.change_percent) }}
+          </div>
+        </div>
+        <div class="stat-card">
+          <h3>{{ $t('dashboard.churnRate') }}</h3>
+          <div class="stat-value">
+            {{ formatPercent(dashboard?.churn?.total || 0) }}
+          </div>
+          <div
+            v-if="dashboard?.churn?.change_percent"
+            class="stat-change"
+            :class="changeClass(-dashboard.churn.change_percent)"
+          >
+            {{ formatPercent(dashboard.churn.change_percent) }}
+          </div>
+        </div>
+        <div class="stat-card">
+          <h3>{{ $t('dashboard.arpu') }}</h3>
+          <div class="stat-value">
+            ${{ formatNumber(dashboard?.arpu?.total || 0) }}
+          </div>
+          <div
+            v-if="dashboard?.arpu?.change_percent"
+            class="stat-change"
+            :class="changeClass(dashboard.arpu.change_percent)"
+          >
+            {{ formatPercent(dashboard.arpu.change_percent) }}
+          </div>
+        </div>
+        <div class="stat-card">
+          <h3>{{ $t('dashboard.conversionRate') }}</h3>
+          <div class="stat-value">
+            {{ formatPercent(dashboard?.conversion?.total || 0) }}
+          </div>
+          <div
+            v-if="dashboard?.conversion?.change_percent"
+            class="stat-change"
+            :class="changeClass(dashboard.conversion.change_percent)"
+          >
+            {{ formatPercent(dashboard.conversion.change_percent) }}
+          </div>
         </div>
       </div>
-      <div class="stat-card">
-        <h3>{{ $t('dashboard.totalRevenue') }}</h3>
-        <div class="stat-value">
-          ${{ formatNumber(dashboard?.revenue?.total || 0) }}
-        </div>
-        <div
-          v-if="dashboard?.revenue?.change_percent"
-          class="stat-change"
-          :class="changeClass(dashboard.revenue.change_percent)"
-        >
-          {{ formatPercent(dashboard.revenue.change_percent) }}
-        </div>
-      </div>
-      <div class="stat-card">
-        <h3>{{ $t('dashboard.userGrowth') }}</h3>
-        <div class="stat-value">
-          {{ formatNumber(dashboard?.user_growth?.total || 0) }}
-        </div>
-        <div
-          v-if="dashboard?.user_growth?.change_percent"
-          class="stat-change"
-          :class="changeClass(dashboard.user_growth.change_percent)"
-        >
-          {{ formatPercent(dashboard.user_growth.change_percent) }}
-        </div>
-      </div>
-      <div class="stat-card">
-        <h3>{{ $t('dashboard.churnRate') }}</h3>
-        <div class="stat-value">
-          {{ formatPercent(dashboard?.churn?.total || 0) }}
-        </div>
-        <div
-          v-if="dashboard?.churn?.change_percent"
-          class="stat-change"
-          :class="changeClass(-dashboard.churn.change_percent)"
-        >
-          {{ formatPercent(dashboard.churn.change_percent) }}
-        </div>
-      </div>
-      <div class="stat-card">
-        <h3>{{ $t('dashboard.arpu') }}</h3>
-        <div class="stat-value">
-          ${{ formatNumber(dashboard?.arpu?.total || 0) }}
-        </div>
-        <div
-          v-if="dashboard?.arpu?.change_percent"
-          class="stat-change"
-          :class="changeClass(dashboard.arpu.change_percent)"
-        >
-          {{ formatPercent(dashboard.arpu.change_percent) }}
-        </div>
-      </div>
-      <div class="stat-card">
-        <h3>{{ $t('dashboard.conversionRate') }}</h3>
-        <div class="stat-value">
-          {{ formatPercent(dashboard?.conversion?.total || 0) }}
-        </div>
-        <div
-          v-if="dashboard?.conversion?.change_percent"
-          class="stat-change"
-          :class="changeClass(dashboard.conversion.change_percent)"
-        >
-          {{ formatPercent(dashboard.conversion.change_percent) }}
-        </div>
-      </div>
-    </div>
     </template>
 
     <!-- Plugin Widgets (dynamically loaded via SDK) -->

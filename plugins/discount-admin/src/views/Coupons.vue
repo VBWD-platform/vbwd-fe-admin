@@ -3,38 +3,88 @@
     <div class="page-header">
       <h1>Coupons</h1>
       <div class="page-header__actions">
-        <button v-if="canManage" class="btn" @click="showBulkGenerate = true">Bulk Generate</button>
-        <router-link v-if="canManage" to="/admin/promotions/coupons/new" class="btn btn--primary">+ New Coupon</router-link>
+        <button
+          v-if="canManage"
+          class="btn"
+          @click="showBulkGenerate = true"
+        >
+          Bulk Generate
+        </button>
+        <router-link
+          v-if="canManage"
+          to="/admin/promotions/coupons/new"
+          class="btn btn--primary"
+        >
+          + New Coupon
+        </router-link>
       </div>
     </div>
 
     <!-- Bulk Generate Modal -->
-    <div v-if="showBulkGenerate" class="modal-overlay" @click.self="showBulkGenerate = false">
+    <div
+      v-if="showBulkGenerate"
+      class="modal-overlay"
+      @click.self="showBulkGenerate = false"
+    >
       <div class="modal">
         <h2>Bulk Generate Coupons</h2>
         <div class="form-group">
           <label>Discount</label>
-          <select v-model="bulkDiscountId" class="form-input">
-            <option value="">— Select discount —</option>
-            <option v-for="d in discounts" :key="d.id" :value="d.id">{{ d.name }}</option>
+          <select
+            v-model="bulkDiscountId"
+            class="form-input"
+          >
+            <option value="">
+              — Select discount —
+            </option>
+            <option
+              v-for="d in discounts"
+              :key="d.id"
+              :value="d.id"
+            >
+              {{ d.name }}
+            </option>
           </select>
         </div>
         <div class="form-group">
           <label>Count</label>
-          <input v-model.number="bulkCount" type="number" min="1" max="100" class="form-input">
+          <input
+            v-model.number="bulkCount"
+            type="number"
+            min="1"
+            max="100"
+            class="form-input"
+          >
         </div>
         <div class="modal-actions">
-          <button class="btn" @click="showBulkGenerate = false">Cancel</button>
-          <button class="btn btn--primary" :disabled="!bulkDiscountId || bulkCount < 1 || generating" @click="handleBulkGenerate">
+          <button
+            class="btn"
+            @click="showBulkGenerate = false"
+          >
+            Cancel
+          </button>
+          <button
+            class="btn btn--primary"
+            :disabled="!bulkDiscountId || bulkCount < 1 || generating"
+            @click="handleBulkGenerate"
+          >
             {{ generating ? 'Generating...' : `Generate ${bulkCount} Coupons` }}
           </button>
         </div>
       </div>
     </div>
 
-    <div v-if="store.loading" class="loading">Loading...</div>
+    <div
+      v-if="store.loading"
+      class="loading"
+    >
+      Loading...
+    </div>
 
-    <table v-else-if="store.coupons.length > 0" class="data-table">
+    <table
+      v-else-if="store.coupons.length > 0"
+      class="data-table"
+    >
       <thead>
         <tr>
           <th>Code</th>
@@ -45,28 +95,53 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="coupon in store.coupons" :key="coupon.id">
+        <tr
+          v-for="coupon in store.coupons"
+          :key="coupon.id"
+        >
           <td class="mono">
-            <router-link :to="`/admin/promotions/coupons/${coupon.id}/edit`" class="link">
+            <router-link
+              :to="`/admin/promotions/coupons/${coupon.id}/edit`"
+              class="link"
+            >
               {{ coupon.code }}
             </router-link>
           </td>
           <td>{{ getDiscountName(coupon.discount_id) }}</td>
           <td>{{ coupon.current_uses }}{{ coupon.max_uses ? ` / ${coupon.max_uses}` : '' }}</td>
           <td>
-            <span class="badge" :class="coupon.is_active ? 'badge--green' : 'badge--gray'">
+            <span
+              class="badge"
+              :class="coupon.is_active ? 'badge--green' : 'badge--gray'"
+            >
               {{ coupon.is_active ? 'Active' : 'Inactive' }}
             </span>
           </td>
           <td>
-            <router-link :to="`/admin/promotions/coupons/${coupon.id}/usage`" class="btn btn--sm btn--ghost">Usage</router-link>
-            <button v-if="canManage" class="btn btn--sm btn--danger" @click="handleDelete(coupon.id, coupon.code)">Delete</button>
+            <router-link
+              :to="`/admin/promotions/coupons/${coupon.id}/usage`"
+              class="btn btn--sm btn--ghost"
+            >
+              Usage
+            </router-link>
+            <button
+              v-if="canManage"
+              class="btn btn--sm btn--danger"
+              @click="handleDelete(coupon.id, coupon.code)"
+            >
+              Delete
+            </button>
           </td>
         </tr>
       </tbody>
     </table>
 
-    <p v-else class="empty">No coupons yet.</p>
+    <p
+      v-else
+      class="empty"
+    >
+      No coupons yet.
+    </p>
   </div>
 </template>
 

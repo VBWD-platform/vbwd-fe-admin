@@ -3,6 +3,7 @@ import { mount, flushPromises } from '@vue/test-utils';
 import { setActivePinia, createPinia } from 'pinia';
 import { createRouter, createMemoryHistory } from 'vue-router';
 import PluginDetails from '@/views/PluginDetails.vue';
+import { configureAuthStore, useAuthStore } from '@/stores/auth';
 
 const mockPluginDetail = {
   name: 'analytics-widget',
@@ -59,6 +60,15 @@ describe('PluginDetails.vue', () => {
 
   beforeEach(async () => {
     setActivePinia(createPinia());
+    configureAuthStore({
+      storageKey: 'test_token',
+      apiClient: { post: async () => ({}), get: async () => ({}), setToken: () => {}, clearToken: () => {} } as any,
+    });
+    const authStore = useAuthStore();
+    authStore.$patch({
+      user: { id: '1', email: 'admin@test.com', role: 'SUPER_ADMIN', permissions: ['*'] },
+      token: 'test-token',
+    });
     vi.clearAllMocks();
 
     router = createRouter({

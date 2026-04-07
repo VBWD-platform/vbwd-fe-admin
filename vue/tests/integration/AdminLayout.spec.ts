@@ -55,13 +55,16 @@ describe('AdminLayout.vue', () => {
 
     // Set up authenticated state
     const authStore = useAuthStore();
-    authStore.token = 'test-token';
-    authStore.user = {
-      id: '1',
-      email: 'admin@test.com',
-      name: 'Admin User',
-      role: 'ADMIN'
-    };
+    authStore.$patch({
+      token: 'test-token',
+      user: {
+        id: '1',
+        email: 'admin@test.com',
+        name: 'Admin User',
+        role: 'SUPER_ADMIN',
+        permissions: ['*']
+      },
+    });
   });
 
   it('renders admin layout with sidebar and topbar', async () => {

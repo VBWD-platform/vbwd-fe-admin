@@ -1,7 +1,7 @@
 <template>
   <div class="access-form">
     <div class="page-header">
-      <h1>{{ isNew ? $t('access.newLevel') : `Edit: ${form.name}` }}</h1>
+      <h1>{{ pageTitle }}</h1>
       <div class="page-header__actions">
         <router-link
           to="/admin/settings/access"
@@ -60,9 +60,21 @@
         </div>
       </div>
 
+      <!-- Plugin-injected form fields -->
+      <component
+        :is="field.component"
+        v-for="(field, index) in pluginFormFields"
+        :key="index"
+        :form="form"
+        :is-new="isNew"
+        :is-user-type="isUserType"
+        :can-manage="canManage"
+        @update:field="(key: string, value: string) => { (form as Record<string, unknown>)[key] = value; }"
+      />
+
       <!-- Permission Matrix -->
       <div class="form-section">
-        <h2>{{ $t('access.permissions') }}</h2>
+        <h2>{{ isUserType ? 'User Permissions' : $t('access.permissions') }}</h2>
         <PermissionMatrixTable
           :permissions="allPermissions"
           :selected="selectedPermissions"
@@ -101,7 +113,9 @@ import { ref, reactive, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { api } from '@/api';
 import { useAuthStore } from '@/stores/auth';
+import { useI18n } from 'vue-i18n';
 import PermissionMatrixTable from '@/components/PermissionMatrixTable.vue';
+import { extensionRegistry } from '@/plugins/extensionRegistry';
 
 interface PermDef {
   key: string;
@@ -115,12 +129,21 @@ interface AssignedUser {
   name: string | null;
 }
 
+const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 const canManage = computed(() => authStore.hasPermission('settings.system'));
 const levelId = computed(() => route.params.id as string | undefined);
 const isNew = computed(() => !levelId.value || route.name === 'access-level-new');
+const isUserType = computed(() => route.query.type === 'user');
+
+const pageTitle = computed(() => {
+  if (isNew.value) {
+    return isUserType.value ? 'New User Access Level' : t('access.newLevel');
+  }
+  return `Edit: ${form.name}`;
+});
 
 const loading = ref(true);
 const saving = ref(false);
@@ -129,11 +152,18 @@ const form = reactive({
   slug: '',
   description: '',
   is_system: false,
+  linked_plan_slug: '',
 });
 
 const allPermissions = ref<PermDef[]>([]);
 const selectedPermissions = reactive(new Set<string>());
 const assignedUsers = ref<AssignedUser[]>([]);
+
+const pluginFormFields = computed(() =>
+  extensionRegistry.getAccessLevelFormFields().filter(
+    (field) => !field.userOnly || isUserType.value
+  )
+);
 
 function autoSlug() {
   if (isNew.value && !form.slug) {
@@ -151,22 +181,40 @@ function togglePermission(key: string) {
 
 async function revokeUser(userId: string) {
   if (!levelId.value) return;
-  await api.delete(`/admin/access/users/${userId}/roles/${levelId.value}`);
+  const endpoint = isUserType.value
+    ? `/admin/access/users/${userId}/user-access-levels/${levelId.value}`
+    : `/admin/access/users/${userId}/roles/${levelId.value}`;
+  await api.delete(endpoint);
   assignedUsers.value = assignedUsers.value.filter(u => u.id !== userId);
 }
 
 async function save() {
   saving.value = true;
   try {
-    const payload = {
-      ...form,
+    const payload: Record<string, unknown> = {
+      name: form.name,
+      slug: form.slug,
+      description: form.description,
       permissions: [...selectedPermissions],
     };
-    if (isNew.value) {
-      const res = await api.post('/admin/access/levels', payload) as { level: { id: string } };
-      router.push(`/admin/settings/access/${res.level.id}`);
+    if (isUserType.value) {
+      payload.linked_plan_slug = form.linked_plan_slug || null;
+    }
+
+    if (isUserType.value) {
+      if (isNew.value) {
+        const res = await api.post('/admin/access/user-levels', payload) as { level: { id: string } };
+        router.push(`/admin/settings/access/${res.level.id}?type=user`);
+      } else {
+        await api.put(`/admin/access/user-levels/${levelId.value}`, payload);
+      }
     } else {
-      await api.put(`/admin/access/levels/${levelId.value}`, payload);
+      if (isNew.value) {
+        const res = await api.post('/admin/access/levels', payload) as { level: { id: string } };
+        router.push(`/admin/settings/access/${res.level.id}`);
+      } else {
+        await api.put(`/admin/access/levels/${levelId.value}`, payload);
+      }
     }
   } finally {
     saving.value = false;
@@ -175,8 +223,11 @@ async function save() {
 
 onMounted(async () => {
   try {
-    // Load available permissions
-    const permRes = await api.get('/admin/access/permissions') as { permissions: Record<string, PermDef[]> };
+    // Load available permissions (admin or user)
+    const permEndpoint = isUserType.value
+      ? '/admin/access/user-permissions'
+      : '/admin/access/permissions';
+    const permRes = await api.get(permEndpoint) as { permissions: Record<string, PermDef[]> };
     const flat: PermDef[] = [];
     for (const perms of Object.values(permRes.permissions)) {
       flat.push(...perms);
@@ -185,11 +236,25 @@ onMounted(async () => {
 
     // Load existing level if editing
     if (!isNew.value && levelId.value) {
-      const res = await api.get(`/admin/access/levels/${levelId.value}`) as { level: { name: string; slug: string; description: string; is_system: boolean; permissions: string[]; users: AssignedUser[] } };
+      const levelEndpoint = isUserType.value
+        ? `/admin/access/user-levels/${levelId.value}`
+        : `/admin/access/levels/${levelId.value}`;
+      const res = await api.get(levelEndpoint) as {
+        level: {
+          name: string;
+          slug: string;
+          description: string;
+          is_system: boolean;
+          permissions: string[];
+          linked_plan_slug?: string;
+          users: AssignedUser[];
+        };
+      };
       form.name = res.level.name;
       form.slug = res.level.slug;
       form.description = res.level.description || '';
       form.is_system = res.level.is_system;
+      form.linked_plan_slug = res.level.linked_plan_slug || '';
       res.level.permissions.forEach(p => selectedPermissions.add(p));
       assignedUsers.value = res.level.users || [];
     }
@@ -211,6 +276,7 @@ onMounted(async () => {
 .form-group label { font-size: 13px; font-weight: 600; color: #374151; }
 .form-input { padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 14px; }
 .form-input:focus { border-color: #3b82f6; outline: none; }
+.form-hint { font-size: 12px; color: #9ca3af; }
 .mono { font-family: monospace; }
 
 /* Users */

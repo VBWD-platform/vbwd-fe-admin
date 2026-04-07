@@ -2,12 +2,25 @@
   <div class="coupon-usage">
     <div class="page-header">
       <h1>Coupon Usage: {{ couponCode }}</h1>
-      <router-link to="/admin/promotions/coupons" class="btn">Back to Coupons</router-link>
+      <router-link
+        to="/admin/promotions/coupons"
+        class="btn"
+      >
+        Back to Coupons
+      </router-link>
     </div>
 
-    <div v-if="store.loading" class="loading">Loading...</div>
+    <div
+      v-if="store.loading"
+      class="loading"
+    >
+      Loading...
+    </div>
 
-    <table v-else-if="store.usages.length > 0" class="data-table">
+    <table
+      v-else-if="store.usages.length > 0"
+      class="data-table"
+    >
       <thead>
         <tr>
           <th>User</th>
@@ -17,10 +30,17 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="usage in store.usages" :key="usage.id">
+        <tr
+          v-for="usage in store.usages"
+          :key="usage.id"
+        >
           <td>{{ usage.user_id }}</td>
           <td>
-            <router-link v-if="usage.invoice_id" :to="`/admin/invoices/${usage.invoice_id}`" class="link">
+            <router-link
+              v-if="usage.invoice_id"
+              :to="`/admin/invoices/${usage.invoice_id}`"
+              class="link"
+            >
               {{ usage.invoice_id.substring(0, 8) }}...
             </router-link>
             <span v-else>—</span>
@@ -31,7 +51,12 @@
       </tbody>
     </table>
 
-    <p v-else class="empty">No usage records yet.</p>
+    <p
+      v-else
+      class="empty"
+    >
+      No usage records yet.
+    </p>
   </div>
 </template>
 
