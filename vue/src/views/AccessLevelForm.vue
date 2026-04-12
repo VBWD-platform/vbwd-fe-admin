@@ -82,6 +82,44 @@
         />
       </div>
 
+      <!-- Visible Content (user access levels, edit mode only) -->
+      <div
+        v-if="!isNew && isUserType && (contentPages.length > 0 || contentWidgets.length > 0)"
+        class="form-section"
+      >
+        <h2>Visible Content</h2>
+        <div
+          v-if="contentPages.length > 0"
+          class="content-list"
+        >
+          <h3 class="content-subheading">
+            Pages ({{ contentPages.length }})
+          </h3>
+          <div
+            v-for="page in contentPages"
+            :key="page.id"
+            class="content-item"
+          >
+            {{ page.name }} <span class="mono text-muted">/{{ page.slug }}</span>
+          </div>
+        </div>
+        <div
+          v-if="contentWidgets.length > 0"
+          class="content-list"
+        >
+          <h3 class="content-subheading">
+            Widgets ({{ contentWidgets.length }})
+          </h3>
+          <div
+            v-for="widget in contentWidgets"
+            :key="widget.id"
+            class="content-item"
+          >
+            {{ widget.area_name }} <span class="mono text-muted">({{ widget.widget_id.slice(0, 8) }}...)</span>
+          </div>
+        </div>
+      </div>
+
       <!-- Assigned Users (edit mode only) -->
       <div
         v-if="!isNew && assignedUsers.length > 0"
@@ -158,6 +196,8 @@ const form = reactive({
 const allPermissions = ref<PermDef[]>([]);
 const selectedPermissions = reactive(new Set<string>());
 const assignedUsers = ref<AssignedUser[]>([]);
+const contentPages = ref<{ id: string; name: string; slug: string }[]>([]);
+const contentWidgets = ref<{ id: string; area_name: string; widget_id: string }[]>([]);
 
 const pluginFormFields = computed(() =>
   extensionRegistry.getAccessLevelFormFields().filter(
@@ -257,6 +297,20 @@ onMounted(async () => {
       form.linked_plan_slug = res.level.linked_plan_slug || '';
       res.level.permissions.forEach(p => selectedPermissions.add(p));
       assignedUsers.value = res.level.users || [];
+
+      // Load content visibility data for user access levels
+      if (isUserType.value) {
+        try {
+          const contentRes = await api.get(`/admin/access/user-levels/${levelId.value}/content`) as {
+            pages: { id: string; name: string; slug: string }[];
+            widgets: { id: string; area_name: string; widget_id: string }[];
+          };
+          contentPages.value = contentRes.pages || [];
+          contentWidgets.value = contentRes.widgets || [];
+        } catch {
+          // CMS plugin may not be available
+        }
+      }
     }
   } finally {
     loading.value = false;
@@ -288,4 +342,8 @@ onMounted(async () => {
 .btn--sm { padding: 4px 8px; font-size: 12px; }
 .btn--danger { background: #ef4444; color: white; border-color: #ef4444; }
 .loading { padding: 40px; text-align: center; color: #6b7280; }
+.text-muted { color: #9ca3af; }
+.content-list { margin-bottom: 12px; }
+.content-subheading { font-size: 0.85rem; font-weight: 600; color: #6b7280; margin: 0 0 6px; }
+.content-item { padding: 4px 0; font-size: 0.9rem; border-bottom: 1px solid #f3f4f6; }
 </style>
