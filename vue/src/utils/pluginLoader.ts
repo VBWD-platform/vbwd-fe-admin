@@ -1,12 +1,15 @@
-import type { IPlugin } from 'vbwd-view-component';
-import pluginsManifest from '@plugins/plugins.json';
+import type { IPlugin, PluginManifest } from 'vbwd-view-component';
+import { fetchPluginManifest } from 'vbwd-view-component';
+import buildTimeManifest from '@plugins/plugins.json';
 import type { AdminExtension } from '@/plugins/extensionRegistry';
 
 /**
  * Plugin Registry - Controls which plugins are used
  *
- * Plugins are discovered dynamically from plugins.json.
- * Only enabled plugins are registered.
+ * Plugins are discovered via Vite's import.meta.glob at build time (all
+ * plugin code is in the bundle). The **manifest** (which plugins to activate)
+ * is fetched at runtime from /plugins.json, falling back to the build-time
+ * import when the fetch fails (e.g., dev server without a mounted file).
  *
  * To add a new plugin:
  * 1. Create the plugin in /plugins/{name}/
@@ -14,44 +17,30 @@ import type { AdminExtension } from '@/plugins/extensionRegistry';
  * 3. Add entry to plugins.json with enabled: true
  */
 
-interface PluginManifest {
-  plugins: Record<string, {
-    enabled: boolean;
-    version: string;
-    installedAt: string;
-    source: string;
-  }>;
-}
-
 // ============================================================================
 // DYNAMIC PLUGIN IMPORTS - Using Vite's import.meta.glob()
 // Plugins are discovered and loaded at runtime based on plugins.json
 // Only enabled plugins are instantiated and registered
 // ============================================================================
 
-// Vite's import.meta.glob() tells Vite to statically analyze all plugin directories
-// This allows dynamic imports to work correctly with proper module resolution
-// The glob returns an object with module loader functions
-// Path: from admin/vue/src/utils/ → ../../../plugins/*/index.ts (three levels up: utils→src→vue→admin, then to admin/plugins/)
 const pluginModules = import.meta.glob<any>('../../../plugins/*/index.ts', { eager: false });
 
-// Debug: log available plugin modules with PROMINENT logging
 const moduleKeys = Object.keys(pluginModules);
 console.log('🔍 [GLOB KEYS] Found glob modules:', moduleKeys);
-console.log('🔍 [GLOB DEBUG] pluginModules object:', pluginModules);
+
+/** Cached manifest after first load */
+let cachedManifest: PluginManifest | null = null;
 
 /**
- * Get enabled plugins based on plugins.json configuration
- *
- * Plugins are dynamically loaded from the plugin modules map,
- * but only if enabled in plugins.json configuration.
- * To enable/disable plugins, edit plugins.json without touching code.
+ * Get enabled plugins based on runtime manifest.
+ * Fetches /plugins.json at runtime; falls back to build-time manifest.
+ * Only enabled plugins are instantiated and registered.
  *
  * @returns Array of enabled plugin objects
  */
 export async function getEnabledPlugins(): Promise<IPlugin[]> {
   try {
-    const manifest: PluginManifest = pluginsManifest as PluginManifest;
+    cachedManifest = await fetchPluginManifest('/plugins.json', buildTimeManifest as PluginManifest);
     const enabledPlugins: IPlugin[] = [];
 
     // Check localStorage for runtime toggle overrides
@@ -62,8 +51,8 @@ export async function getEnabledPlugins(): Promise<IPlugin[]> {
       // ignore
     }
 
-    for (const [pluginName, pluginConfig] of Object.entries(manifest.plugins)) {
-      // localStorage override takes precedence over plugins.json
+    for (const [pluginName, pluginConfig] of Object.entries(cachedManifest.plugins)) {
+      // localStorage override takes precedence over runtime manifest
       const isEnabled = pluginName in stateOverrides
         ? stateOverrides[pluginName]
         : pluginConfig.enabled;
@@ -75,11 +64,8 @@ export async function getEnabledPlugins(): Promise<IPlugin[]> {
 
       try {
         // Try different path formats to find the module
-        // Vite's glob keys can vary, so we need to be flexible
         let moduleLoader = null;
-        let foundPath = null;
 
-        // Try the most common path format first
         const possiblePaths = [
           `../../../plugins/${pluginName}/index.ts`,
           `../../plugins/${pluginName}/index.ts`,
@@ -89,7 +75,6 @@ export async function getEnabledPlugins(): Promise<IPlugin[]> {
         for (const tryPath of possiblePaths) {
           if (pluginModules[tryPath]) {
             moduleLoader = pluginModules[tryPath];
-            foundPath = tryPath;
             break;
           }
         }
@@ -101,7 +86,6 @@ export async function getEnabledPlugins(): Promise<IPlugin[]> {
           );
           if (matchingKey) {
             moduleLoader = pluginModules[matchingKey];
-            foundPath = matchingKey;
           }
         }
 
@@ -109,8 +93,6 @@ export async function getEnabledPlugins(): Promise<IPlugin[]> {
           console.warn(`[PluginRegistry] Plugin module not found for: ${pluginName}. Available: ${Object.keys(pluginModules).join(', ')}`);
           continue;
         }
-
-        console.debug(`[PluginRegistry] Found plugin '${pluginName}' at: ${foundPath}`);
 
         // Dynamically load the module (only for enabled plugins)
         const pluginModule = await moduleLoader();
@@ -147,12 +129,12 @@ export async function getEnabledPlugins(): Promise<IPlugin[]> {
 }
 
 /**
- * Get list of enabled plugin names from manifest
- * Useful for checking if specific plugins are enabled
+ * Get list of enabled plugin names from manifest.
+ * Uses cached runtime manifest if available, otherwise falls back to build-time.
  */
 export function getEnabledPluginNames(): Set<string> {
   try {
-    const manifest: PluginManifest = pluginsManifest as PluginManifest;
+    const manifest = cachedManifest ?? (buildTimeManifest as PluginManifest);
     return new Set(
       Object.entries(manifest.plugins)
         .filter(([, config]) => config.enabled)
@@ -165,24 +147,23 @@ export function getEnabledPluginNames(): Set<string> {
 }
 
 /**
+ * Get the cached runtime manifest.
+ * Returns null if getEnabledPlugins() has not been called yet.
+ */
+export function getCachedManifest(): PluginManifest | null {
+  return cachedManifest;
+}
+
+/**
  * Get admin extensions (already registered by admin plugins)
  *
  * Admin plugins register their extensions during install() via extensionRegistry.
  * This function retrieves extensions that have been registered.
  *
- * Note: Extensions are registered by admin plugins at runtime,
- * so this function just returns what's in the registry.
- *
  * @returns All registered admin extensions
  */
 export async function getAdminExtensions(): Promise<Record<string, AdminExtension>> {
-  // Admin plugins register extensions during install()
-  // We retrieve them from the registry (no external loading needed)
-  // The registry is populated by plugin install() methods
   return {};
-  // NOTE: Extensions are registered directly in extensionRegistry by plugins
-  // The pluginSections computed property in UserDetails.vue reads from
-  // extensionRegistry.getUserDetailsSections() directly
 }
 
 /**

@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia';
-import pluginsRegistry from '@plugins/plugins.json';
-import savedConfigs from '@plugins/config.json';
+import { fetchPluginManifest, fetchPluginConfigs } from 'vbwd-view-component';
+import type { PluginManifest } from 'vbwd-view-component';
+import buildTimeRegistry from '@plugins/plugins.json';
+import buildTimeConfigs from '@plugins/config.json';
 
 export interface PluginEntry {
   name: string;
@@ -58,8 +60,17 @@ type PluginRegistryFile = {
   plugins: Record<string, PluginRegistryEntry>;
 };
 
-const registry = pluginsRegistry as PluginRegistryFile;
-const configs = savedConfigs as Record<string, Record<string, unknown>>;
+let registry = buildTimeRegistry as PluginRegistryFile;
+let configs = buildTimeConfigs as Record<string, Record<string, unknown>>;
+let manifestLoaded = false;
+
+async function ensureManifestLoaded(): Promise<void> {
+  if (manifestLoaded) return;
+  const runtimeManifest = await fetchPluginManifest('/plugins.json', buildTimeRegistry as PluginManifest);
+  registry = { plugins: runtimeManifest.plugins as unknown as Record<string, PluginRegistryEntry> };
+  configs = await fetchPluginConfigs('/config.json');
+  manifestLoaded = true;
+}
 
 const PLUGIN_STATE_KEY = 'vbwd_admin_plugin_state';
 
@@ -167,6 +178,7 @@ export const usePluginsStore = defineStore('plugins', {
       this.error = null;
 
       try {
+        await ensureManifestLoaded();
         const entries: PluginEntry[] = Object.entries(registry.plugins).map(([name, entry]) => ({
           name,
           version: entry.version,
@@ -191,6 +203,7 @@ export const usePluginsStore = defineStore('plugins', {
       this.error = null;
 
       try {
+        await ensureManifestLoaded();
         const entry = registry.plugins[name];
         if (!entry) {
           throw new Error(`Plugin "${name}" not found`);
