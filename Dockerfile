@@ -15,6 +15,18 @@ RUN rm -f package-lock.json && npm install
 ARG VITE_API_URL=/api/v1
 ENV VITE_API_URL=$VITE_API_URL
 
+# HMAC secret baked into the fe-admin bundle at build time. Must match the
+# value the fe-user plugin-api sidecar uses at runtime (PLUGIN_API_SECRET).
+# Passed by CI via --build-arg. Empty default so plain `docker build` works;
+# the User Plugins tab is non-functional without a real value.
+ARG VITE_PLUGIN_API_SECRET=""
+ENV VITE_PLUGIN_API_SECRET=$VITE_PLUGIN_API_SECRET
+
+# Base URL for /_plugins calls. Default empty = same-origin relative path, so
+# the browser hits the current host's /_plugins rather than localhost:8080.
+ARG VITE_USER_APP_URL=""
+ENV VITE_USER_APP_URL=$VITE_USER_APP_URL
+
 RUN npm run build
 
 # ── Stage 2: Serve ──────────────────────────────────────────────────────────

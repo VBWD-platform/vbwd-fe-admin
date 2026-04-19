@@ -1,6 +1,8 @@
 import { signRequest } from '@/utils/hmac';
 
-const USER_APP_URL = import.meta.env.VITE_USER_APP_URL || 'http://localhost:8080';
+// Use ?? (not ||) so CI can pass an explicit empty string for same-origin
+// prod builds. Dev default assumes fe-user is reachable at :8080 via docker-compose.
+const USER_APP_URL = import.meta.env.VITE_USER_APP_URL ?? 'http://localhost:8080';
 
 interface RequestOptions {
   method: 'GET' | 'PUT' | 'POST';
