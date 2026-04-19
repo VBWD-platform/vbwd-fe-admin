@@ -1,4 +1,4 @@
-import type { IPlugin, PluginManifest } from 'vbwd-view-component';
+import type { IPlugin, PluginManifest, PluginManifestEntry } from 'vbwd-view-component';
 import { fetchPluginManifest } from 'vbwd-view-component';
 import buildTimeManifest from '@plugins/plugins.json';
 import type { AdminExtension } from '@/plugins/extensionRegistry';
@@ -40,7 +40,8 @@ let cachedManifest: PluginManifest | null = null;
  */
 export async function getEnabledPlugins(): Promise<IPlugin[]> {
   try {
-    cachedManifest = await fetchPluginManifest('/plugins.json', buildTimeManifest as PluginManifest);
+    const manifest = await fetchPluginManifest('/plugins.json', buildTimeManifest as PluginManifest);
+    cachedManifest = manifest;
     const enabledPlugins: IPlugin[] = [];
 
     // Check localStorage for runtime toggle overrides
@@ -51,7 +52,7 @@ export async function getEnabledPlugins(): Promise<IPlugin[]> {
       // ignore
     }
 
-    for (const [pluginName, pluginConfig] of Object.entries(cachedManifest.plugins)) {
+    for (const [pluginName, pluginConfig] of Object.entries(manifest.plugins) as [string, PluginManifestEntry][]) {
       // localStorage override takes precedence over runtime manifest
       const isEnabled = pluginName in stateOverrides
         ? stateOverrides[pluginName]

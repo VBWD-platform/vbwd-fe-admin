@@ -6,7 +6,7 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { fetchPluginManifest, fetchPluginConfigs } from 'vbwd-view-component';
-import type { PluginManifest } from 'vbwd-view-component';
+import type { PluginManifest, PluginManifestEntry } from 'vbwd-view-component';
 
 describe('Runtime plugin manifest loading (fe-admin)', () => {
   beforeEach(() => {
@@ -87,7 +87,7 @@ describe('Runtime plugin manifest loading (fe-admin)', () => {
     const result = await fetchPluginManifest('/plugins.json');
 
     const enabled = Object.entries(result.plugins)
-      .filter(([, config]) => config.enabled)
+      .filter(([, config]) => (config as PluginManifestEntry).enabled)
       .map(([name]) => name);
 
     expect(enabled).toEqual(['subscription-admin', 'cms-admin']);
