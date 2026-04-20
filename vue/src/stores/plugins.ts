@@ -66,9 +66,12 @@ let manifestLoaded = false;
 
 async function ensureManifestLoaded(): Promise<void> {
   if (manifestLoaded) return;
-  const runtimeManifest = await fetchPluginManifest('/plugins.json', buildTimeRegistry as PluginManifest);
+  // Admin app is served under /admin/, so the manifest files live at
+  // /admin/plugins.json and /admin/config.json — not at the root.
+  const base = import.meta.env.BASE_URL;
+  const runtimeManifest = await fetchPluginManifest(`${base}plugins.json`, buildTimeRegistry as PluginManifest);
   registry = { plugins: runtimeManifest.plugins as unknown as Record<string, PluginRegistryEntry> };
-  configs = await fetchPluginConfigs('/config.json');
+  configs = await fetchPluginConfigs(`${base}config.json`);
   manifestLoaded = true;
 }
 

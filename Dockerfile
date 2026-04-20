@@ -38,5 +38,6 @@ COPY nginx.prod.conf.template /etc/nginx/templates/default.conf.template
 # API_UPSTREAM is the backend service host:port within the Docker network.
 # Override at runtime via environment variable, e.g. API_UPSTREAM=api:5000
 ENV API_UPSTREAM=api:5000
+ENV PLUGIN_API_UPSTREAM=plugin-api:3001
 
 EXPOSE 80
