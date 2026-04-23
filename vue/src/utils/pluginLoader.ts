@@ -47,11 +47,27 @@ export async function getEnabledPlugins(): Promise<IPlugin[]> {
 
     // Check localStorage for runtime toggle overrides
     let stateOverrides: Record<string, boolean> = {};
+    let rawStateOverride: string | null = null;
     try {
-      stateOverrides = JSON.parse(localStorage.getItem('vbwd_admin_plugin_state') || '{}');
+      rawStateOverride = localStorage.getItem('vbwd_admin_plugin_state');
+      stateOverrides = JSON.parse(rawStateOverride || '{}');
     } catch {
       // ignore
     }
+
+    // Diagnostic: print the manifest + localStorage state at the same
+    // moment so the 9-enabled-in-manifest vs N-loaded delta is visible
+    // at a glance. Appears as a console.log so it's never filtered.
+    console.log(
+      '[PluginRegistry] manifest vs localStorage snapshot:',
+      {
+        manifestEnabledPlugins: Object.entries(manifest.plugins)
+          .filter(([, pluginConfig]) => (pluginConfig as PluginManifestEntry).enabled)
+          .map(([name]) => name),
+        localStorageOverrides: stateOverrides,
+        rawLocalStorageValue: rawStateOverride,
+      },
+    );
 
     for (const [pluginName, pluginConfig] of Object.entries(manifest.plugins) as [string, PluginManifestEntry][]) {
       // localStorage override takes precedence over runtime manifest
