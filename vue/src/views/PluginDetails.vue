@@ -323,6 +323,31 @@ async function handleSaveConfig(): Promise<void> {
   }
 }
 
+/**
+ * Translate the raw PluginRegistry error into something the developer can act on.
+ *
+ * The core's "Plugin 'X' not found" error means the plugin module either
+ * (a) failed to import at boot (JS/TS error in index.ts or a locale JSON),
+ * or (b) has no default export and the named-export fallback picked a
+ * non-plugin export. In either case the Settings page still shows the
+ * toggle as ON because plugins.json hasn't changed — the mismatch is what
+ * made the error confusing. Point the user at the browser console where
+ * pluginLoader logs the real import error.
+ */
+function describePluginActionError(error: unknown, action: string): string {
+  const message = (error as Error).message || '';
+  if (/not found/i.test(message)) {
+    return (
+      `${message}. The plugin appears enabled in plugins.json but never ` +
+      `registered with the core runtime — its module likely failed to ` +
+      `import at page load. Check the browser console for a red ` +
+      `"[PluginRegistry] Failed to load plugin '${pluginName}'" line, fix ` +
+      `that error in the plugin source, then hard-refresh.`
+    );
+  }
+  return message || `Failed to ${action} plugin`;
+}
+
 async function handleActivate(): Promise<void> {
   try {
     if (pluginRegistry) {
@@ -334,7 +359,7 @@ async function handleActivate(): Promise<void> {
       plugin.value.status = 'active';
     }
   } catch (e) {
-    saveError.value = (e as Error).message || 'Failed to activate plugin';
+    saveError.value = describePluginActionError(e, 'activate');
   }
 }
 
@@ -350,7 +375,7 @@ async function handleDeactivate(): Promise<void> {
       plugin.value.status = 'inactive';
     }
   } catch (e) {
-    saveError.value = (e as Error).message || 'Failed to deactivate plugin';
+    saveError.value = describePluginActionError(e, 'deactivate');
   }
 }
 

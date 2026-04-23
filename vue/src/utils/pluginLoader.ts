@@ -123,14 +123,30 @@ export async function getEnabledPlugins(): Promise<IPlugin[]> {
         }
 
         if (!plugin) {
-          console.warn(`[PluginRegistry] Plugin '${pluginName}' loaded but no export with install() found. Skipping.`);
+          console.error(
+            `[PluginRegistry] Plugin '${pluginName}' loaded but no export ` +
+            `with install() found. The module must export the plugin as ` +
+            `\`export default\` or as a named export containing .install(). ` +
+            `Nav entries and routes for this plugin will NOT work.`,
+          );
           continue;
         }
 
         console.debug(`[PluginRegistry] Loaded enabled plugin: ${plugin.name} (v${plugin.version || 'unknown'})`);
         enabledPlugins.push(plugin);
       } catch (error) {
-        console.warn(`[PluginRegistry] Failed to load plugin '${pluginName}':`, error);
+        // Escalated to console.error — a silent warn here has been the #1
+        // cause of "my plugin disappeared from the sidebar" confusion:
+        // plugins.json still lists it as enabled, the Settings page still
+        // shows the toggle as on, but the core registry never saw it, so
+        // Activate/Deactivate later throws "Plugin X not found".
+        console.error(
+          `[PluginRegistry] Failed to load plugin '${pluginName}':`,
+          error,
+          `\nCheck the plugin's index.ts for an import error. The plugin ` +
+          `will appear enabled in /admin/settings/plugins but its nav ` +
+          `entries and routes will NOT work.`,
+        );
       }
     }
 
