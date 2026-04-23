@@ -235,12 +235,29 @@ export const usePluginsStore = defineStore('plugins', {
       }
     },
 
+    /**
+     * Persist plugin enablement to the server and mirror it in local
+     * reactive state. The backend rewrites fe-admin's plugins.json on
+     * disk — the authoritative source of truth across every browser.
+     * The caller should location.reload() after this resolves so the
+     * pluginLoader picks up the updated manifest on the next boot.
+     */
+    async _setPluginEnabledOnServer(name: string, enabled: boolean): Promise<void> {
+      const { api } = await import('@/api');
+      const action = enabled ? 'enable' : 'disable';
+      await api.post(`/admin/frontend-plugins/admin/${name}/${action}`);
+    },
+
     async activatePlugin(name: string): Promise<void> {
       this.loading = true;
       this.error = null;
 
       try {
-        // Update local registry
+        await this._setPluginEnabledOnServer(name, true);
+
+        // Mirror the server's new state in local reactive state so the
+        // Settings UI reflects the change immediately (the SPA still
+        // needs a reload to actually mount the newly-enabled plugin).
         if (registry.plugins[name]) {
           registry.plugins[name].enabled = true;
         }
@@ -254,7 +271,6 @@ export const usePluginsStore = defineStore('plugins', {
           this.currentPlugin.status = 'active';
         }
 
-        // Call the actual plugin activate() lifecycle hook
         _callPluginLifecycle(name, 'activate');
       } catch (error) {
         this.error = (error as Error).message || 'Failed to activate plugin';
@@ -269,7 +285,8 @@ export const usePluginsStore = defineStore('plugins', {
       this.error = null;
 
       try {
-        // Call the actual plugin deactivate() lifecycle hook
+        await this._setPluginEnabledOnServer(name, false);
+
         _callPluginLifecycle(name, 'deactivate');
 
         if (registry.plugins[name]) {

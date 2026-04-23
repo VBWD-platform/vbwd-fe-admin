@@ -350,14 +350,26 @@ function describePluginActionError(error: unknown, action: string): string {
 
 async function handleActivate(): Promise<void> {
   try {
-    if (pluginRegistry) {
-      await pluginRegistry.activate(pluginName);
-    }
+    // Persist server-side first — if this throws we haven't touched
+    // the local state, so the UI stays consistent with the real
+    // manifest.
     await pluginsStore.activatePlugin(pluginName);
+    if (pluginRegistry) {
+      try {
+        await pluginRegistry.activate(pluginName);
+      } catch {
+        // The plugin's runtime activate may fail because the module
+        // wasn't installed in this session (we just enabled it). A
+        // reload mounts it fresh.
+      }
+    }
     if (plugin.value) {
       plugin.value.enabled = true;
       plugin.value.status = 'active';
     }
+    // Pluggable routes + stores only register on boot, so re-read the
+    // updated manifest by reloading the SPA.
+    window.location.reload();
   } catch (e) {
     saveError.value = describePluginActionError(e, 'activate');
   }
@@ -366,14 +378,19 @@ async function handleActivate(): Promise<void> {
 async function handleDeactivate(): Promise<void> {
   if (!confirm(t('adminPlugins.detail.confirmDeactivate'))) return;
   try {
-    if (pluginRegistry) {
-      await pluginRegistry.deactivate(pluginName);
-    }
     await pluginsStore.deactivatePlugin(pluginName);
+    if (pluginRegistry) {
+      try {
+        await pluginRegistry.deactivate(pluginName);
+      } catch {
+        // See note in handleActivate.
+      }
+    }
     if (plugin.value) {
       plugin.value.enabled = false;
       plugin.value.status = 'inactive';
     }
+    window.location.reload();
   } catch (e) {
     saveError.value = describePluginActionError(e, 'deactivate');
   }

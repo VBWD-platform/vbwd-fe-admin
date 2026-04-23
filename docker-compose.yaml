@@ -20,6 +20,11 @@ services:
       - .:/app
       - ../vbwd-fe-core:/app/vbwd-fe-core
       - node_modules:/app/node_modules
+      # Shared plugin state — same directory the backend writes to. The
+      # backend is the only writer, fe-admin mounts read-only so the
+      # browser sees the same manifest every other container sees.
+      - ${VBWD_VAR_DIR:-../var}/plugins/fe-admin-plugins.json:/app/vue/public/plugins.json:ro
+      - ${VBWD_VAR_DIR:-../var}/plugins/fe-admin-plugins-config.json:/app/vue/public/config.json:ro
     command: sh -c "npm install --no-package-lock && npm run dev -- --host"
     environment:
       - VITE_API_URL=/api/v1
