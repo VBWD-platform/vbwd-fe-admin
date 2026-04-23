@@ -47,7 +47,9 @@ test.describe(`admin plugin config diagnostic — ${PLUGIN}`, () => {
       let body = '';
       try {
         body = (await response.text()).substring(0, 600);
-      } catch {}
+      } catch {
+        // Response body unavailable (e.g. aborted request) — keep body empty.
+      }
       apiLog.push(`${status} ${response.request().method()} ${url}\n  → ${body}\n`);
     });
 

@@ -67,7 +67,11 @@ export async function createVbwdAdminApp(
   const pinia = createPinia();
 
   app.use(pinia);
-  app.use(router);
+  // NOTE: app.use(router) is deliberately deferred until AFTER plugins have
+  // registered their routes. Installing the router plugin triggers Vue
+  // Router's initial-navigation resolve, so any plugin route added later
+  // isn't known to that first resolve — direct-URL loads of
+  // /admin/<plugin-path> would fall through to /admin/login.
   app.use(i18n);
 
   // Plugin system
@@ -92,10 +96,13 @@ export async function createVbwdAdminApp(
     console.log(`[Admin] Registered extension for plugin: ${pluginName}`);
   }
 
-  // Inject plugin routes into Vue Router
+  // Inject plugin routes into Vue Router before installing the router on
+  // the app — see note above.
   for (const route of sdk.getRoutes()) {
     router.addRoute('admin', route as unknown as import('vue-router').RouteRecordRaw);
   }
+
+  app.use(router);
 
   // Make available via provide/inject
   app.provide('pluginRegistry', registry);
