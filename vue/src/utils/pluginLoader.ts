@@ -55,12 +55,24 @@ export async function getEnabledPlugins(): Promise<IPlugin[]> {
 
     for (const [pluginName, pluginConfig] of Object.entries(manifest.plugins) as [string, PluginManifestEntry][]) {
       // localStorage override takes precedence over runtime manifest
-      const isEnabled = pluginName in stateOverrides
-        ? stateOverrides[pluginName]
-        : pluginConfig.enabled;
+      const manifestEnabled = pluginConfig.enabled;
+      const hasOverride = pluginName in stateOverrides;
+      const isEnabled = hasOverride ? stateOverrides[pluginName] : manifestEnabled;
 
       if (!isEnabled) {
-        console.debug(`[PluginRegistry] Skipping disabled plugin: ${pluginName}`);
+        // When a plugin is disabled by a localStorage override despite being
+        // enabled in plugins.json, warn loudly — this is the #1 source of
+        // "my plugin's nav entries disappeared" confusion. Clear with:
+        //   localStorage.removeItem('vbwd_admin_plugin_state'); location.reload();
+        if (hasOverride && manifestEnabled) {
+          console.warn(
+            `[PluginRegistry] '${pluginName}' is enabled in plugins.json but ` +
+            `disabled by localStorage override 'vbwd_admin_plugin_state'. ` +
+            `Run localStorage.removeItem('vbwd_admin_plugin_state'); location.reload(); to restore it.`,
+          );
+        } else {
+          console.debug(`[PluginRegistry] Skipping disabled plugin: ${pluginName}`);
+        }
         continue;
       }
 
