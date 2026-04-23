@@ -113,16 +113,6 @@
         data-testid="error-message"
       >
         {{ saveError }}
-        <button
-          v-if="isPluginNotFoundError"
-          type="button"
-          class="retry-btn"
-          style="margin-left: 10px;"
-          data-testid="reset-plugin-overrides-btn"
-          @click="resetPluginStateOverridesAndReload"
-        >
-          Reset plugin overrides &amp; reload
-        </button>
       </div>
 
       <!-- Config Tabs -->
@@ -268,18 +258,6 @@ const loading = ref(true);
 const error = ref<string | null>(null);
 const saving = ref(false);
 const saveError = ref<string | null>(null);
-const isPluginNotFoundError = computed(() =>
-  !!saveError.value && /not found/i.test(saveError.value),
-);
-
-function resetPluginStateOverridesAndReload(): void {
-  try {
-    localStorage.removeItem('vbwd_admin_plugin_state');
-  } catch {
-    // localStorage unavailable — reload still helps in case another tab fixed it
-  }
-  window.location.reload();
-}
 const successMessage = ref<string | null>(null);
 const activeConfigTab = ref('');
 const plugin = ref<PluginDetail | null>(null);

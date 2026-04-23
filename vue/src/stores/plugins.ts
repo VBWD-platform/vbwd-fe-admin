@@ -75,32 +75,12 @@ async function ensureManifestLoaded(): Promise<void> {
   manifestLoaded = true;
 }
 
-const PLUGIN_STATE_KEY = 'vbwd_admin_plugin_state';
-
-/**
- * Persist plugin enabled/disabled state to localStorage.
- * On reload, pluginLoader checks this before loading plugins.
- */
-function _persistPluginState(name: string, enabled: boolean): void {
-  try {
-    const stored = JSON.parse(localStorage.getItem(PLUGIN_STATE_KEY) || '{}');
-    stored[name] = enabled;
-    localStorage.setItem(PLUGIN_STATE_KEY, JSON.stringify(stored));
-  } catch {
-    // localStorage unavailable
-  }
-}
-
-/**
- * Get persisted plugin state overrides from localStorage.
- */
-export function getPersistedPluginState(): Record<string, boolean> {
-  try {
-    return JSON.parse(localStorage.getItem(PLUGIN_STATE_KEY) || '{}');
-  } catch {
-    return {};
-  }
-}
+// Plugin enablement is server-side (plugins.json). No client-side cache.
+// The previous implementation persisted Activate/Deactivate clicks into
+// `localStorage.vbwd_admin_plugin_state`, which meant the set of enabled
+// plugins was different for every browser and every user — that's the
+// wrong authority for this data. If you need to toggle a plugin, edit
+// plugins.json on the server (or the future admin-plugins PATCH endpoint).
 
 /**
  * Call a plugin's activate() or deactivate() lifecycle hook.
@@ -276,9 +256,6 @@ export const usePluginsStore = defineStore('plugins', {
 
         // Call the actual plugin activate() lifecycle hook
         _callPluginLifecycle(name, 'activate');
-
-        // Persist to localStorage so reload respects toggle
-        _persistPluginState(name, true);
       } catch (error) {
         this.error = (error as Error).message || 'Failed to activate plugin';
         throw error;
@@ -307,9 +284,6 @@ export const usePluginsStore = defineStore('plugins', {
           this.currentPlugin.enabled = false;
           this.currentPlugin.status = 'inactive';
         }
-
-        // Persist to localStorage so reload respects toggle
-        _persistPluginState(name, false);
       } catch (error) {
         this.error = (error as Error).message || 'Failed to deactivate plugin';
         throw error;

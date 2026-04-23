@@ -45,50 +45,30 @@ export async function getEnabledPlugins(): Promise<IPlugin[]> {
     cachedManifest = manifest;
     const enabledPlugins: IPlugin[] = [];
 
-    // Check localStorage for runtime toggle overrides
-    let stateOverrides: Record<string, boolean> = {};
-    let rawStateOverride: string | null = null;
+    // Self-healing: strip any legacy per-browser plugin-state overrides.
+    // The original code persisted Activate/Deactivate clicks into
+    // localStorage under 'vbwd_admin_plugin_state' and read them back on
+    // every boot. That made plugin enablement depend on which browser tab
+    // you clicked in — different users, different devices, or even an
+    // incognito window would see different "enabled" plugins. The server
+    // container is the only authoritative source (plugins.json), so the
+    // client-side cache is removed and any stale entries are deleted once.
     try {
-      rawStateOverride = localStorage.getItem('vbwd_admin_plugin_state');
-      stateOverrides = JSON.parse(rawStateOverride || '{}');
+      if (localStorage.getItem('vbwd_admin_plugin_state')) {
+        console.info(
+          '[PluginRegistry] Removing legacy localStorage plugin-state ' +
+          "overrides ('vbwd_admin_plugin_state'). Plugin enablement is now " +
+          'server-side (plugins.json) only.',
+        );
+        localStorage.removeItem('vbwd_admin_plugin_state');
+      }
     } catch {
-      // ignore
+      // localStorage unavailable — nothing to clean up
     }
 
-    // Diagnostic: print the manifest + localStorage state at the same
-    // moment so the 9-enabled-in-manifest vs N-loaded delta is visible
-    // at a glance. Appears as a console.log so it's never filtered.
-    console.log(
-      '[PluginRegistry] manifest vs localStorage snapshot:',
-      {
-        manifestEnabledPlugins: Object.entries(manifest.plugins)
-          .filter(([, pluginConfig]) => (pluginConfig as PluginManifestEntry).enabled)
-          .map(([name]) => name),
-        localStorageOverrides: stateOverrides,
-        rawLocalStorageValue: rawStateOverride,
-      },
-    );
-
     for (const [pluginName, pluginConfig] of Object.entries(manifest.plugins) as [string, PluginManifestEntry][]) {
-      // localStorage override takes precedence over runtime manifest
-      const manifestEnabled = pluginConfig.enabled;
-      const hasOverride = pluginName in stateOverrides;
-      const isEnabled = hasOverride ? stateOverrides[pluginName] : manifestEnabled;
-
-      if (!isEnabled) {
-        // When a plugin is disabled by a localStorage override despite being
-        // enabled in plugins.json, warn loudly — this is the #1 source of
-        // "my plugin's nav entries disappeared" confusion. Clear with:
-        //   localStorage.removeItem('vbwd_admin_plugin_state'); location.reload();
-        if (hasOverride && manifestEnabled) {
-          console.warn(
-            `[PluginRegistry] '${pluginName}' is enabled in plugins.json but ` +
-            `disabled by localStorage override 'vbwd_admin_plugin_state'. ` +
-            `Run localStorage.removeItem('vbwd_admin_plugin_state'); location.reload(); to restore it.`,
-          );
-        } else {
-          console.debug(`[PluginRegistry] Skipping disabled plugin: ${pluginName}`);
-        }
+      if (!pluginConfig.enabled) {
+        console.debug(`[PluginRegistry] Skipping disabled plugin (plugins.json): ${pluginName}`);
         continue;
       }
 

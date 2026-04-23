@@ -1017,7 +1017,7 @@
             v-else
             class="bundles-table-container"
           >
-            <!-- Quick Search + Reset Overrides -->
+            <!-- Quick Search -->
             <div class="plugin-search-box">
               <input
                 v-model="pluginSearchQuery"
@@ -1026,16 +1026,6 @@
                 class="search-input"
                 data-testid="admin-plugin-search"
               >
-              <button
-                v-if="hasPluginStateOverrides"
-                type="button"
-                class="retry-btn"
-                data-testid="reset-plugin-overrides-btn"
-                :title="'Clears localStorage vbwd_admin_plugin_state so plugins.json is the single source of truth again.'"
-                @click="resetPluginStateOverrides"
-              >
-                Reset plugin overrides
-              </button>
             </div>
 
             <div
@@ -1795,27 +1785,6 @@ const pluginsLoading = ref(false);
 const pluginsError = ref<string | null>(null);
 const pluginsLoaded = ref(false);
 const pluginSearchQuery = ref('');
-const hasPluginStateOverrides = ref<boolean>(
-  (() => {
-    try {
-      const raw = localStorage.getItem('vbwd_admin_plugin_state');
-      return !!raw && Object.keys(JSON.parse(raw)).length > 0;
-    } catch {
-      return false;
-    }
-  })(),
-);
-
-function resetPluginStateOverrides(): void {
-  try {
-    localStorage.removeItem('vbwd_admin_plugin_state');
-  } catch {
-    // ignore
-  }
-  hasPluginStateOverrides.value = false;
-  // Reload so pluginLoader re-reads the manifest without any override.
-  window.location.reload();
-}
 const pluginSortKey = ref<string>('name');
 const pluginSortDir = ref<'asc' | 'desc'>('asc');
 
