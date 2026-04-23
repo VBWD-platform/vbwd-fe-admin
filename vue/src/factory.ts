@@ -78,22 +78,73 @@ export async function createVbwdAdminApp(
   const registry = new PluginRegistry();
   const sdk = new PlatformSDK(i18n);
 
-  // Register and install all plugins
+  // Register and install all plugins.
+  //
+  // Each step is wrapped so a single plugin's failure doesn't abort the
+  // rest — previously a throw here would skip every plugin after the
+  // failing one, leaving the admin with ghost entries in plugins.json
+  // that the core registry never saw.
   for (const plugin of plugins) {
-    registry.register(plugin);
+    try {
+      registry.register(plugin);
+    } catch (error) {
+      console.error(
+        `[Admin] Plugin '${plugin.name}' failed registry.register:`,
+        error,
+      );
+    }
   }
 
-  await registry.installAll(sdk);
-
-  // Activate all loaded plugins
   for (const plugin of plugins) {
-    await registry.activate(plugin.name);
+    try {
+      await registry.install(plugin.name, sdk);
+    } catch (error) {
+      console.error(
+        `[Admin] Plugin '${plugin.name}' failed install():`,
+        error,
+      );
+    }
+  }
+
+  for (const plugin of plugins) {
+    try {
+      await registry.activate(plugin.name);
+    } catch (error) {
+      console.error(
+        `[Admin] Plugin '${plugin.name}' failed activate():`,
+        error,
+      );
+    }
   }
 
   // Register admin extensions from plugins
   for (const [pluginName, extension] of Object.entries(adminExtensions)) {
     extensionRegistry.register(pluginName, extension);
     console.log(`[Admin] Registered extension for plugin: ${pluginName}`);
+  }
+
+  // Post-boot diagnostic: catch the case where plugins.json says a plugin
+  // is enabled but it never made it into the core registry (almost always
+  // an import error hidden earlier in the console). Without this check
+  // the only symptom is "Plugin 'X' not found" when the user later hits
+  // Activate/Deactivate — too far from the root cause to be useful.
+  try {
+    const registeredPluginNames = new Set(registry.getAll().map((p) => p.name));
+    const manifestEnabledPluginNames = plugins.map((p) => p.name);
+    const missingFromCore = manifestEnabledPluginNames.filter(
+      (name) => !registeredPluginNames.has(name),
+    );
+    if (missingFromCore.length > 0) {
+      console.error(
+        `[Admin] Mismatch: plugins enabled in plugins.json but absent from ` +
+        `the core PluginRegistry: ${missingFromCore.join(', ')}. ` +
+        `The Settings page will still show these as "Active" but their ` +
+        `routes, nav entries, and Activate/Deactivate actions will fail. ` +
+        `Check earlier console errors for the failing import.`,
+      );
+    }
+  } catch (error) {
+    console.warn('[Admin] Post-boot mismatch check skipped:', error);
   }
 
   // Inject plugin routes into Vue Router before installing the router on
