@@ -163,6 +163,22 @@ export async function createVbwdAdminApp(
   const authStore = useAuthStore();
   authStore.initAuth();
 
+  // On any 401 (expired or invalid token) wipe auth state and bounce the
+  // user to the login page instead of leaving "Invalid or expired token"
+  // frozen on the current view. Preserves the intended destination via
+  // ?redirect= so they come back after re-auth. Skipped if we're already
+  // on /admin/login to avoid reload loops during the login POST itself.
+  api.on('token-expired', () => {
+    if (router.currentRoute.value.name === 'login') return;
+    // Fire-and-forget: logout() also hits /auth/logout which will 401
+    // again; that's fine — the .catch inside logout() swallows it.
+    authStore.logout();
+    router.replace({
+      name: 'login',
+      query: { redirect: router.currentRoute.value.fullPath },
+    });
+  });
+
   // Initialize locale from stored preference
   initLocale();
 

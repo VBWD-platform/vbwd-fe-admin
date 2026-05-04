@@ -56,11 +56,12 @@
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/auth';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 
 const { t } = useI18n();
 const authStore = useAuthStore();
 const router = useRouter();
+const route = useRoute();
 
 const username = ref('');
 const password = ref('');
@@ -99,8 +100,18 @@ async function handleLogin(): Promise<void> {
       return;
     }
 
-    console.log('[LOGIN] Admin user confirmed, redirecting to dashboard');
-    router.push('/admin/dashboard');
+    // Honor ?redirect=<path> if the user was bounced here by a 401 — only
+    // accept in-app /admin paths to avoid open-redirect into arbitrary URLs.
+    const rawRedirect = Array.isArray(route.query.redirect)
+      ? route.query.redirect[0]
+      : route.query.redirect;
+    const safeRedirect =
+      typeof rawRedirect === 'string' && rawRedirect.startsWith('/admin/') && rawRedirect !== '/admin/login'
+        ? rawRedirect
+        : '/admin/dashboard';
+
+    console.log('[LOGIN] Admin user confirmed, redirecting to', safeRedirect);
+    router.push(safeRedirect);
   } catch (err) {
     console.error('[LOGIN] Error:', err);
     if (typeof window !== 'undefined') {
