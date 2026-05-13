@@ -5,7 +5,13 @@ const baseURL = process.env.E2E_BASE_URL || 'http://localhost:5174';
 const useDevServer = !process.env.E2E_BASE_URL;
 
 export default defineConfig({
-  testDir: './vue/tests/e2e',
+  // Host-app tests live under vue/tests/e2e; each plugin owns its own
+  // tests/e2e/ folder (SOLID — plugins ship with their own coverage).
+  testDir: '.',
+  testMatch: [
+    'vue/tests/e2e/**/*.spec.ts',
+    'plugins/*/tests/e2e/**/*.spec.ts',
+  ],
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
