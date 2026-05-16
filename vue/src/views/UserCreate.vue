@@ -359,11 +359,14 @@ async function handleSubmit(): Promise<void> {
     const details = formData.value.details;
     const hasDetails = Object.values(details).some(v => v && v.trim());
 
+    // Backend enums (UserStatus/UserRole) are canonically UPPERCASE.
+    // Send the canonical casing so the wire contract is explicit and
+    // independent of the dropdown's option casing.
     const data: CreateUserData = {
       email: formData.value.email,
       password: formData.value.password,
-      status: formData.value.status,
-      role: formData.value.role,
+      status: formData.value.status.toUpperCase(),
+      role: formData.value.role.toUpperCase(),
     };
 
     if (hasDetails) {
