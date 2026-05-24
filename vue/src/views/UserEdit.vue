@@ -55,14 +55,6 @@
           {{ $t('users.account') }}
         </button>
         <button
-          data-testid="tab-subscriptions"
-          class="tab-btn"
-          :class="{ active: activeTab === 'subscriptions' }"
-          @click="switchToSubscriptions"
-        >
-          {{ $t('nav.subscriptions') }}
-        </button>
-        <button
           data-testid="tab-invoices"
           class="tab-btn"
           :class="{ active: activeTab === 'invoices' }"
@@ -70,13 +62,16 @@
         >
           {{ $t('nav.invoices') }}
         </button>
+        <!-- Plugin-contributed tabs -->
         <button
-          data-testid="tab-addons"
+          v-for="tab in pluginTabs"
+          :key="tab.id"
+          :data-testid="`tab-${tab.id}`"
           class="tab-btn"
-          :class="{ active: activeTab === 'addons' }"
-          @click="switchToAddons"
+          :class="{ active: activeTab === tab.id }"
+          @click="activeTab = tab.id"
         >
-          {{ $t('users.addons') }}
+          {{ tab.label }}
         </button>
       </div>
 
@@ -203,10 +198,6 @@
                       v-if="level.is_system"
                       class="role-badge"
                     >system</span>
-                    <span
-                      v-if="level.linked_plan_slug"
-                      class="role-badge role-badge--plan"
-                    >{{ level.linked_plan_slug }}</span>
                   </label>
                 </div>
               </div>
@@ -418,96 +409,6 @@
         </form>
       </div>
 
-      <!-- Subscriptions Tab Content -->
-      <div
-        v-show="activeTab === 'subscriptions'"
-        data-testid="tab-content-subscriptions"
-        class="tab-content"
-      >
-        <div class="tab-filters">
-          <input
-            v-model="subscriptionSearch"
-            type="text"
-            data-testid="subscriptions-search-input"
-            :placeholder="$t('subscriptions.searchPlaceholder')"
-            class="search-input"
-          >
-        </div>
-
-        <div
-          v-if="subscriptionsLoading"
-          class="loading-state"
-        >
-          <div class="spinner" />
-          <p>{{ $t('subscriptions.loading') }}</p>
-        </div>
-
-        <div
-          v-else-if="filteredSubscriptions.length === 0"
-          data-testid="subscriptions-empty-state"
-          class="empty-state"
-        >
-          <p>{{ $t('subscriptions.noSubscriptionsForUser') }}</p>
-        </div>
-
-        <table
-          v-else
-          data-testid="user-subscriptions-table"
-          class="data-table"
-        >
-          <thead>
-            <tr>
-              <th>{{ $t('subscriptions.plan') }}</th>
-              <th>{{ $t('subscriptions.status') }}</th>
-              <th>{{ $t('subscriptions.createdAt') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="subscription in filteredSubscriptions"
-              :key="subscription.id"
-              class="clickable-row"
-              @click="navigateToSubscription(subscription.id)"
-            >
-              <td>{{ subscription.plan_name }}</td>
-              <td>
-                <span
-                  class="status-badge"
-                  :class="subscription.status.toLowerCase()"
-                >
-                  {{ formatStatus(subscription.status) }}
-                </span>
-              </td>
-              <td>{{ formatDate(subscription.created_at) }}</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div
-          v-if="subscriptionsTotalPages > 1"
-          data-testid="subscriptions-pagination"
-          class="pagination"
-        >
-          <button
-            :disabled="subscriptionsPage === 1"
-            class="pagination-btn"
-            @click="changeSubscriptionsPage(subscriptionsPage - 1)"
-          >
-            {{ $t('common.previous') }}
-          </button>
-          <span class="pagination-info">
-            {{ $t('common.page') }} {{ subscriptionsPage }} {{ $t('common.of') }} {{ subscriptionsTotalPages }}
-          </span>
-          <button
-            :disabled="subscriptionsPage >= subscriptionsTotalPages"
-            class="pagination-btn"
-            @click="changeSubscriptionsPage(subscriptionsPage + 1)"
-          >
-            {{ $t('common.next') }}
-          </button>
-        </div>
-      </div>
-
       <!-- Invoices Tab Content -->
       <div
         v-show="activeTab === 'invoices'"
@@ -600,102 +501,15 @@
         </div>
       </div>
 
-      <!-- Addons Tab Content -->
-      <div
-        v-show="activeTab === 'addons'"
-        data-testid="tab-content-addons"
-        class="tab-content"
-      >
-        <div class="tab-filters">
-          <input
-            v-model="addonSearch"
-            type="text"
-            data-testid="addons-search-input"
-            :placeholder="$t('common.search')"
-            class="search-input"
-          >
-        </div>
-
-        <div
-          v-if="addonsLoading"
-          class="loading-state"
-        >
-          <div class="spinner" />
-          <p>{{ $t('common.loading') }}</p>
-        </div>
-
-        <div
-          v-else-if="filteredAddons.length === 0"
-          data-testid="addons-empty-state"
-          class="empty-state"
-        >
-          <p>{{ $t('users.noAddonsForUser') }}</p>
-        </div>
-
-        <table
-          v-else
-          data-testid="user-addons-table"
-          class="data-table"
-        >
-          <thead>
-            <tr>
-              <th>{{ $t('users.addonName') }}</th>
-              <th>{{ $t('users.paymentStatus') }}</th>
-              <th>{{ $t('common.status') }}</th>
-              <th>{{ $t('users.firstInvoice') }}</th>
-              <th>{{ $t('users.lastInvoice') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="addon in filteredAddons"
-              :key="addon.id"
-            >
-              <td>{{ addon.addon_name }}</td>
-              <td>
-                <span
-                  v-if="addon.invoice_status"
-                  class="status-badge"
-                  :class="addon.invoice_status"
-                >
-                  {{ formatInvoiceStatus(addon.invoice_status) }}
-                </span>
-                <span v-else>-</span>
-              </td>
-              <td>
-                <span
-                  class="status-badge"
-                  :class="addon.status.toLowerCase()"
-                >
-                  {{ formatStatus(addon.status) }}
-                </span>
-              </td>
-              <td>
-                <a
-                  v-if="addon.first_invoice"
-                  class="invoice-link"
-                  data-testid="first-invoice-link"
-                  @click="navigateToInvoice(addon.first_invoice.id)"
-                >
-                  {{ formatDate(addon.first_invoice.created_at) }}
-                </a>
-                <span v-else>-</span>
-              </td>
-              <td>
-                <a
-                  v-if="addon.last_invoice"
-                  class="invoice-link"
-                  data-testid="last-invoice-link"
-                  @click="navigateToInvoice(addon.last_invoice.id)"
-                >
-                  {{ formatDate(addon.last_invoice.created_at) }}
-                </a>
-                <span v-else>-</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <!-- Plugin-contributed tab content -->
+      <component
+        :is="tab.component"
+        v-for="tab in pluginTabs"
+        v-show="activeTab === tab.id"
+        :key="tab.id"
+        :user-id="userId"
+        :active="activeTab === tab.id"
+      />
     </template>
   </div>
 </template>
@@ -705,7 +519,6 @@ import { ref, computed, onMounted, reactive } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useUsersStore } from '@/stores/users';
-import { useSubscriptionsStore, type Subscription } from '@/stores/subscriptions';
 import { useInvoicesStore, type Invoice } from '@/stores/invoices';
 import { useAuthStore } from '@/stores/auth';
 import { extensionRegistry } from '@/plugins/extensionRegistry';
@@ -717,11 +530,18 @@ const { t } = useI18n();
 const usersStore = useUsersStore();
 const authStore = useAuthStore();
 const canManage = computed(() => authStore.hasPermission('users.manage'));
-const subscriptionsStore = useSubscriptionsStore();
 const invoicesStore = useInvoicesStore();
 
-// Tab state
-const activeTab = ref<'account' | 'subscriptions' | 'invoices' | 'addons'>('account');
+// Tab state — 'account'/'invoices' are core; other ids come from plugin tabs.
+const activeTab = ref<string>('account');
+
+// Plugin-contributed tabs, filtered by the viewer's permissions. Keeps the
+// core User Edit page agnostic to any specific feature plugin.
+const pluginTabs = computed(() =>
+  extensionRegistry
+    .getUserEditTabs()
+    .filter((tab) => !tab.requiredPermission || authStore.hasPermission(tab.requiredPermission))
+);
 
 // User form state
 const loadingUser = ref(true);
@@ -784,7 +604,6 @@ interface UserLevel {
   name: string;
   slug: string;
   is_system: boolean;
-  linked_plan_slug: string | null;
 }
 const availableUserLevels = ref<UserLevel[]>([]);
 const assignedUserLevelIds = reactive(new Set<string>());
@@ -832,14 +651,6 @@ const userId = route.params.id as string;
 // Plugin extensions
 const pluginSections = computed(() => extensionRegistry.getUserDetailsSections());
 
-// Subscriptions state
-const subscriptionsLoading = ref(false);
-const userSubscriptions = ref<Subscription[]>([]);
-const subscriptionsTotal = ref(0);
-const subscriptionsPage = ref(1);
-const subscriptionSearch = ref('');
-const subscriptionsPerPage = 10;
-
 // Invoices state
 const invoicesLoading = ref(false);
 const userInvoices = ref<Invoice[]>([]);
@@ -848,45 +659,10 @@ const invoicesPage = ref(1);
 const invoiceSearch = ref('');
 const invoicesPerPage = 10;
 
-// Addons state
-interface AddonInvoice {
-  id: string;
-  invoice_number: string;
-  created_at: string | null;
-}
-interface UserAddonSub {
-  id: string;
-  addon_name: string;
-  status: string;
-  invoice_status: string | null;
-  first_invoice: AddonInvoice | null;
-  last_invoice: AddonInvoice | null;
-  starts_at: string | null;
-  expires_at: string | null;
-  created_at: string | null;
-}
-const addonsLoading = ref(false);
-const userAddonSubs = ref<UserAddonSub[]>([]);
-const addonSearch = ref('');
-
 // Computed
-const subscriptionsTotalPages = computed(() =>
-  Math.ceil(subscriptionsTotal.value / subscriptionsPerPage)
-);
 const invoicesTotalPages = computed(() =>
   Math.ceil(invoicesTotal.value / invoicesPerPage)
 );
-
-const filteredSubscriptions = computed(() => {
-  if (!subscriptionSearch.value.trim()) {
-    return userSubscriptions.value;
-  }
-  const query = subscriptionSearch.value.toLowerCase();
-  return userSubscriptions.value.filter(sub =>
-    sub.plan_name?.toLowerCase().includes(query) ||
-    sub.status?.toLowerCase().includes(query)
-  );
-});
 
 const filteredInvoices = computed(() => {
   if (!invoiceSearch.value.trim()) {
@@ -896,17 +672,6 @@ const filteredInvoices = computed(() => {
   return userInvoices.value.filter(inv =>
     inv.invoice_number?.toLowerCase().includes(query) ||
     inv.status?.toLowerCase().includes(query)
-  );
-});
-
-const filteredAddons = computed(() => {
-  if (!addonSearch.value.trim()) {
-    return userAddonSubs.value;
-  }
-  const query = addonSearch.value.toLowerCase();
-  return userAddonSubs.value.filter(a =>
-    a.addon_name?.toLowerCase().includes(query) ||
-    a.status?.toLowerCase().includes(query)
   );
 });
 
@@ -1050,53 +815,10 @@ function goBack(): void {
 }
 
 // Tab switching with data loading
-async function switchToSubscriptions(): Promise<void> {
-  activeTab.value = 'subscriptions';
-  if (userSubscriptions.value.length === 0) {
-    await fetchUserSubscriptions();
-  }
-}
-
 async function switchToInvoices(): Promise<void> {
   activeTab.value = 'invoices';
   if (userInvoices.value.length === 0) {
     await fetchUserInvoices();
-  }
-}
-
-async function switchToAddons(): Promise<void> {
-  activeTab.value = 'addons';
-  if (userAddonSubs.value.length === 0) {
-    await fetchUserAddons();
-  }
-}
-
-async function fetchUserAddons(): Promise<void> {
-  addonsLoading.value = true;
-  try {
-    const response = await api.get(`/admin/users/${userId}/addons`) as { addon_subscriptions: UserAddonSub[] };
-    userAddonSubs.value = response.addon_subscriptions || [];
-  } catch {
-    // Error handled silently
-  } finally {
-    addonsLoading.value = false;
-  }
-}
-
-async function fetchUserSubscriptions(): Promise<void> {
-  subscriptionsLoading.value = true;
-  try {
-    const response = await subscriptionsStore.fetchSubscriptions({
-      page: subscriptionsPage.value,
-      per_page: subscriptionsPerPage,
-      user_id: userId
-    });
-    userSubscriptions.value = response.subscriptions;
-    subscriptionsTotal.value = response.total;
-  } catch {
-    // Error handled in store
-  } finally {
-    subscriptionsLoading.value = false;
   }
 }
 
@@ -1117,29 +839,13 @@ async function fetchUserInvoices(): Promise<void> {
   }
 }
 
-function changeSubscriptionsPage(page: number): void {
-  subscriptionsPage.value = page;
-  fetchUserSubscriptions();
-}
-
 function changeInvoicesPage(page: number): void {
   invoicesPage.value = page;
   fetchUserInvoices();
 }
 
-function navigateToSubscription(subscriptionId: string): void {
-  router.push(`/admin/subscriptions/${subscriptionId}`);
-}
-
 function navigateToInvoice(invoiceId: string): void {
   router.push(`/admin/invoices/${invoiceId}`);
-}
-
-function formatStatus(status: string): string {
-  const statusKey = `subscriptions.statuses.${status}`;
-  const translated = t(statusKey);
-  // If translation key not found, return original status
-  return translated === statusKey ? status : translated;
 }
 
 function formatInvoiceStatus(status: string): string {
@@ -1548,9 +1254,5 @@ onMounted(() => {
   border-radius: 8px;
   background: #cce5ff;
   color: #004085;
-}
-.role-badge--plan {
-  background: #d4edda;
-  color: #155724;
 }
 </style>

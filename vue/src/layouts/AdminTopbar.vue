@@ -16,11 +16,14 @@ import { useRoute } from 'vue-router';
 const route = useRoute();
 
 const pageTitle = computed((): string => {
+  // Plugin-contributed routes carry their own title via meta.title, so core
+  // stays agnostic (no hardcoded plugin route titles here).
+  const metaTitle = route.meta?.title as string | undefined;
+  if (metaTitle) return metaTitle;
+
   const titles: Record<string, string> = {
     'dashboard': 'Dashboard',
     'users': 'User Management',
-    'plans': 'Plan Management',
-    'subscriptions': 'Subscriptions',
     'invoices': 'Invoices',
     'settings': 'Settings'
   };

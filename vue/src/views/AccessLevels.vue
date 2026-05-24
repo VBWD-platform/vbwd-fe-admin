@@ -166,9 +166,15 @@
           </th>
           <th>{{ $t('access.name') }}</th>
           <th>{{ $t('access.slug') }}</th>
-          <th>Linked Plan</th>
           <th>{{ $t('access.permissions') }}</th>
           <th>{{ $t('access.system') }}</th>
+          <!-- Plugin-contributed columns -->
+          <th
+            v-for="col in pluginUserColumns"
+            :key="col.id"
+          >
+            {{ col.header }}
+          </th>
           <th>{{ $t('access.actions') }}</th>
         </tr>
       </thead>
@@ -196,22 +202,22 @@
           <td class="mono">
             {{ level.slug }}
           </td>
-          <td>
-            <span
-              v-if="level.linked_plan_slug"
-              class="badge badge--green"
-            >{{ level.linked_plan_slug }}</span>
-            <span
-              v-else
-              class="text-muted"
-            >&mdash;</span>
-          </td>
           <td>{{ level.permissions.length }} {{ $t('access.permissions') }}</td>
           <td>
             <span
               v-if="level.is_system"
               class="badge badge--blue"
             >{{ $t('access.system') }}</span>
+          </td>
+          <!-- Plugin-contributed cells (aligned with plugin column headers) -->
+          <td
+            v-for="col in pluginUserColumns"
+            :key="col.id"
+          >
+            <component
+              :is="col.component"
+              :level="level"
+            />
           </td>
           <td>
             <button
@@ -257,10 +263,6 @@ interface AccessLevel {
   permissions: string[];
 }
 
-interface UserAccessLevel extends AccessLevel {
-  linked_plan_slug: string | null;
-}
-
 const authStore = useAuthStore();
 const canManage = computed(() => authStore.hasPermission('settings.system'));
 
@@ -268,10 +270,11 @@ const importInput = ref<HTMLInputElement | null>(null);
 const loading = ref(true);
 const activeTab = ref<string>('admin');
 const adminLevels = ref<AccessLevel[]>([]);
-const userLevels = ref<UserAccessLevel[]>([]);
+const userLevels = ref<AccessLevel[]>([]);
 
 // Plugin-contributed tabs
 const pluginTabs = computed(() => extensionRegistry.getAccessLevelTabs());
+const pluginUserColumns = computed(() => extensionRegistry.getAccessLevelUserColumns());
 const activePluginTab = computed(() =>
   pluginTabs.value.find((tab) => tab.id === activeTab.value)
 );
@@ -333,7 +336,7 @@ async function loadAdminLevels() {
 
 async function loadUserLevels() {
   try {
-    const res = await api.get('/admin/access/user-levels') as { levels: UserAccessLevel[] };
+    const res = await api.get('/admin/access/user-levels') as { levels: AccessLevel[] };
     userLevels.value = res.levels;
   } catch {
     userLevels.value = [];

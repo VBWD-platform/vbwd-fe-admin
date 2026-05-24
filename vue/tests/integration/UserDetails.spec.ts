@@ -96,20 +96,9 @@ describe('UserDetails.vue', () => {
     expect(wrapper.text()).toContain('Test User');
   });
 
-  it('displays subscription information', async () => {
-    await router.push('/admin/users/1');
-
-    const wrapper = mount(UserDetails, {
-      global: {
-        plugins: [router]
-      }
-    });
-
-    await flushPromises();
-
-    expect(wrapper.text()).toContain('Pro');
-    expect(wrapper.text()).toContain('active');
-  });
+  // Subscription summary is contributed by the subscription-admin plugin via
+  // `extensionRegistry.userDetailsSections`; its rendering is covered by the
+  // plugin's UserSubscriptionSection.spec.ts. Core stays subscription-agnostic.
 
   it('displays user stats', async () => {
     await router.push('/admin/users/1');

@@ -71,6 +71,32 @@ export interface AccessLevelTab {
   requiredPermission?: string;
 }
 
+export interface UserEditTab {
+  /** Unique tab ID (also the activeTab value, e.g. 'subscriptions') */
+  id: string;
+  /** Tab button label (already human-readable; plugin owns its i18n) */
+  label: string;
+  /**
+   * Tab content component. Receives two props:
+   *  - `userId: string`  — the user being edited
+   *  - `active: boolean` — whether this tab is currently shown (lazy-load hint)
+   */
+  component: Component;
+  /** Ordering hint among plugin tabs (lower = earlier; default 100) */
+  order?: number;
+  /** Permission required to see this tab */
+  requiredPermission?: string;
+}
+
+export interface AccessLevelUserColumn {
+  /** Unique column id */
+  id: string;
+  /** Column header label (plugin owns its i18n) */
+  header: string;
+  /** Cell component, rendered per row with a `level` prop (the user access level) */
+  component: Component;
+}
+
 export interface AccessLevelFormField {
   /** Component to render as form field */
   component: Component;
@@ -78,6 +104,12 @@ export interface AccessLevelFormField {
   userOnly?: boolean;
   /** Permission required to see this field */
   requiredPermission?: string;
+  /**
+   * Names of the form keys this field owns. The core Access Level form uses
+   * these to load the values from the entity, seed defaults, and include them
+   * in the save payload — generically, without naming any plugin field.
+   */
+  fields?: string[];
 }
 
 export interface AdminExtension {
@@ -98,6 +130,10 @@ export interface AdminExtension {
   accessLevelTabs?: AccessLevelTab[];
   /** Additional form fields on the Access Level form */
   accessLevelFormFields?: AccessLevelFormField[];
+  /** Additional columns on the user Access Levels table (e.g. Linked Plan) */
+  accessLevelUserColumns?: AccessLevelUserColumn[];
+  /** Additional tabs on the User Edit page (e.g. Subscriptions, Add-ons) */
+  userEditTabs?: UserEditTab[];
 }
 
 class ExtensionRegistry {
@@ -171,6 +207,26 @@ class ExtensionRegistry {
       }
     });
     return fields;
+  }
+
+  getUserEditTabs(): UserEditTab[] {
+    const tabs: UserEditTab[] = [];
+    this.extensions.forEach((ext) => {
+      if (ext.userEditTabs) {
+        tabs.push(...ext.userEditTabs);
+      }
+    });
+    return tabs.sort((a, b) => (a.order ?? 100) - (b.order ?? 100));
+  }
+
+  getAccessLevelUserColumns(): AccessLevelUserColumn[] {
+    const columns: AccessLevelUserColumn[] = [];
+    this.extensions.forEach((ext) => {
+      if (ext.accessLevelUserColumns) {
+        columns.push(...ext.accessLevelUserColumns);
+      }
+    });
+    return columns;
   }
 
   get(pluginName: string): AdminExtension | undefined {

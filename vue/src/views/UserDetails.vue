@@ -86,35 +86,6 @@
         </div>
 
         <div
-          v-if="user.subscription"
-          class="section"
-        >
-          <h3>{{ $t('users.subscription') }}</h3>
-          <div class="info-grid">
-            <div class="info-item">
-              <label>{{ $t('subscriptions.plan') }}</label>
-              <span>{{ user.subscription.plan || $t('common.none') }}</span>
-            </div>
-            <div class="info-item">
-              <label>{{ $t('subscriptions.status') }}</label>
-              <span
-                class="subscription-status"
-                :class="user.subscription.status?.toLowerCase()"
-              >
-                {{ user.subscription.status || $t('common.na') }}
-              </span>
-            </div>
-            <div
-              v-if="user.subscription.expires_at"
-              class="info-item"
-            >
-              <label>{{ $t('subscriptions.expires') }}</label>
-              <span>{{ formatDate(user.subscription.expires_at) }}</span>
-            </div>
-          </div>
-        </div>
-
-        <div
           v-if="user.stats"
           class="section"
         >
@@ -390,19 +361,6 @@ onMounted(() => {
   border-radius: 4px;
   font-size: 0.8rem;
   color: #495057;
-}
-
-.subscription-status {
-  text-transform: capitalize;
-}
-
-.subscription-status.active {
-  color: #155724;
-}
-
-.subscription-status.canceled,
-.subscription-status.expired {
-  color: #721c24;
 }
 
 .user-actions {

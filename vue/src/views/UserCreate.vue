@@ -82,7 +82,7 @@
                 {{ $t('users.active') }}
               </option>
               <option value="pending">
-                {{ $t('subscriptions.statuses.pending') }}
+                {{ $t('users.pending') }}
               </option>
               <option value="suspended">
                 {{ $t('users.suspended') }}

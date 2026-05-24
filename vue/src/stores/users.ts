@@ -15,7 +15,6 @@ export interface User {
   role: string;
   access_levels?: AccessLevel[];
   user_access_levels?: AccessLevel[];
-  subscription_plan?: string;
   created_at?: string;
 }
 
@@ -28,11 +27,6 @@ export interface DeletionInfo {
 }
 
 export interface UserDetail extends User {
-  subscription?: {
-    plan: string | null;
-    status: string | null;
-    expires_at?: string | null;
-  };
   stats?: {
     total_payments: number;
     last_login?: string | null;

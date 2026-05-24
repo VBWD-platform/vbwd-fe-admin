@@ -65,11 +65,11 @@
         :is="field.component"
         v-for="(field, index) in pluginFormFields"
         :key="index"
-        :form="form"
+        :form="pluginFieldForm"
         :is-new="isNew"
         :is-user-type="isUserType"
         :can-manage="canManage"
-        @update:field="(key: string, value: string) => { (form as Record<string, unknown>)[key] = value; }"
+        @update:field="(key: string, value: string) => { pluginFieldValues[key] = value; }"
       />
 
       <!-- Permission Matrix -->
@@ -190,7 +190,6 @@ const form = reactive({
   slug: '',
   description: '',
   is_system: false,
-  linked_plan_slug: '',
 });
 
 const allPermissions = ref<PermDef[]>([]);
@@ -204,6 +203,19 @@ const pluginFormFields = computed(() =>
     (field) => !field.userOnly || isUserType.value
   )
 );
+
+// Form keys owned by the currently-visible plugin fields. The form loads,
+// seeds, and saves these generically so core never names a plugin field.
+const pluginFieldKeys = computed(() =>
+  pluginFormFields.value.flatMap((field) => field.fields ?? [])
+);
+
+// Reactive bag holding plugin-owned field values, merged into `form` for the
+// plugin field components and folded back into the save payload.
+const pluginFieldValues = reactive<Record<string, unknown>>({});
+
+// What plugin field components receive as `form`: core fields + their own.
+const pluginFieldForm = computed(() => ({ ...form, ...pluginFieldValues }));
 
 function autoSlug() {
   if (isNew.value && !form.slug) {
@@ -237,8 +249,9 @@ async function save() {
       description: form.description,
       permissions: [...selectedPermissions],
     };
-    if (isUserType.value) {
-      payload.linked_plan_slug = form.linked_plan_slug || null;
+    // Fold plugin-owned fields into the payload generically.
+    for (const key of pluginFieldKeys.value) {
+      payload[key] = pluginFieldValues[key] || null;
     }
 
     if (isUserType.value) {
@@ -286,15 +299,17 @@ onMounted(async () => {
           description: string;
           is_system: boolean;
           permissions: string[];
-          linked_plan_slug?: string;
           users: AssignedUser[];
-        };
+        } & Record<string, unknown>;
       };
       form.name = res.level.name;
       form.slug = res.level.slug;
       form.description = res.level.description || '';
       form.is_system = res.level.is_system;
-      form.linked_plan_slug = res.level.linked_plan_slug || '';
+      // Load plugin-owned fields generically (e.g. linked_plan_slug).
+      for (const key of pluginFieldKeys.value) {
+        pluginFieldValues[key] = res.level[key] ?? '';
+      }
       res.level.permissions.forEach(p => selectedPermissions.add(p));
       assignedUsers.value = res.level.users || [];
 
