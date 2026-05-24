@@ -519,8 +519,9 @@ async function handleBulkDelete(): Promise<void> {
   try {
     const userIds = Array.from(selectedUsers.value);
 
-    // Get deletion info for each user to check for dependencies
-    let userWithDependencies: Array<{ userId: string; invoiceCount: number; subscriptionCount: number }> = [];
+    // Get deletion info for each user to check for dependencies. Core names no
+    // plugin domain — it renders the generic, plugin-contributed dependencies[].
+    let userWithDependencies: Array<{ userId: string; summary: string }> = [];
 
     for (const userId of userIds) {
       try {
@@ -528,8 +529,9 @@ async function handleBulkDelete(): Promise<void> {
         if (info.has_cascade_dependencies) {
           userWithDependencies.push({
             userId: info.user_id,
-            invoiceCount: info.invoice_count,
-            subscriptionCount: info.subscription_count
+            summary: info.dependencies
+              .map(d => `${d.count} ${d.label.toLowerCase()}`)
+              .join(', ')
           });
         }
       } catch {
@@ -540,7 +542,7 @@ async function handleBulkDelete(): Promise<void> {
     // If there are users with dependencies, ask for two-step confirmation
     if (userWithDependencies.length > 0) {
       const dependencyInfo = userWithDependencies
-        .map(u => `${u.userId}: ${u.invoiceCount} invoice(s), ${u.subscriptionCount} subscription(s)`)
+        .map(u => `${u.userId}: ${u.summary}`)
         .join('\n');
 
       const firstConfirm = confirm(

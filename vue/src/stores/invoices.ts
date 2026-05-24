@@ -7,7 +7,6 @@ export interface Invoice {
   user_id?: string;
   user_email?: string;
   user_name?: string;
-  subscription_id?: string;
   amount: number;
   currency?: string;
   status: 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED' | 'REFUNDED';
@@ -16,21 +15,13 @@ export interface Invoice {
   created_at?: string;
 }
 
+// Core invoices are subscription-agnostic. Any plan/subscription metadata is
+// contributed by a plugin (backend `enrich_invoice`) and rendered via the
+// `invoiceDetailSections` extension point — core does not type or display it.
 export interface InvoiceDetail extends Invoice {
   line_items?: LineItem[];
   billing_address?: BillingAddress;
   payment_method?: string;
-  // Plan info
-  plan_name?: string;
-  plan_description?: string;
-  plan_billing_period?: string;
-  plan_price?: string;
-  // Subscription info
-  subscription_status?: string;
-  subscription_start_date?: string;
-  subscription_end_date?: string;
-  subscription_is_trial?: boolean;
-  subscription_trial_end?: string;
 }
 
 export interface LineItem {

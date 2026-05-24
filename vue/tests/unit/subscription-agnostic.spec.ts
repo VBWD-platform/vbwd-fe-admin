@@ -7,13 +7,11 @@
  * views, or business logic. All subscription UI is contributed by the
  * subscription-admin plugin through the extension registry.
  *
- * Allowed residuals (decision-locked — NOT violations):
- *  - D4: invoices stay core, so an invoice DTO may carry optional
- *    `subscription_*` metadata and InvoiceDetails may display it (the FE
- *    mirror of subscription *models* staying in core on the backend).
- *  - Backend API contract: `/admin/users/:id/deletion-info` returns a named
- *    `subscription_count`; decoupling it needs a generic `dependencies[]`
- *    payload (a backend sprint), not a fe extension point.
+ * Sprint 11 closed the two former residuals (D4 + deletion-info): core invoices
+ * carry NO `subscription_*` metadata in their views/stores (the "Subscription
+ * Info" block moved to the plugin via `invoiceDetailSections`), and
+ * `/deletion-info` is consumed as a generic `dependencies[]` payload — core
+ * names no plugin domain.
  *
  * If this test fails, core has re-acquired a subscription coupling — move it
  * to the subscription-admin plugin instead of relaxing the assertions.
@@ -96,12 +94,46 @@ describe('core fe-admin is subscription-agnostic (Sprint 09 oracle)', () => {
     for (const hook of [
       'getUserEditTabs',
       'getUserDetailsSections',
+      'getInvoiceDetailSections',
       'getAccessLevelTabs',
       'getAccessLevelFormFields',
       'getAccessLevelUserColumns',
     ]) {
       expect(registry).toContain(hook);
     }
+  });
+
+  it('core invoice store + view carry no subscription/plan metadata (Sprint 11)', () => {
+    const fields = [
+      'subscription_id',
+      'subscription_status',
+      'subscription_start_date',
+      'subscription_end_date',
+      'subscription_is_trial',
+      'subscription_trial_end',
+      'plan_name',
+      'plan_billing_period',
+      'plan_price',
+      'tarif_plan_id',
+    ];
+    for (const file of ['stores/invoices.ts', 'views/InvoiceDetails.vue']) {
+      const text = read(file);
+      for (const field of fields) {
+        expect(text, `${file} must not name ${field}`).not.toContain(field);
+      }
+    }
+    // The core invoice view renders plugin-contributed sections instead.
+    expect(read('views/InvoiceDetails.vue')).toContain('getInvoiceDetailSections');
+  });
+
+  it('core deletion-info is consumed generically (no named subscription_count)', () => {
+    for (const file of ['stores/users.ts', 'views/Users.vue']) {
+      const text = read(file);
+      expect(text, `${file} must not name subscription_count`).not.toContain(
+        'subscription_count',
+      );
+    }
+    expect(read('stores/users.ts')).toContain('dependencies');
   });
 
   it('AccessLevels / AccessLevelForm name no subscription field', () => {

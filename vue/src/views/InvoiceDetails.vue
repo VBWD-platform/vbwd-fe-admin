@@ -161,52 +161,14 @@
           </p>
         </div>
 
-        <div
-          v-if="invoice.subscription_id"
-          class="info-section"
-          data-testid="subscription-info"
-        >
-          <h3>{{ $t('invoices.subscriptionInfo') }}</h3>
-          <div class="info-grid">
-            <div
-              v-if="invoice.subscription_status"
-              class="info-item"
-            >
-              <label>{{ $t('common.status') }}</label>
-              <span
-                class="status-badge"
-                :class="invoice.subscription_status"
-              >
-                {{ invoice.subscription_status }}
-              </span>
-            </div>
-            <div
-              v-if="invoice.subscription_start_date"
-              class="info-item"
-            >
-              <label>{{ $t('subscriptions.startDate') }}</label>
-              <span>{{ formatDate(invoice.subscription_start_date) }}</span>
-            </div>
-            <div
-              v-if="invoice.subscription_end_date"
-              class="info-item"
-            >
-              <label>{{ $t('subscriptions.endDate') }}</label>
-              <span>{{ formatDate(invoice.subscription_end_date) }}</span>
-            </div>
-            <div class="info-item">
-              <label>{{ $t('invoices.trial') }}</label>
-              <span>{{ invoice.subscription_is_trial ? $t('common.yes') : $t('common.no') }}</span>
-            </div>
-            <div
-              v-if="invoice.subscription_trial_end"
-              class="info-item"
-            >
-              <label>{{ $t('invoices.trialEndDate') }}</label>
-              <span>{{ formatDate(invoice.subscription_trial_end) }}</span>
-            </div>
-          </div>
-        </div>
+        <!-- Plugin-contributed sections (e.g. subscription info) — core stays
+             agnostic and renders whatever plugins inject for an invoice. -->
+        <component
+          :is="Section"
+          v-for="(Section, index) in pluginSections"
+          :key="index"
+          :invoice="invoice"
+        />
 
         <div
           v-if="invoice.billing_address"
@@ -289,6 +251,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useInvoicesStore } from '@/stores/invoices';
 import { useAuthStore } from '@/stores/auth';
+import { extensionRegistry } from '@/plugins/extensionRegistry';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -296,6 +259,9 @@ const router = useRouter();
 const invoicesStore = useInvoicesStore();
 const authStore = useAuthStore();
 const canManage = computed(() => authStore.hasPermission('invoices.manage'));
+
+// Plugin-contributed invoice sections (subscription info lives here now).
+const pluginSections = computed(() => extensionRegistry.getInvoiceDetailSections());
 
 const processing = ref(false);
 

@@ -18,12 +18,18 @@ export interface User {
   created_at?: string;
 }
 
+export interface DeletionDependency {
+  type: string;
+  count: number;
+  label: string;
+}
+
 export interface DeletionInfo {
   user_id: string;
   email: string;
   has_cascade_dependencies: boolean;
-  invoice_count: number;
-  subscription_count: number;
+  // Generic, plugin-contributed cascade dependencies (core names no domain).
+  dependencies: DeletionDependency[];
 }
 
 export interface UserDetail extends User {
@@ -246,13 +252,12 @@ export const useUsersStore = defineStore('users', {
       this.error = null;
 
       try {
-        const response = await api.get(`/admin/users/${userId}/deletion-info`) as { user_id: string; email: string; has_cascade_dependencies: boolean; invoice_count: number; subscription_count: number };
+        const response = await api.get(`/admin/users/${userId}/deletion-info`) as { user_id: string; email: string; has_cascade_dependencies: boolean; dependencies?: DeletionDependency[] };
         return {
           user_id: response.user_id,
           email: response.email,
           has_cascade_dependencies: response.has_cascade_dependencies,
-          invoice_count: response.invoice_count,
-          subscription_count: response.subscription_count,
+          dependencies: response.dependencies ?? [],
         };
       } catch (error) {
         this.error = (error as Error).message || 'Failed to get deletion info';

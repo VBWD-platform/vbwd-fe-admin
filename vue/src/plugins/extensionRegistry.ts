@@ -114,6 +114,8 @@ export interface AccessLevelFormField {
 
 export interface AdminExtension {
   userDetailsSections?: Component[];
+  /** Sections rendered on the core Invoice Details page (receive `:invoice`) */
+  invoiceDetailSections?: Component[];
   /** Nav sections added to the admin sidebar by this plugin */
   navSections?: NavSection[];
   /** Items injected into the core Settings nav section (deprecated — use sectionItems.settings) */
@@ -154,6 +156,16 @@ class ExtensionRegistry {
     this.extensions.forEach((ext) => {
       if (ext.userDetailsSections) {
         sections.push(...ext.userDetailsSections);
+      }
+    });
+    return sections;
+  }
+
+  getInvoiceDetailSections(): Component[] {
+    const sections: Component[] = [];
+    this.extensions.forEach((ext) => {
+      if (ext.invoiceDetailSections) {
+        sections.push(...ext.invoiceDetailSections);
       }
     });
     return sections;
