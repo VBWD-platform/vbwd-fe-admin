@@ -16,9 +16,16 @@ test-results
 # Plugin dirs are hosted in individual repos (vbwd-fe-admin-plugin-*)
 plugins/analytics-widget/
 plugins/booking/
+plugins/c2p2-admin/
 plugins/cms-admin/
+plugins/conekta-admin/
 plugins/ecommerce-admin/
 plugins/email-admin/
 plugins/ghrm-admin/
+plugins/meinchat-admin/
+plugins/mercado-pago-admin/
+plugins/promptpay-admin/
 plugins/subscription-admin/
 plugins/taro-admin/
+plugins/toss-payments-admin/
+plugins/truemoney-admin/
