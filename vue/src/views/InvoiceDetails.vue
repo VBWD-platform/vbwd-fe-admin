@@ -388,7 +388,7 @@ function itemLink(item: { type?: string; item_id?: string; catalog_item_id?: str
     case 'TOKEN_BUNDLE':
       return item.catalog_item_id ? `/admin/settings/token-bundles/${item.catalog_item_id}` : null;
     case 'ADD_ON':
-      return '/admin/add-ons';
+      return item.catalog_item_id ? `/admin/add-ons/${item.catalog_item_id}/edit` : null;
     default:
       break;
   }

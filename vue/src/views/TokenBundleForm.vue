@@ -251,7 +251,13 @@ async function handleSubmit(): Promise<void> {
 }
 
 function goBack(): void {
-  router.push('/admin/settings');
+  // Return to wherever the user came from. Fall back to Settings only when
+  // there's no in-app history (e.g. the page was opened directly by URL).
+  if (window.history.length > 1) {
+    router.back();
+  } else {
+    router.push('/admin/settings');
+  }
 }
 
 onMounted(() => {

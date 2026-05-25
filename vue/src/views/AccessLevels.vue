@@ -69,7 +69,8 @@
       {{ $t('common.loading') }}
     </div>
 
-    <!-- Bulk actions -->
+    <!-- Bulk actions — independent of the table chain below, so selecting a
+         checkbox shows this bar ABOVE the table and never hides the table. -->
     <div
       v-if="!loading && selectedIds.size > 0"
       class="bulk-actions"
@@ -85,7 +86,7 @@
 
     <!-- Admin Access Levels Table -->
     <table
-      v-else-if="activeTab === 'admin' && adminLevels.length > 0"
+      v-if="!loading && activeTab === 'admin' && adminLevels.length > 0"
       class="data-table"
     >
       <thead>
@@ -240,7 +241,7 @@
     </template>
 
     <p
-      v-else
+      v-else-if="!loading"
       class="empty"
     >
       {{ activeTab === 'admin' ? $t('access.noLevels') : 'No user access levels defined.' }}
