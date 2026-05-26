@@ -293,7 +293,10 @@
     "resend": "重新发送发票",
     "markAsPaid": "标记为已付款",
     "void": "作废发票",
-    "refund": "退款"
+    "refund": "退款",
+    "paymentMethod": "付款方式",
+    "paymentData": "付款数据",
+    "paymentInformation": "付款信息"
   },
   "webhooks": {
     "title": "Webhooks",

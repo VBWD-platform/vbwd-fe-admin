@@ -21,6 +21,10 @@ import type { IPlugin } from 'vbwd-view-component';
 import i18n, { initLocale, setLocale, type LocaleCode, availableLocales } from '@/i18n';
 import { extensionRegistry } from '@/plugins/extensionRegistry';
 import type { Router } from 'vue-router';
+// fe-core ships its scoped component styles as a separate stylesheet
+// (default for vite library builds) — import once at the entry so e.g.
+// PaymentDataBlock's flex layout actually applies in the host.
+import 'vbwd-view-component/styles';
 
 export interface AdminExtensionMap {
   [pluginName: string]: import('@/plugins/extensionRegistry').AdminExtension;

@@ -293,7 +293,10 @@
     "resend": "請求書を再送",
     "markAsPaid": "支払い済みにする",
     "void": "請求書を無効化",
-    "refund": "返金"
+    "refund": "返金",
+    "paymentMethod": "支払い方法",
+    "paymentData": "支払いデータ",
+    "paymentInformation": "支払い情報"
   },
   "webhooks": {
     "title": "Webhook",

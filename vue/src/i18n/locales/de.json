@@ -301,7 +301,10 @@
     "resend": "Rechnung erneut senden",
     "markAsPaid": "Als bezahlt markieren",
     "void": "Rechnung stornieren",
-    "refund": "Erstatten"
+    "refund": "Erstatten",
+    "paymentMethod": "Zahlungsmethode",
+    "paymentData": "Zahlungsdaten",
+    "paymentInformation": "Zahlungsinformationen"
   },
   "webhooks": {
     "title": "Webhooks",

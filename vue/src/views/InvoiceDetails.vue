@@ -85,12 +85,39 @@
               <label>{{ $t('invoices.paidAt') }}</label>
               <span>{{ formatDate(invoice.paid_at) }}</span>
             </div>
+            <div
+              v-if="invoice.payment_method"
+              class="info-item"
+            >
+              <label>{{ $t('invoices.paymentMethod') }}</label>
+              <span data-testid="payment-method">{{ invoice.payment_method }}</span>
+            </div>
             <div class="info-item">
               <label>{{ $t('common.created') }}</label>
               <span>{{ formatDate(invoice.created_at) }}</span>
             </div>
           </div>
+
+          <!-- Plugin-contributed payment-method rows (token-payment, stripe,
+               paypal, …) — visual peers of the rows above, no heading or
+               chrome of their own. Block + registry live in vbwd-fe-core.
+               ``payment-method`` enables the legacy/zero-price fallback. -->
+          <PaymentDataBlock
+            :metadata="invoice.metadata"
+            :payment-method="invoice.payment_method"
+          />
         </div>
+
+        <!-- Payment Information — peer section of "Invoice Information".
+             Each payment plugin contributes its own multi-row table
+             (Tokens: Payment type / Tokens paid;
+              Stripe: Payment type / Transaction id / Authorised / Captured /
+              Refunded). Block + registry live in vbwd-fe-core. -->
+        <PaymentInformationBlock
+          :metadata="invoice.metadata"
+          :payment-method="invoice.payment_method"
+          :heading="$t('invoices.paymentInformation')"
+        />
 
         <div
           class="info-section"
@@ -249,6 +276,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { PaymentDataBlock, PaymentInformationBlock } from 'vbwd-view-component';
 import { useInvoicesStore } from '@/stores/invoices';
 import { useAuthStore } from '@/stores/auth';
 import { extensionRegistry } from '@/plugins/extensionRegistry';

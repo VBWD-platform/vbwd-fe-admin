@@ -293,7 +293,10 @@
     "resend": "Renvoyer la facture",
     "markAsPaid": "Marquer comme payée",
     "void": "Annuler la facture",
-    "refund": "Rembourser"
+    "refund": "Rembourser",
+    "paymentMethod": "Méthode de paiement",
+    "paymentData": "Données de paiement",
+    "paymentInformation": "Informations de paiement"
   },
   "webhooks": {
     "title": "Webhooks",

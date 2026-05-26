@@ -293,7 +293,10 @@
     "resend": "Отправить повторно",
     "markAsPaid": "Отметить оплаченным",
     "void": "Аннулировать",
-    "refund": "Возврат"
+    "refund": "Возврат",
+    "paymentMethod": "Способ оплаты",
+    "paymentData": "Данные платежа",
+    "paymentInformation": "Информация о платеже"
   },
   "webhooks": {
     "title": "Вебхуки",

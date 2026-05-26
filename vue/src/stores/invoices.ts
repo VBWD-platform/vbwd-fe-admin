@@ -22,6 +22,11 @@ export interface InvoiceDetail extends Invoice {
   line_items?: LineItem[];
   billing_address?: BillingAddress;
   payment_method?: string;
+  // Free-form JSON written by payment plugins under their namespace
+  // (e.g. ``{ tokens_paid: { amount: 600 } }``). Rendered via the shared
+  // fe-core ``PaymentDataBlock`` driven by the ``paymentDataContributors``
+  // registry — core is agnostic about any namespace's shape.
+  metadata?: Record<string, unknown> | null;
 }
 
 export interface LineItem {

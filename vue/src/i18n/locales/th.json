@@ -293,7 +293,10 @@
     "resend": "ส่งใบแจ้งหนี้ใหม่",
     "markAsPaid": "ทำเครื่องหมายว่าชำระแล้ว",
     "void": "ยกเลิกใบแจ้งหนี้",
-    "refund": "คืนเงิน"
+    "refund": "คืนเงิน",
+    "paymentMethod": "วิธีการชำระเงิน",
+    "paymentData": "ข้อมูลการชำระเงิน",
+    "paymentInformation": "ข้อมูลการชำระเงิน"
   },
   "webhooks": {
     "title": "Webhooks",

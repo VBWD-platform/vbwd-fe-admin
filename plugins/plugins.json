@@ -95,6 +95,12 @@
       "version": "1.0.0",
       "installedAt": "2026-04-29T00:00:00.000Z",
       "source": "local"
+    },
+    "token-payment-admin": {
+      "enabled": true,
+      "version": "1.0.0",
+      "installedAt": "2026-05-26T00:00:00.000Z",
+      "source": "local"
     }
   }
 }

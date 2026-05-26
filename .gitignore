@@ -27,5 +27,6 @@ plugins/mercado-pago-admin/
 plugins/promptpay-admin/
 plugins/subscription-admin/
 plugins/taro-admin/
+plugins/token-payment-admin/
 plugins/toss-payments-admin/
 plugins/truemoney-admin/

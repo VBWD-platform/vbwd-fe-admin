@@ -293,7 +293,10 @@
     "resend": "Reenviar Factura",
     "markAsPaid": "Marcar como Pagada",
     "void": "Anular Factura",
-    "refund": "Reembolsar"
+    "refund": "Reembolsar",
+    "paymentMethod": "Método de pago",
+    "paymentData": "Datos del pago",
+    "paymentInformation": "Información de pago"
   },
   "webhooks": {
     "title": "Webhooks",

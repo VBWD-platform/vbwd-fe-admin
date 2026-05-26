@@ -348,7 +348,10 @@
     "bulkDelete": "Delete Selected",
     "confirmDelete": "Delete invoice(s)? This action cannot be undone.",
     "confirmVoid": "Void invoice(s)? This action cannot be undone.",
-    "confirmRefund": "Refund invoice(s)? This action cannot be undone."
+    "confirmRefund": "Refund invoice(s)? This action cannot be undone.",
+    "paymentMethod": "Payment Method",
+    "paymentData": "Payment data",
+    "paymentInformation": "Payment Information"
   },
   "webhooks": {
     "title": "Webhooks",
