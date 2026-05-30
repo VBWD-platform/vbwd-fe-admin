@@ -1,0 +1,11 @@
+{
+  "meinchatPlusAdmin": {
+    "title": "Secure chat (E2E)",
+    "notice": "Messages are end-to-end encrypted — content is NOT available to administrators. Only public device keys are visible.",
+    "userIdPlaceholder": "User ID",
+    "lookup": "List devices",
+    "device": "Device",
+    "algorithm": "Algorithm",
+    "identityKey": "Identity key (public)"
+  }
+}

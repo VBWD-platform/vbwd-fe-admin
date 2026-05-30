@@ -1,0 +1,11 @@
+{
+  "fields": [
+    {
+      "key": "debug_mode",
+      "type": "boolean",
+      "label": "Debug mode",
+      "default": false,
+      "description": "Verbose admin-side logging for the device-key view."
+    }
+  ]
+}
