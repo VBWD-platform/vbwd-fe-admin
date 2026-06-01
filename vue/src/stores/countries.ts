@@ -126,6 +126,36 @@ export const useCountriesStore = defineStore('countries', {
       }
     },
 
+    // Export the full catalog as a VBWD-standard JSON envelope (for download).
+    async exportCountries(): Promise<unknown> {
+      this.error = null;
+      try {
+        return await api.get('/admin/countries/export');
+      } catch (error) {
+        this.error = (error as Error).message || 'Failed to export countries';
+        throw error;
+      }
+    },
+
+    // Import a VBWD-standard JSON envelope (upsert by code), then refresh.
+    async importCountries(payload: unknown): Promise<{ created: number; updated: number }> {
+      this.loading = true;
+      this.error = null;
+      try {
+        const response = await api.post('/admin/countries/import', payload) as {
+          created: number;
+          updated: number;
+        };
+        await this.fetchAllCountries();
+        return response;
+      } catch (error) {
+        this.error = (error as Error).message || 'Failed to import countries';
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+
     // Optimistic UI update for drag-and-drop
     updateEnabledOrder(countries: Country[]): void {
       this.enabledCountries = countries;

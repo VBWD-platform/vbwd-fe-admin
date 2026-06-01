@@ -572,7 +572,12 @@
     "countryEnabled": "Country enabled successfully",
     "countryDisabled": "Country disabled successfully",
     "orderSaved": "Order saved successfully",
-    "loadError": "Failed to load countries"
+    "loadError": "Failed to load countries",
+    "exportButton": "Export Countries",
+    "importButton": "Import Countries",
+    "exportError": "Failed to export countries",
+    "importError": "Failed to import countries",
+    "importSuccess": "Import complete: {created} created, {updated} updated"
   },
   "paymentMethods": {
     "title": "Payment Methods",

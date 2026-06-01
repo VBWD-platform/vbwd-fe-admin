@@ -139,7 +139,7 @@
           </td>
           <td>
             <button
-              v-if="canManage && !level.is_system"
+              v-if="canDelete(level)"
               class="btn btn--sm btn--danger"
               @click="handleDeleteAdmin(level.id, level.name)"
             >
@@ -222,7 +222,7 @@
           </td>
           <td>
             <button
-              v-if="canManage && !level.is_system"
+              v-if="canDelete(level)"
               class="btn btn--sm btn--danger"
               @click="handleDeleteUser(level.id, level.name)"
             >
@@ -266,6 +266,10 @@ interface AccessLevel {
 
 const authStore = useAuthStore();
 const canManage = computed(() => authStore.hasPermission('settings.system'));
+// Super admins may delete system roles / levels; ordinary admins may not.
+const isSuperAdmin = computed(() => authStore.isSuperAdmin);
+const canDelete = (level: AccessLevel): boolean =>
+  canManage.value && (!level.is_system || isSuperAdmin.value);
 
 const importInput = ref<HTMLInputElement | null>(null);
 const loading = ref(true);
@@ -283,8 +287,8 @@ const activePluginTab = computed(() =>
 // Bulk selection
 const selectedIds = reactive(new Set<string>());
 
-const deletableAdminIds = computed(() => adminLevels.value.filter(l => !l.is_system).map(l => l.id));
-const deletableUserIds = computed(() => userLevels.value.filter(l => !l.is_system).map(l => l.id));
+const deletableAdminIds = computed(() => adminLevels.value.filter(l => canDelete(l)).map(l => l.id));
+const deletableUserIds = computed(() => userLevels.value.filter(l => canDelete(l)).map(l => l.id));
 
 const allAdminSelected = computed(() => deletableAdminIds.value.length > 0 && deletableAdminIds.value.every(id => selectedIds.has(id)));
 const someAdminSelected = computed(() => deletableAdminIds.value.some(id => selectedIds.has(id)));

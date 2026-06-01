@@ -78,3 +78,49 @@ describe('AccessLevels — checkbox selection keeps the table visible', () => {
     expect(wrapper.find('.bulk-actions').exists()).toBe(true)
   })
 })
+
+describe('AccessLevels — system roles deletable only by a super admin', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    extensionRegistry.clear()
+    setActivePinia(createPinia())
+    configureAuthStore({
+      storageKey: 'test_token',
+      apiClient: { post: async () => ({}), get: async () => ({}), setToken: () => {} } as never,
+    })
+    mockGet.mockImplementation((url: string) =>
+      url.includes('user-levels')
+        ? Promise.resolve({ levels: [] })
+        : Promise.resolve({ levels: adminLevels })
+    )
+  })
+
+  function deleteButtons(wrapper: ReturnType<typeof mountComponent>) {
+    return wrapper
+      .findAll('tbody button.btn--danger')
+      .filter((b) => b.text().trim() === 'Delete')
+  }
+
+  it('shows a Delete button on the system role for a SUPER_ADMIN', async () => {
+    useAuthStore().$patch({
+      user: { id: '1', email: 'super@test.com', role: 'SUPER_ADMIN', permissions: ['*'] },
+      token: 'test-token',
+    })
+    const wrapper = mountComponent()
+    await flushPromises()
+    // Both the non-system (Editor) and system (Super) rows are deletable.
+    expect(deleteButtons(wrapper)).toHaveLength(adminLevels.length)
+  })
+
+  it('hides the Delete button on the system role for an ordinary ADMIN', async () => {
+    useAuthStore().$patch({
+      user: { id: '2', email: 'admin@test.com', role: 'ADMIN', permissions: ['settings.system'] },
+      token: 'test-token',
+    })
+    const wrapper = mountComponent()
+    await flushPromises()
+    // Only the non-system row is deletable; the system row's Delete is hidden.
+    const buttons = deleteButtons(wrapper)
+    expect(buttons).toHaveLength(adminLevels.filter((l) => !l.is_system).length)
+  })
+})
