@@ -19,6 +19,7 @@
 
     <AdminSidebar
       :show-mobile="showMobileMenu"
+      :collapsed="sidebarCollapsed"
       @close="closeMobileMenu"
     />
 
@@ -29,8 +30,14 @@
       @click="closeMobileMenu"
     />
 
-    <div class="admin-main">
-      <AdminTopbar>
+    <div
+      class="admin-main"
+      :class="{ 'admin-main--full': sidebarCollapsed }"
+    >
+      <AdminTopbar
+        :collapsed="sidebarCollapsed"
+        @toggle="toggleSidebar"
+      >
         <template #actions>
           <slot name="actions" />
         </template>
@@ -43,11 +50,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import AdminSidebar from './AdminSidebar.vue';
 import AdminTopbar from './AdminTopbar.vue';
 
+const SIDEBAR_KEY = 'admin_sidebar_collapsed';
+
 const showMobileMenu = ref(false);
+// Desktop sidebar collapse — remembered across reloads so the admin keeps the
+// extra content width they chose.
+const sidebarCollapsed = ref(localStorage.getItem(SIDEBAR_KEY) === '1');
+
+watch(sidebarCollapsed, (collapsed) => {
+  localStorage.setItem(SIDEBAR_KEY, collapsed ? '1' : '0');
+});
 
 function toggleMobileMenu() {
   showMobileMenu.value = !showMobileMenu.value;
@@ -55,6 +71,10 @@ function toggleMobileMenu() {
 
 function closeMobileMenu() {
   showMobileMenu.value = false;
+}
+
+function toggleSidebar() {
+  sidebarCollapsed.value = !sidebarCollapsed.value;
 }
 </script>
 
@@ -140,6 +160,12 @@ function closeMobileMenu() {
   display: flex;
   flex-direction: column;
   background-color: #f5f5f5;
+  transition: margin-left 0.25s ease;
+}
+
+/* Sidebar collapsed (desktop): reclaim the full width for content. */
+.admin-main--full {
+  margin-left: 0;
 }
 
 .admin-content {

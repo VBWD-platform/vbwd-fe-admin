@@ -176,4 +176,40 @@ describe('AdminLayout.vue', () => {
 
     expect(wrapper.text()).toContain('VBWD Admin');
   });
+
+  it('toggles the sidebar collapsed state (and frees content width)', async () => {
+    localStorage.removeItem('admin_sidebar_collapsed');
+    const wrapper = mount(AdminLayout, {
+      global: { plugins: [pinia, router] }
+    });
+    await flushPromises();
+
+    // Expanded by default.
+    expect(wrapper.find('.admin-main--full').exists()).toBe(false);
+    expect(wrapper.find('.admin-sidebar-collapsed').exists()).toBe(false);
+
+    await wrapper.find('[data-testid="sidebar-toggle"]').trigger('click');
+    await flushPromises();
+
+    // Collapsed: content goes full width, sidebar gets the collapsed class,
+    // and the choice is persisted.
+    expect(wrapper.find('.admin-main--full').exists()).toBe(true);
+    expect(wrapper.find('.admin-sidebar-collapsed').exists()).toBe(true);
+    expect(localStorage.getItem('admin_sidebar_collapsed')).toBe('1');
+
+    await wrapper.find('[data-testid="sidebar-toggle"]').trigger('click');
+    await flushPromises();
+    expect(wrapper.find('.admin-main--full').exists()).toBe(false);
+    expect(localStorage.getItem('admin_sidebar_collapsed')).toBe('0');
+  });
+
+  it('restores the collapsed preference from localStorage', async () => {
+    localStorage.setItem('admin_sidebar_collapsed', '1');
+    const wrapper = mount(AdminLayout, {
+      global: { plugins: [pinia, router] }
+    });
+    await flushPromises();
+    expect(wrapper.find('.admin-main--full').exists()).toBe(true);
+    localStorage.removeItem('admin_sidebar_collapsed');
+  });
 });

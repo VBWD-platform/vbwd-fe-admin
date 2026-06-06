@@ -208,6 +208,7 @@
     "failedToCopyPlan": "Failed to copy plan",
     "bulkActivate": "Activate Selected",
     "bulkDeactivate": "Deactivate Selected",
+    "bulkCopy": "Copy Selected",
     "bulkDelete": "Delete Selected",
     "trialDays": "Trial Days",
     "plansTab": "Plans",

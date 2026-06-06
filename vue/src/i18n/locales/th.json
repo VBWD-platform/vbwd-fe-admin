@@ -186,6 +186,7 @@
     "reactivatePlan": "เปิดใช้งานแผนใหม่",
     "copying": "กำลังคัดลอก...",
     "copyPlan": "คัดลอกแผน",
+    "bulkCopy": "คัดลอกที่เลือก",
     "updatePlan": "อัปเดตแผน",
     "nameRequired": "ต้องระบุชื่อแผน",
     "priceInvalid": "ราคาต้องเป็น 0 หรือมากกว่า",

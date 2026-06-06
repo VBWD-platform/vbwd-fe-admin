@@ -186,6 +186,7 @@
     "reactivatePlan": "重新激活计划",
     "copying": "复制中...",
     "copyPlan": "复制计划",
+    "bulkCopy": "复制所选",
     "updatePlan": "更新计划",
     "nameRequired": "计划名称必填",
     "priceInvalid": "价格必须为0或更大",

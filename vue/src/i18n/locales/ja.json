@@ -186,6 +186,7 @@
     "reactivatePlan": "プランを再有効化",
     "copying": "コピー中...",
     "copyPlan": "プランをコピー",
+    "bulkCopy": "選択をコピー",
     "updatePlan": "プランを更新",
     "nameRequired": "プラン名は必須です",
     "priceInvalid": "価格は0以上である必要があります",

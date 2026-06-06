@@ -186,6 +186,7 @@
     "reactivatePlan": "Réactiver le plan",
     "copying": "Copie...",
     "copyPlan": "Copier le plan",
+    "bulkCopy": "Copier la sélection",
     "updatePlan": "Mettre à jour le plan",
     "nameRequired": "Le nom du plan est requis",
     "priceInvalid": "Le prix doit être 0 ou plus",

@@ -192,6 +192,7 @@
     "reactivatePlan": "Tarif reaktivieren",
     "copying": "Kopieren...",
     "copyPlan": "Tarif kopieren",
+    "bulkCopy": "Auswahl kopieren",
     "updatePlan": "Tarif aktualisieren",
     "nameRequired": "Tarifname ist erforderlich",
     "priceInvalid": "Preis muss 0 oder größer sein",

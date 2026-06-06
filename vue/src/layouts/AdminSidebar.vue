@@ -1,7 +1,7 @@
 <template>
   <aside
     class="admin-sidebar"
-    :class="{ 'admin-sidebar-mobile-open': showMobile }"
+    :class="{ 'admin-sidebar-mobile-open': showMobile, 'admin-sidebar-collapsed': collapsed }"
   >
     <div class="sidebar-brand">
       <h2>VBWD Admin</h2>
@@ -144,7 +144,7 @@ import { useAuthStore } from '@/stores/auth';
 import { extensionRegistry } from '@/plugins/extensionRegistry';
 import type { NavSection } from '@/plugins/extensionRegistry';
 
-defineProps<{ showMobile?: boolean }>();
+defineProps<{ showMobile?: boolean; collapsed?: boolean }>();
 const emit = defineEmits<{ close: [] }>();
 
 const { t } = useI18n();
@@ -247,6 +247,13 @@ async function handleLogout(): Promise<void> {
   height: 100vh;
   left: 0;
   top: 0;
+  transition: transform 0.25s ease;
+}
+
+/* Desktop collapse — slide the sidebar off-screen so content fills the width.
+   Declared before the mobile media block so mobile-open still overrides it. */
+.admin-sidebar-collapsed {
+  transform: translateX(-100%);
 }
 
 .sidebar-brand {
