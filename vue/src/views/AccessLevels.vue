@@ -3,6 +3,18 @@
     <div class="page-header">
       <h1>{{ $t('access.title') }}</h1>
       <div class="page-header__actions">
+        <ImportExportControls
+          v-if="showImportExport"
+          :api="dataExchangeApi"
+          entity-key="access_levels"
+          :selected-ids="selectedAccessLevelIds"
+          :can-export="accessLevelsCapabilities.can_export"
+          :can-import="accessLevelsCapabilities.can_import"
+          :can-export-pii="accessLevelsCapabilities.can_export_pii"
+          :is-superadmin="isSuperAdmin"
+          :supported-formats="accessLevelsCapabilities.supported_formats"
+          @refresh="loadAll"
+        />
         <button
           v-if="canManage"
           class="btn"
@@ -251,9 +263,12 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, watch } from 'vue';
+import { ImportExportControls } from 'vbwd-view-component';
 import { api } from '@/api';
 import { useAuthStore } from '@/stores/auth';
 import { extensionRegistry } from '@/plugins/extensionRegistry';
+import { createDataExchangeApi } from '@/api/dataExchangeApi';
+import { useDataExchangeManifest } from '@/composables/useDataExchangeManifest';
 
 interface AccessLevel {
   id: string;
@@ -286,6 +301,17 @@ const activePluginTab = computed(() =>
 
 // Bulk selection
 const selectedIds = reactive(new Set<string>());
+
+// Import/Export controls (S46.4) — settings cluster, gated by the manifest.
+const dataExchangeApi = createDataExchangeApi();
+const { load: loadManifest, capabilitiesFor } = useDataExchangeManifest();
+const accessLevelsCapabilities = computed(() => capabilitiesFor('access_levels'));
+const showImportExport = computed(
+  () =>
+    accessLevelsCapabilities.value.can_export ||
+    accessLevelsCapabilities.value.can_import,
+);
+const selectedAccessLevelIds = computed(() => [...selectedIds]);
 
 const deletableAdminIds = computed(() => adminLevels.value.filter(l => canDelete(l)).map(l => l.id));
 const deletableUserIds = computed(() => userLevels.value.filter(l => canDelete(l)).map(l => l.id));
@@ -400,7 +426,10 @@ async function handleImport(e: Event) {
   }
 }
 
-onMounted(loadAll);
+onMounted(() => {
+  loadAll();
+  loadManifest();
+});
 </script>
 
 <style scoped>

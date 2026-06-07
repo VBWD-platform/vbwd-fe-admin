@@ -53,7 +53,8 @@
     "profile": "Профиль",
     "logout": "Выйти",
     "sales": "Продажи",
-    "accessLevels": "Access Levels"
+    "accessLevels": "Access Levels",
+    "importExport": "Import / Export"
   },
   "auth": {
     "login": "Вход",

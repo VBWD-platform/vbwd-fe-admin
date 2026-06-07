@@ -5,14 +5,28 @@
   >
     <div class="page-header">
       <h2>{{ $t('paymentMethods.title') }}</h2>
-      <router-link
-        v-if="canManage"
-        to="/admin/payment-methods/new"
-        class="btn btn-primary"
-        data-testid="create-payment-method"
-      >
-        {{ $t('paymentMethods.createMethod') }}
-      </router-link>
+      <div class="page-header-actions">
+        <ImportExportControls
+          v-if="showImportExport"
+          :api="dataExchangeApi"
+          entity-key="payment_methods"
+          :selected-ids="selectedMethodIds"
+          :can-export="paymentMethodsCapabilities.can_export"
+          :can-import="paymentMethodsCapabilities.can_import"
+          :can-export-pii="paymentMethodsCapabilities.can_export_pii"
+          :is-superadmin="isSuperadmin"
+          :supported-formats="paymentMethodsCapabilities.supported_formats"
+          @refresh="loadPaymentMethods"
+        />
+        <router-link
+          v-if="canManage"
+          to="/admin/payment-methods/new"
+          class="btn btn-primary"
+          data-testid="create-payment-method"
+        >
+          {{ $t('paymentMethods.createMethod') }}
+        </router-link>
+      </div>
     </div>
 
     <div
@@ -232,20 +246,35 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { ImportExportControls } from 'vbwd-view-component';
 import { usePaymentMethodsStore, type PaymentMethod } from '@/stores/paymentMethods';
 import { useAuthStore } from '@/stores/auth';
 import { useI18n } from 'vue-i18n';
+import { createDataExchangeApi } from '@/api/dataExchangeApi';
+import { useDataExchangeManifest } from '@/composables/useDataExchangeManifest';
 
 const { t } = useI18n();
 const store = usePaymentMethodsStore();
 const authStore = useAuthStore();
 const canManage = computed(() => authStore.hasPermission('settings.manage'));
 
+// Import/Export controls (S46.4) — settings cluster, gated by the manifest.
+const dataExchangeApi = createDataExchangeApi();
+const isSuperadmin = computed(() => authStore.isSuperAdmin);
+const { load: loadManifest, capabilitiesFor } = useDataExchangeManifest();
+const paymentMethodsCapabilities = computed(() => capabilitiesFor('payment_methods'));
+const showImportExport = computed(
+  () =>
+    paymentMethodsCapabilities.value.can_export ||
+    paymentMethodsCapabilities.value.can_import,
+);
+
 const loading = ref(false);
 const error = ref<string | null>(null);
 const actionLoading = ref<string | null>(null);
 const successMessage = ref<string | null>(null);
 const selectedMethods = ref(new Set<string>());
+const selectedMethodIds = computed(() => [...selectedMethods.value]);
 const processingBulk = ref(false);
 const bulkSuccessMessage = ref('');
 const bulkErrorMessage = ref('');
@@ -470,6 +499,7 @@ async function handleBulkDelete(): Promise<void> {
 
 onMounted(() => {
   loadPaymentMethods();
+  loadManifest();
 });
 </script>
 

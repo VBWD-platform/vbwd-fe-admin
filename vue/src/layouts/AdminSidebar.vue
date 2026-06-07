@@ -175,6 +175,7 @@ const coreSections = computed((): NavSection[] => [
       { label: t('nav.settings'), to: '/admin/settings', id: 'settings', requiredPermission: 'settings.view' },
       { label: t('nav.paymentMethods'), to: '/admin/payment-methods', id: 'payment-methods', requiredPermission: 'settings.manage' },
       { label: t('nav.accessLevels'), to: '/admin/settings/access', id: 'access-levels', requiredPermission: 'settings.system' },
+      { label: t('nav.importExport'), to: '/admin/import-export', id: 'import-export', requiredPermission: 'settings.view' },
     ],
   },
 ]);

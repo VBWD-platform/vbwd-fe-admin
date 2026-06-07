@@ -45,6 +45,20 @@
           {{ $t('invoices.statuses.refunded') }}
         </option>
       </select>
+
+      <ImportExportControls
+        v-if="showImportExport"
+        :api="dataExchangeApi"
+        entity-key="invoices"
+        :selected-ids="selectedInvoiceIds"
+        :filter-state="invoiceFilterState"
+        :can-export="invoicesCapabilities.can_export"
+        :can-import="invoicesCapabilities.can_import"
+        :can-export-pii="invoicesCapabilities.can_export_pii"
+        :is-superadmin="isSuperadmin"
+        :supported-formats="invoicesCapabilities.supported_formats"
+        @refresh="fetchInvoices"
+      />
     </div>
 
     <!-- Bulk Actions -->
@@ -267,8 +281,11 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { ImportExportControls } from 'vbwd-view-component';
 import { useInvoicesStore } from '@/stores/invoices';
 import { useAuthStore } from '@/stores/auth';
+import { createDataExchangeApi } from '@/api/dataExchangeApi';
+import { useDataExchangeManifest } from '@/composables/useDataExchangeManifest';
 
 const { t } = useI18n();
 
@@ -276,6 +293,16 @@ const router = useRouter();
 const invoicesStore = useInvoicesStore();
 const authStore = useAuthStore();
 const canManage = computed(() => authStore.hasPermission('invoices.manage'));
+
+// Import/Export controls (S46.4). Invoices are export-only; the control hides
+// itself (R12) unless the manifest grants the user `invoices.export`.
+const dataExchangeApi = createDataExchangeApi();
+const isSuperadmin = computed(() => authStore.isSuperAdmin);
+const { load: loadManifest, capabilitiesFor } = useDataExchangeManifest();
+const invoicesCapabilities = computed(() => capabilitiesFor('invoices'));
+const showImportExport = computed(
+  () => invoicesCapabilities.value.can_export || invoicesCapabilities.value.can_import,
+);
 
 const statusFilter = ref('');
 const searchQuery = ref('');
@@ -285,6 +312,12 @@ const selectedInvoices = ref(new Set<string>());
 const processingBulk = ref(false);
 const bulkSuccessMessage = ref('');
 const bulkErrorMessage = ref('');
+
+const selectedInvoiceIds = computed(() => [...selectedInvoices.value]);
+const invoiceFilterState = computed(() => ({
+  search: searchQuery.value,
+  status: statusFilter.value,
+}));
 
 // Sorting state
 type SortColumn = 'invoice_number' | 'user_email' | 'amount' | 'status' | 'created_at' | null;
@@ -585,6 +618,7 @@ async function handleBulkDelete(): Promise<void> {
 
 onMounted(() => {
   fetchInvoices();
+  loadManifest();
 });
 </script>
 

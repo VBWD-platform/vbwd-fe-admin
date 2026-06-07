@@ -53,7 +53,8 @@
     "profile": "プロフィール",
     "logout": "ログアウト",
     "sales": "売上",
-    "accessLevels": "Access Levels"
+    "accessLevels": "Access Levels",
+    "importExport": "Import / Export"
   },
   "auth": {
     "login": "ログイン",

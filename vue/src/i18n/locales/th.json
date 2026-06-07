@@ -53,7 +53,8 @@
     "profile": "โปรไฟล์",
     "logout": "ออกจากระบบ",
     "sales": "ยอดขาย",
-    "accessLevels": "Access Levels"
+    "accessLevels": "Access Levels",
+    "importExport": "Import / Export"
   },
   "auth": {
     "login": "เข้าสู่ระบบ",

@@ -58,7 +58,8 @@
     "profile": "Profile",
     "logout": "Logout",
     "sales": "Sales",
-    "accessLevels": "Access Levels"
+    "accessLevels": "Access Levels",
+    "importExport": "Import / Export"
   },
   "auth": {
     "login": "Login",
@@ -430,7 +431,8 @@
       "adminPlugins": "Admin Plugins",
       "backendPlugins": "Backend Plugins",
       "userPlugins": "User Plugins",
-      "tax": "Tax"
+      "tax": "Tax",
+      "importExport": "Import / Export"
     },
     "coreSettings": {
       "title": "Service Provider Information",

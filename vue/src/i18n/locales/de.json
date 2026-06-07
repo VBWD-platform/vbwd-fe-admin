@@ -56,7 +56,8 @@
     "profile": "Profil",
     "logout": "Abmelden",
     "sales": "Verkauf",
-    "accessLevels": "Access Levels"
+    "accessLevels": "Access Levels",
+    "importExport": "Import / Export"
   },
   "auth": {
     "login": "Anmelden",

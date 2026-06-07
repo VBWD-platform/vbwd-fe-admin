@@ -112,6 +112,21 @@ export interface AccessLevelFormField {
   fields?: string[];
 }
 
+export interface DataExchangeTabExtension {
+  /** Unique tab ID (also the active-tab value) */
+  id: string;
+  /** Tab button label (plugin owns its i18n) */
+  label: string;
+  /** Tab content component, rendered inside the Import/Export page */
+  component: Component;
+  /** Static props passed to the component */
+  props?: Record<string, unknown>;
+  /** Ordering hint among contributed tabs (lower = earlier; default 100) */
+  order?: number;
+  /** Permission required to see this tab (R12 gating) */
+  requiredPermission?: string;
+}
+
 export interface AdminExtension {
   userDetailsSections?: Component[];
   /** Sections rendered on the core Invoice Details page (receive `:invoice`) */
@@ -136,6 +151,8 @@ export interface AdminExtension {
   accessLevelUserColumns?: AccessLevelUserColumn[];
   /** Additional tabs on the User Edit page (e.g. Subscriptions, Add-ons) */
   userEditTabs?: UserEditTab[];
+  /** Additional tabs on the Settings → Import/Export page (R7, S46.4) */
+  dataExchangeTabs?: DataExchangeTabExtension[];
 }
 
 class ExtensionRegistry {
@@ -239,6 +256,16 @@ class ExtensionRegistry {
       }
     });
     return columns;
+  }
+
+  getDataExchangeTabs(): DataExchangeTabExtension[] {
+    const tabs: DataExchangeTabExtension[] = [];
+    this.extensions.forEach((ext) => {
+      if (ext.dataExchangeTabs) {
+        tabs.push(...ext.dataExchangeTabs);
+      }
+    });
+    return tabs.sort((a, b) => (a.order ?? 100) - (b.order ?? 100));
   }
 
   get(pluginName: string): AdminExtension | undefined {

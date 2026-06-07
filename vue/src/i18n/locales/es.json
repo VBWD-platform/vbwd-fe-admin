@@ -53,7 +53,8 @@
     "profile": "Perfil",
     "logout": "Cerrar Sesión",
     "sales": "Ventas",
-    "accessLevels": "Access Levels"
+    "accessLevels": "Access Levels",
+    "importExport": "Import / Export"
   },
   "auth": {
     "login": "Iniciar Sesión",

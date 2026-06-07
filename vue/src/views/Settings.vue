@@ -1520,7 +1520,14 @@ const taxAdminStore = useTaxAdminStore();
 const canManage = computed(() => authStore.hasPermission('settings.manage'));
 
 // Tab state
-type MainTab = 'core' | 'tokens' | 'countries' | 'tax' | 'adminPlugins' | 'backendPlugins' | 'userPlugins';
+type MainTab =
+  | 'core'
+  | 'tokens'
+  | 'countries'
+  | 'tax'
+  | 'adminPlugins'
+  | 'backendPlugins'
+  | 'userPlugins';
 
 const activeTab = ref<MainTab>('core');
 

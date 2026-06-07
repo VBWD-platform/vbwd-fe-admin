@@ -202,6 +202,17 @@
                 />
               </template>
 
+              <!-- Dual-list (two-sided selector, options fetched from endpoint) -->
+              <template v-else-if="field.component === 'dual-list'">
+                <label class="field-label">{{ field.label }}</label>
+                <DualListSelector
+                  :model-value="asStringArray(configValues[field.key])"
+                  :options="dualListOptions[field.key] || []"
+                  :testid="field.key"
+                  @update:model-value="configValues[field.key] = $event"
+                />
+              </template>
+
               <!-- Field description -->
               <p
                 v-if="getFieldDescription(field.key)"
@@ -237,6 +248,23 @@ import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/auth';
 import { api } from '@/api';
+import DualListSelector, { type DualListOption } from '@/components/DualListSelector.vue';
+
+interface AdminConfigField {
+  key: string;
+  label: string;
+  component: string;
+  inputType?: string;
+  options?: Array<{ value: string; label: string }>;
+  min?: number;
+  max?: number;
+  // For component === 'dual-list': options are fetched from a remote endpoint
+  // so the core renderer stays agnostic to any plugin's domain vocabulary.
+  optionsEndpoint?: string;
+  optionsKey?: string;
+  valueKey?: string;
+  labelKey?: string;
+}
 
 interface PluginDetailResponse {
   name: string;
@@ -246,7 +274,7 @@ interface PluginDetailResponse {
   status: 'active' | 'inactive' | 'error';
   dependencies: string[];
   configSchema: Record<string, { type: string; default: unknown; description?: string }>;
-  adminConfig: { tabs: Array<{ id: string; label: string; fields: Array<{ key: string; label: string; component: string; inputType?: string; options?: Array<{ value: string; label: string }>; min?: number; max?: number }> }> };
+  adminConfig: { tabs: Array<{ id: string; label: string; fields: AdminConfigField[] }> };
   savedConfig: Record<string, unknown>;
 }
 
@@ -263,12 +291,62 @@ const successMessage = ref<string | null>(null);
 const activeConfigTab = ref('');
 const plugin = ref<PluginDetailResponse | null>(null);
 const configValues = reactive<Record<string, unknown>>({});
+// Fetched options for each `dual-list` field, keyed by field key.
+const dualListOptions = reactive<Record<string, DualListOption[]>>({});
 
 const pluginName = route.params.pluginName as string;
 
 function getFieldDescription(key: string): string {
   if (!plugin.value?.configSchema?.[key]) return '';
   return plugin.value.configSchema[key].description || '';
+}
+
+/** Coerce a stored value into a string[] (tolerates a legacy comma-separated string). */
+function asStringArray(value: unknown): string[] {
+  if (Array.isArray(value)) return value.map(String);
+  if (typeof value === 'string') {
+    return value.split(',').map(s => s.trim()).filter(Boolean);
+  }
+  return [];
+}
+
+function eachField(cb: (field: AdminConfigField) => void): void {
+  for (const tab of plugin.value?.adminConfig?.tabs ?? []) {
+    for (const field of tab.fields ?? []) cb(field);
+  }
+}
+
+/**
+ * For every `dual-list` field, fetch its options from the declared endpoint and
+ * normalise its stored value to an array. The renderer never names a domain
+ * concept — the field config supplies the endpoint and the value/label keys.
+ */
+async function loadDualListOptions(): Promise<void> {
+  const fields: AdminConfigField[] = [];
+  eachField(f => { if (f.component === 'dual-list') fields.push(f); });
+
+  for (const field of fields) {
+    // Ensure the bound value is always an array (legacy text stored a CSV string).
+    configValues[field.key] = asStringArray(configValues[field.key]);
+    dualListOptions[field.key] = dualListOptions[field.key] ?? [];
+
+    if (!field.optionsEndpoint) continue;
+    try {
+      const valueKey = field.valueKey ?? 'value';
+      const labelKey = field.labelKey ?? 'label';
+      const res = await api.get(field.optionsEndpoint) as unknown;
+      const rawList = field.optionsKey
+        ? ((res as Record<string, unknown>)?.[field.optionsKey] as unknown[])
+        : (res as unknown[]);
+      dualListOptions[field.key] = (Array.isArray(rawList) ? rawList : [])
+        .map(item => {
+          const rec = item as Record<string, unknown>;
+          return { value: String(rec[valueKey]), label: String(rec[labelKey] ?? rec[valueKey]) };
+        });
+    } catch {
+      // Leave options empty on failure; already-selected values still render.
+    }
+  }
 }
 
 function initConfigValues(): void {
@@ -299,6 +377,7 @@ async function loadPlugin(): Promise<void> {
     const data = await api.get(`/admin/plugins/${pluginName}`) as PluginDetailResponse;
     plugin.value = data;
     initConfigValues();
+    await loadDualListOptions();
   } catch (e) {
     error.value = (e as Error).message || 'Failed to load plugin';
   } finally {

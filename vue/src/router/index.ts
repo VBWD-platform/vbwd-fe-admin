@@ -147,6 +147,12 @@ const routes: RouteRecordRaw[] = [
         name: 'access-level-new',
         component: () => import('@/views/AccessLevelForm.vue'),
         meta: { requiredPermission: 'settings.system' }
+      },
+      {
+        path: 'import-export',
+        name: 'ImportExport',
+        component: () => import('@/views/ImportExport.vue'),
+        meta: { requiredPermission: 'settings.view' }
       }
     ]
   }

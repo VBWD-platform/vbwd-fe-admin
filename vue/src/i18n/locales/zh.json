@@ -53,7 +53,8 @@
     "profile": "个人资料",
     "logout": "退出登录",
     "sales": "销售",
-    "accessLevels": "Access Levels"
+    "accessLevels": "Access Levels",
+    "importExport": "Import / Export"
   },
   "auth": {
     "login": "登录",

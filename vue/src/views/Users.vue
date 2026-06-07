@@ -46,6 +46,20 @@
           {{ $t('common.inactive') }}
         </option>
       </select>
+
+      <ImportExportControls
+        v-if="showImportExport"
+        :api="dataExchangeApi"
+        entity-key="users"
+        :selected-ids="selectedUserIds"
+        :filter-state="userFilterState"
+        :can-export="usersCapabilities.can_export"
+        :can-import="usersCapabilities.can_import"
+        :can-export-pii="usersCapabilities.can_export_pii"
+        :is-superadmin="isSuperadmin"
+        :supported-formats="usersCapabilities.supported_formats"
+        @refresh="fetchUsers"
+      />
     </div>
 
     <!-- Bulk Actions -->
@@ -285,14 +299,33 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { ImportExportControls } from 'vbwd-view-component';
 import { useUsersStore } from '@/stores/users';
 import { useAuthStore } from '@/stores/auth';
 import { api } from '@/api';
+import { createDataExchangeApi } from '@/api/dataExchangeApi';
+import { useDataExchangeManifest } from '@/composables/useDataExchangeManifest';
 
 const router = useRouter();
 const usersStore = useUsersStore();
 const authStore = useAuthStore();
 const canManage = computed(() => authStore.hasPermission('users.manage'));
+
+// Import/Export controls (S46.4). Capabilities come from the perm-filtered
+// data-exchange manifest; the control is hidden (R12) when neither export nor
+// import is permitted for the `users` entity.
+const dataExchangeApi = createDataExchangeApi();
+const isSuperadmin = computed(() => authStore.isSuperAdmin);
+const { load: loadManifest, capabilitiesFor } = useDataExchangeManifest();
+const usersCapabilities = computed(() => capabilitiesFor('users'));
+const showImportExport = computed(
+  () => usersCapabilities.value.can_export || usersCapabilities.value.can_import,
+);
+const selectedUserIds = computed(() => [...selectedUsers.value]);
+const userFilterState = computed(() => ({
+  search: searchQuery.value,
+  status: statusFilter.value,
+}));
 
 const searchQuery = ref('');
 const statusFilter = ref('');
@@ -651,6 +684,7 @@ async function handleBulkAssignRole(): Promise<void> {
 onMounted(() => {
   fetchUsers();
   loadRoles();
+  loadManifest();
 });
 </script>
 
