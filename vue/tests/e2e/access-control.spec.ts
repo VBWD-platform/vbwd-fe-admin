@@ -102,32 +102,6 @@ test.describe('Access Control — Permission API', () => {
     expect(deleteRes.status).toBe(400);
   });
 
-  test('export/import roundtrip preserves data', async () => {
-    const token = await getAdminToken();
-    const headers = {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    };
-
-    // Export
-    const exportRes = await fetch(`${API}/admin/access/export`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({}),
-    });
-    expect(exportRes.status).toBe(200);
-    const exportData = await exportRes.json();
-    expect(exportData.roles.length).toBeGreaterThan(0);
-
-    // Import (upsert — should not fail)
-    const importRes = await fetch(`${API}/admin/access/import`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(exportData),
-    });
-    expect(importRes.status).toBe(200);
-  });
-
   test('unauthenticated request to access API returns 401', async () => {
     const response = await fetch(`${API}/admin/access/levels`);
     expect(response.status).toBe(401);

@@ -15,27 +15,6 @@
           :supported-formats="accessLevelsCapabilities.supported_formats"
           @refresh="loadAll"
         />
-        <button
-          v-if="canManage"
-          class="btn"
-          @click="handleExport"
-        >
-          {{ $t('access.export') }}
-        </button>
-        <button
-          v-if="canManage"
-          class="btn"
-          @click="importInput?.click()"
-        >
-          {{ $t('access.import') }}
-        </button>
-        <input
-          ref="importInput"
-          type="file"
-          accept=".json"
-          style="display:none"
-          @change="handleImport"
-        >
         <router-link
           v-if="canManage"
           :to="activeTab === 'admin' ? '/admin/settings/access/new' : '/admin/settings/access/new?type=user'"
@@ -286,7 +265,6 @@ const isSuperAdmin = computed(() => authStore.isSuperAdmin);
 const canDelete = (level: AccessLevel): boolean =>
   canManage.value && (!level.is_system || isSuperAdmin.value);
 
-const importInput = ref<HTMLInputElement | null>(null);
 const loading = ref(true);
 const activeTab = ref<string>('admin');
 const adminLevels = ref<AccessLevel[]>([]);
@@ -393,37 +371,6 @@ async function handleDeleteUser(id: string, name: string) {
   if (!confirm(`Delete user access level "${name}"?`)) return;
   await api.delete(`/admin/access/user-levels/${id}`);
   await loadUserLevels();
-}
-
-async function handleExport() {
-  const endpoint = activeTab.value === 'admin'
-    ? '/admin/access/export'
-    : '/admin/access/user-levels/export';
-  const res = await api.post(endpoint, {}) as Record<string, unknown>;
-  const blob = new Blob([JSON.stringify(res, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = activeTab.value === 'admin' ? 'access-levels.json' : 'user-access-levels.json';
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-async function handleImport(e: Event) {
-  const file = (e.target as HTMLInputElement).files?.[0];
-  if (!file) return;
-  try {
-    const payload = JSON.parse(await file.text());
-    const endpoint = activeTab.value === 'admin'
-      ? '/admin/access/import'
-      : '/admin/access/user-levels/import';
-    await api.post(endpoint, payload);
-    await loadAll();
-  } catch (err) {
-    alert((err as Error)?.message ?? 'Import failed');
-  } finally {
-    (e.target as HTMLInputElement).value = '';
-  }
 }
 
 onMounted(() => {

@@ -58,6 +58,8 @@
         :can-export-pii="usersCapabilities.can_export_pii"
         :is-superadmin="isSuperadmin"
         :supported-formats="usersCapabilities.supported_formats"
+        :allow-export-all="false"
+        :allow-export-selected="false"
         @refresh="fetchUsers"
       />
     </div>

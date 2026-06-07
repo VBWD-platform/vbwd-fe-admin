@@ -468,35 +468,6 @@
           {{ $t('countriesConfig.description') }}
         </p>
 
-        <div class="countries-porting-actions">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            data-testid="export-countries-btn"
-            :disabled="countriesPorting"
-            @click="exportCountries"
-          >
-            {{ $t('countriesConfig.exportButton') }}
-          </button>
-          <button
-            type="button"
-            class="btn btn-secondary"
-            data-testid="import-countries-btn"
-            :disabled="countriesPorting"
-            @click="triggerImportPicker"
-          >
-            {{ $t('countriesConfig.importButton') }}
-          </button>
-          <input
-            ref="countryFileInput"
-            type="file"
-            accept="application/json,.json"
-            class="visually-hidden-file"
-            data-testid="import-countries-input"
-            @change="handleImportFile"
-          >
-        </div>
-
         <div
           v-if="countriesLoading && !countriesHasData"
           class="bundles-loading"
@@ -1739,59 +1710,6 @@ async function loadCountries(): Promise<void> {
   }
 }
 
-const countryFileInput = ref<HTMLInputElement | null>(null);
-const countriesPorting = ref(false);
-
-async function exportCountries(): Promise<void> {
-  countriesPorting.value = true;
-  countriesError.value = null;
-  try {
-    const envelope = await countriesStore.exportCountries();
-    const blob = new Blob([JSON.stringify(envelope, null, 2)], {
-      type: 'application/json',
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'vbwd-countries.json';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  } catch (e) {
-    countriesError.value = (e as Error).message || t('countriesConfig.exportError');
-  } finally {
-    countriesPorting.value = false;
-  }
-}
-
-function triggerImportPicker(): void {
-  countryFileInput.value?.click();
-}
-
-async function handleImportFile(event: Event): Promise<void> {
-  const input = event.target as HTMLInputElement;
-  const file = input.files?.[0];
-  if (!file) {
-    return;
-  }
-  countriesPorting.value = true;
-  countriesError.value = null;
-  try {
-    const payload = JSON.parse(await file.text());
-    const result = await countriesStore.importCountries(payload);
-    successMessage.value = t('countriesConfig.importSuccess', {
-      created: result.created,
-      updated: result.updated,
-    });
-    setTimeout(() => { successMessage.value = null; }, 4000);
-  } catch (e) {
-    countriesError.value = (e as Error).message || t('countriesConfig.importError');
-  } finally {
-    countriesPorting.value = false;
-    input.value = '';  // allow re-selecting the same file
-  }
-}
 
 async function handleEnableCountry(code: string): Promise<void> {
   countryActionLoading.value = code;
@@ -2713,37 +2631,6 @@ onMounted(() => {
 }
 
 /* Countries Tab */
-.countries-porting-actions {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  margin-bottom: 1.25rem;
-}
-
-.countries-porting-actions .btn {
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  border: 1px solid var(--vbwd-border, #d1d5db);
-  background: var(--vbwd-surface, #fff);
-  color: var(--vbwd-text, #374151);
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.countries-porting-actions .btn:hover:not(:disabled) {
-  background: var(--vbwd-surface-hover, #f3f4f6);
-}
-
-.countries-porting-actions .btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.visually-hidden-file {
-  display: none;
-}
-
 .countries-layout {
   display: grid;
   grid-template-columns: 1fr 1fr;

@@ -33,7 +33,7 @@ vi.mock('@/composables/useDataExchangeManifest', () => ({
 
 const ControlsStub = defineComponent({
   name: 'ImportExportControls',
-  props: ['api', 'entityKey', 'selectedIds', 'filterState', 'canExport', 'canImport', 'canExportPii', 'isSuperadmin', 'supportedFormats'],
+  props: ['api', 'entityKey', 'selectedIds', 'filterState', 'canExport', 'canImport', 'canExportPii', 'isSuperadmin', 'supportedFormats', 'allowExportAll', 'allowExportSelected', 'allowExportFiltered', 'allowImport'],
   emits: ['refresh'],
   template: '<div data-testid="iec-stub" />',
 });
@@ -100,6 +100,19 @@ describe('Users → ImportExportControls (S46.4)', () => {
     await flushPromises();
 
     expect(wrapper.findComponent(ControlsStub).props('selectedIds')).toEqual(['1']);
+  });
+
+  it('GDPR: disables bulk export-all and export-selected but keeps import', async () => {
+    capabilities.value = {
+      users: { can_export: true, can_import: true, can_export_pii: false, supported_formats: ['json'] },
+    };
+    const wrapper = mountUsers();
+    await flushPromises();
+
+    const control = wrapper.findComponent(ControlsStub);
+    expect(control.props('allowExportAll')).toBe(false);
+    expect(control.props('allowExportSelected')).toBe(false);
+    expect(control.props('allowImport')).not.toBe(false);
   });
 
   it('R12: hides the control when the manifest grants no users capabilities', async () => {

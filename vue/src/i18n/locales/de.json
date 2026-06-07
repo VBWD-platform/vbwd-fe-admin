@@ -527,12 +527,7 @@
     "countryEnabled": "Land erfolgreich aktiviert",
     "countryDisabled": "Land erfolgreich deaktiviert",
     "orderSaved": "Reihenfolge erfolgreich gespeichert",
-    "loadError": "Fehler beim Laden der Länder",
-    "exportButton": "Länder exportieren",
-    "importButton": "Länder importieren",
-    "exportError": "Länder konnten nicht exportiert werden",
-    "importError": "Länder konnten nicht importiert werden",
-    "importSuccess": "Import abgeschlossen: {created} erstellt, {updated} aktualisiert"
+    "loadError": "Fehler beim Laden der Länder"
   },
   "profile": {
     "title": "Profil",
@@ -700,8 +695,6 @@
     "save": "Save",
     "saving": "Saving...",
     "cancel": "Cancel",
-    "export": "Export",
-    "import": "Import",
     "noLevels": "No access levels defined.",
     "deleteConfirm": "Delete access level \"{name}\"?",
     "systemRoleWarning": "System roles cannot be deleted",

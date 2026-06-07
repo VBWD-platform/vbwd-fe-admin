@@ -187,25 +187,4 @@ test.describe('Access Level Management (Video Proof)', () => {
     expect(coreKeys).toContain('settings.system');
     expect(coreKeys).toContain('settings.manage');
   });
-
-  test('export/import roundtrip', async ({ page }) => {
-    await loginAsAdmin(page);
-    const token = await page.evaluate(() => localStorage.getItem('admin_token'));
-
-    // Export
-    const exportResponse = await page.request.post(`${BASE}/api/v1/admin/access/export`, {
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      data: {},
-    });
-    expect(exportResponse.status()).toBe(200);
-    const exportData = await exportResponse.json();
-    expect(exportData.roles.length).toBeGreaterThan(0);
-
-    // Import (upsert)
-    const importResponse = await page.request.post(`${BASE}/api/v1/admin/access/import`, {
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      data: exportData,
-    });
-    expect(importResponse.status()).toBe(200);
-  });
 });

@@ -677,8 +677,6 @@
     "save": "Save",
     "saving": "Saving...",
     "cancel": "Cancel",
-    "export": "Export",
-    "import": "Import",
     "noLevels": "No access levels defined.",
     "deleteConfirm": "Delete access level \"{name}\"?",
     "systemRoleWarning": "System roles cannot be deleted",
