@@ -1,6 +1,9 @@
 <template>
-  <div class="import-export-view">
-    <div class="import-export-header">
+  <div
+    class="import-export-view"
+    data-testid="import-export-view"
+  >
+    <div class="page-header">
       <h2>{{ $t('nav.importExport') }}</h2>
     </div>
 
@@ -42,7 +45,21 @@ const dataExchangeTabs = computed<DataExchangeTab[]>(() =>
 </script>
 
 <style scoped>
-.import-export-header {
-  margin-bottom: 1.5rem;
+.import-export-view {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.page-header h2 {
+  margin: 0;
+  color: #2c3e50;
 }
 </style>
