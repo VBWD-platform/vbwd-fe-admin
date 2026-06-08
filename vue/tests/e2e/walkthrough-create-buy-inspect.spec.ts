@@ -27,7 +27,7 @@
  *   - A $0 plan (GHRM) is bought so checkout completes without a payment gateway while still
  *     producing a real invoice + subscription.
  */
-import { test, expect, Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { adminCredentials } from './helpers/auth';
 import * as fs from 'fs';
 import * as path from 'path';
