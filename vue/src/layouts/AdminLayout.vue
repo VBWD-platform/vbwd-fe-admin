@@ -21,6 +21,7 @@
       :show-mobile="showMobileMenu"
       :collapsed="sidebarCollapsed"
       @close="closeMobileMenu"
+      @toggle="toggleSidebar"
     />
 
     <!-- Mobile Overlay -->

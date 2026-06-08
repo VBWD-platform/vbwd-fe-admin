@@ -1,15 +1,29 @@
 <template>
   <header class="admin-topbar">
     <div class="topbar-title">
+      <!-- Reopen the menu when the sidebar is collapsed (the hide-toggle now
+           lives in the sidebar brand, which is off-screen while collapsed). -->
       <button
-        class="sidebar-toggle"
+        v-if="collapsed"
+        class="topbar-btn sidebar-show"
         type="button"
-        data-testid="sidebar-toggle"
-        :title="collapsed ? 'Show menu' : 'Hide menu'"
-        :aria-label="collapsed ? 'Show menu' : 'Hide menu'"
+        data-testid="sidebar-show"
+        title="Show menu"
+        aria-label="Show menu"
         @click="$emit('toggle')"
       >
-        {{ collapsed ? '☰' : '«' }}
+        ☰
+      </button>
+      <!-- Browser-style back, on every admin page. -->
+      <button
+        class="topbar-btn topbar-back"
+        type="button"
+        data-testid="topbar-back"
+        title="Back"
+        aria-label="Back"
+        @click="goBack"
+      >
+        ←
       </button>
       <h1>{{ pageTitle }}</h1>
     </div>
@@ -21,12 +35,20 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 defineProps<{ collapsed?: boolean }>();
 defineEmits<{ toggle: [] }>();
 
 const route = useRoute();
+const router = useRouter();
+
+// Literal browser-back. Falls back to the dashboard when there is no history
+// to go back to (e.g. the admin was opened directly on this page).
+function goBack(): void {
+  if (window.history.length > 1) router.back();
+  else router.push('/admin/dashboard');
+}
 
 const pageTitle = computed((): string => {
   // Plugin-contributed routes carry their own title via meta.title, so core
@@ -69,8 +91,8 @@ const pageTitle = computed((): string => {
   color: #2c3e50;
 }
 
-/* Desktop sidebar collapse toggle (mobile uses its own burger header). */
-.sidebar-toggle {
+/* Topbar buttons: back (always) + show-menu (only while collapsed). */
+.topbar-btn {
   background: none;
   border: 1px solid #e0e0e0;
   border-radius: 6px;
@@ -83,12 +105,14 @@ const pageTitle = computed((): string => {
   flex-shrink: 0;
 }
 
-.sidebar-toggle:hover {
+.topbar-btn:hover {
   background: #f5f5f5;
 }
 
+/* The collapsed "show menu" reopen affordance is desktop-only — mobile uses
+   its own burger header. The back button stays available everywhere. */
 @media (max-width: 1024px) {
-  .sidebar-toggle {
+  .sidebar-show {
     display: none;
   }
 }

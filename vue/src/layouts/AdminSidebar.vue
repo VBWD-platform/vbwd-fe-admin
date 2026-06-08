@@ -5,6 +5,16 @@
   >
     <div class="sidebar-brand">
       <h2>VBWD Admin</h2>
+      <button
+        class="sidebar-toggle"
+        type="button"
+        data-testid="sidebar-toggle"
+        title="Hide menu"
+        aria-label="Hide menu"
+        @click="emit('toggle')"
+      >
+        «
+      </button>
     </div>
     <nav
       class="sidebar-nav"
@@ -145,7 +155,7 @@ import { extensionRegistry } from '@/plugins/extensionRegistry';
 import type { NavSection } from '@/plugins/extensionRegistry';
 
 defineProps<{ showMobile?: boolean; collapsed?: boolean }>();
-const emit = defineEmits<{ close: [] }>();
+const emit = defineEmits<{ close: []; toggle: [] }>();
 
 const { t } = useI18n();
 const router = useRouter();
@@ -260,11 +270,33 @@ async function handleLogout(): Promise<void> {
 .sidebar-brand {
   padding: 20px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 .sidebar-brand h2 {
   margin: 0;
   font-size: 1.3rem;
+}
+
+/* Hide-menu toggle, moved here from the topbar (light-on-dark sidebar). */
+.sidebar-brand .sidebar-toggle {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: inherit;
+  flex-shrink: 0;
+}
+
+.sidebar-brand .sidebar-toggle:hover {
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .sidebar-nav {
