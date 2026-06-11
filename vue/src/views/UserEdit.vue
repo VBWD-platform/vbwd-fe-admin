@@ -62,6 +62,16 @@
         >
           {{ $t('nav.invoices') }}
         </button>
+        <!-- Native "API" tab (S52) — ships by default; gated api_keys.manage -->
+        <button
+          v-if="canManageApiKeys"
+          data-testid="tab-api"
+          class="tab-btn"
+          :class="{ active: activeTab === 'api' }"
+          @click="switchToApi"
+        >
+          {{ $t('apiKeys.tabTitle') }}
+        </button>
         <!-- Plugin-contributed tabs -->
         <button
           v-for="tab in pluginTabs"
@@ -501,6 +511,27 @@
         </div>
       </div>
 
+      <!-- Native "API" tab content (S52) — same shared component as fe-user -->
+      <div
+        v-if="canManageApiKeys"
+        v-show="activeTab === 'api'"
+        data-testid="tab-content-api"
+        class="tab-content"
+      >
+        <ApiKeysManager
+          :keys="apiKeysStore.keys"
+          :available-scopes="apiKeysStore.scopes"
+          :loading="apiKeysStore.loading"
+          :error="apiKeysStore.error"
+          :created-plaintext="apiKeysStore.createdPlaintext"
+          :can-delete="true"
+          @create="onCreateApiKey"
+          @revoke="onRevokeApiKey"
+          @delete="onDeleteApiKey"
+          @dismiss-plaintext="apiKeysStore.dismissPlaintext"
+        />
+      </div>
+
       <!-- Plugin-contributed tab content -->
       <component
         :is="tab.component"
@@ -521,7 +552,9 @@ import { useI18n } from 'vue-i18n';
 import { useUsersStore } from '@/stores/users';
 import { useInvoicesStore, type Invoice } from '@/stores/invoices';
 import { useAuthStore } from '@/stores/auth';
+import { useApiKeysStore } from '@/stores/apiKeys';
 import { extensionRegistry } from '@/plugins/extensionRegistry';
+import { ApiKeysManager } from 'vbwd-view-component';
 import { api } from '@/api';
 
 const route = useRoute();
@@ -531,6 +564,12 @@ const usersStore = useUsersStore();
 const authStore = useAuthStore();
 const canManage = computed(() => authStore.hasPermission('users.manage'));
 const invoicesStore = useInvoicesStore();
+
+// Native "API" tab (S52). Admin-only, gated by api_keys.manage; mounts the
+// shared fe-core ApiKeysManager wired to the admin store (the target user's
+// keys). Identical-by-construction to the fe-user Manage-API page.
+const apiKeysStore = useApiKeysStore();
+const canManageApiKeys = computed(() => authStore.hasPermission('api_keys.manage'));
 
 // Tab state — 'account'/'invoices' are core; other ids come from plugin tabs.
 const activeTab = ref<string>('account');
@@ -820,6 +859,27 @@ async function switchToInvoices(): Promise<void> {
   if (userInvoices.value.length === 0) {
     await fetchUserInvoices();
   }
+}
+
+// ── API keys tab (S52) ──────────────────────────────────────────────────
+async function switchToApi(): Promise<void> {
+  activeTab.value = 'api';
+  apiKeysStore.dismissPlaintext();
+  await Promise.all([apiKeysStore.fetchScopes(), apiKeysStore.fetchKeys(userId)]);
+}
+
+async function onCreateApiKey(
+  payload: { label: string; scopes: string[]; ipWhitelist: string[] }
+): Promise<void> {
+  await apiKeysStore.createKey(userId, payload);
+}
+
+async function onRevokeApiKey(keyId: string): Promise<void> {
+  await apiKeysStore.revokeKey(userId, keyId);
+}
+
+async function onDeleteApiKey(keyId: string): Promise<void> {
+  await apiKeysStore.deleteKey(userId, keyId);
 }
 
 async function fetchUserInvoices(): Promise<void> {

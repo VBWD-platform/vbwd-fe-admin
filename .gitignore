@@ -16,6 +16,7 @@ test-results
 # Plugin dirs are hosted in individual repos (vbwd-fe-admin-plugin-*)
 plugins/analytics-widget/
 plugins/booking/
+plugins/bot-telegram-admin/
 plugins/c2p2-admin/
 plugins/cms-admin/
 plugins/conekta-admin/

@@ -816,5 +816,8 @@
     "revokeRole": "Revoke",
     "yes": "Yes",
     "no": "No"
+  },
+  "apiKeys": {
+    "tabTitle": "API"
   }
 }
