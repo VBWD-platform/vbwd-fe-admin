@@ -1,11 +1,16 @@
 {
-  "fields": [
+  "tabs": [
     {
-      "key": "debug_mode",
-      "type": "boolean",
-      "label": "Debug mode",
-      "default": false,
-      "description": "Verbose admin-side logging for the device-key view."
+      "id": "general",
+      "label": "General",
+      "fields": [
+        {
+          "key": "debug_mode",
+          "label": "Debug mode",
+          "component": "checkbox",
+          "description": "Verbose admin-side logging for the device-key view."
+        }
+      ]
     }
   ]
 }
