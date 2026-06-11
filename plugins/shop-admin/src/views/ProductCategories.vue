@@ -5,14 +5,28 @@
   >
     <div class="page-header">
       <h1>Product Categories</h1>
-      <button
-        v-if="canManage"
-        class="btn btn--primary"
-        data-testid="create-category-btn"
-        @click="showForm = !showForm"
-      >
-        {{ showForm ? 'Cancel' : '+ Create Category' }}
-      </button>
+      <div class="header-actions">
+        <ImportExportControls
+          v-if="showImportExport"
+          :api="dataExchangeApi"
+          entity-key="shop_product_categories"
+          :selected-ids="selectedCategoryIds"
+          :can-export="categoriesCaps.can_export"
+          :can-import="categoriesCaps.can_import"
+          :can-export-pii="categoriesCaps.can_export_pii"
+          :is-superadmin="isSuperadmin"
+          :supported-formats="categoriesCaps.supported_formats"
+          @refresh="fetchCategories"
+        />
+        <button
+          v-if="canManage"
+          class="btn btn--primary"
+          data-testid="create-category-btn"
+          @click="showForm = !showForm"
+        >
+          {{ showForm ? 'Cancel' : '+ Create Category' }}
+        </button>
+      </div>
     </div>
 
     <div
@@ -95,6 +109,14 @@
     >
       <thead>
         <tr>
+          <th class="checkbox-col">
+            <input
+              type="checkbox"
+              :checked="allSelected"
+              data-testid="select-all-categories"
+              @change="toggleAll"
+            >
+          </th>
           <th>Name</th>
           <th>Slug</th>
           <th>Parent</th>
@@ -108,6 +130,14 @@
           :key="category.id"
           :data-testid="`category-row-${category.id}`"
         >
+          <td class="checkbox-col">
+            <input
+              type="checkbox"
+              :checked="selectedIds.has(category.id)"
+              :data-testid="`select-category-${category.id}`"
+              @change="toggleSelect(category.id)"
+            >
+          </td>
           <td>{{ category.name }}</td>
           <td><code>{{ category.slug }}</code></td>
           <td>{{ getParentName(category.parent_id) }}</td>
@@ -146,8 +176,11 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
+import { ImportExportControls } from 'vbwd-view-component';
 import { useAuthStore } from '@/stores/auth';
 import { api } from '@/api';
+import { createDataExchangeApi } from '@/api/dataExchangeApi';
+import { useDataExchangeManifest } from '@/composables/useDataExchangeManifest';
 
 const authStore = useAuthStore();
 const canManage = computed(() => authStore.hasPermission('shop.categories.manage'));
@@ -165,6 +198,40 @@ const loading = ref(false);
 const error = ref<string | null>(null);
 const showForm = ref(false);
 const editingId = ref<string | null>(null);
+
+// Row selection (for "export selected").
+const selectedIds = reactive(new Set<string>());
+const allSelected = computed(
+  () => categories.value.length > 0 && categories.value.every(c => selectedIds.has(c.id)),
+);
+const selectedCategoryIds = computed(() => Array.from(selectedIds));
+
+function toggleSelect(categoryId: string) {
+  if (selectedIds.has(categoryId)) {
+    selectedIds.delete(categoryId);
+  } else {
+    selectedIds.add(categoryId);
+  }
+}
+
+function toggleAll() {
+  if (allSelected.value) {
+    selectedIds.clear();
+  } else {
+    categories.value.forEach(c => selectedIds.add(c.id));
+  }
+}
+
+// Import/Export controls. Capabilities come from the perm-filtered
+// data-exchange manifest; the control hides when neither export nor import is
+// permitted for `shop_product_categories`.
+const dataExchangeApi = createDataExchangeApi();
+const isSuperadmin = computed(() => authStore.isSuperAdmin);
+const { load: loadManifest, capabilitiesFor } = useDataExchangeManifest();
+const categoriesCaps = computed(() => capabilitiesFor('shop_product_categories'));
+const showImportExport = computed(
+  () => categoriesCaps.value.can_export || categoriesCaps.value.can_import,
+);
 
 const formData = reactive({
   name: '',
@@ -250,12 +317,15 @@ async function handleDelete(categoryId: string) {
 
 onMounted(() => {
   fetchCategories();
+  loadManifest();
 });
 </script>
 
 <style scoped>
 .categories-view { background: white; padding: 20px; border-radius: 8px; }
 .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.header-actions { display: flex; align-items: center; gap: 12px; }
+.checkbox-col { width: 40px; text-align: center !important; }
 .category-form { background: #f8f9fa; padding: 16px; border-radius: 6px; margin-bottom: 20px; }
 .form-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
 .form-group { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 160px; }

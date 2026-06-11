@@ -2,14 +2,28 @@
   <div class="products-view">
     <div class="page-header">
       <h1>{{ $t('shop.products.title') || 'Products' }}</h1>
-      <router-link
-        v-if="canManage"
-        to="/admin/shop/products/new"
-        class="btn btn--primary"
-        data-testid="create-product-btn"
-      >
-        + New Product
-      </router-link>
+      <div class="header-actions">
+        <ImportExportControls
+          v-if="showImportExport"
+          :api="dataExchangeApi"
+          entity-key="shop_products"
+          :selected-ids="selectedProductIds"
+          :can-export="productsCaps.can_export"
+          :can-import="productsCaps.can_import"
+          :can-export-pii="productsCaps.can_export_pii"
+          :is-superadmin="isSuperadmin"
+          :supported-formats="productsCaps.supported_formats"
+          @refresh="store.fetchProducts"
+        />
+        <router-link
+          v-if="canManage"
+          to="/admin/shop/products/new"
+          class="btn btn--primary"
+          data-testid="create-product-btn"
+        >
+          + New Product
+        </router-link>
+      </div>
     </div>
 
     <div
@@ -152,14 +166,29 @@
 
 <script setup lang="ts">
 import { reactive, computed, onMounted } from 'vue';
+import { ImportExportControls } from 'vbwd-view-component';
 import { useProductAdminStore } from '../stores/productAdmin';
 import { useAuthStore } from '@/stores/auth';
 import { api } from '@/api';
+import { createDataExchangeApi } from '@/api/dataExchangeApi';
+import { useDataExchangeManifest } from '@/composables/useDataExchangeManifest';
 
 const store = useProductAdminStore();
 const authStore = useAuthStore();
 const canManage = computed(() => authStore.hasPermission('shop.products.manage'));
 const selectedIds = reactive(new Set<string>());
+
+// Import/Export controls. Capabilities come from the perm-filtered
+// data-exchange manifest; the control hides when neither export nor import is
+// permitted for `shop_products`.
+const dataExchangeApi = createDataExchangeApi();
+const isSuperadmin = computed(() => authStore.isSuperAdmin);
+const { load: loadManifest, capabilitiesFor } = useDataExchangeManifest();
+const productsCaps = computed(() => capabilitiesFor('shop_products'));
+const showImportExport = computed(
+  () => productsCaps.value.can_export || productsCaps.value.can_import,
+);
+const selectedProductIds = computed(() => Array.from(selectedIds));
 
 const allSelected = computed(() => {
   return store.products.length > 0 && store.products.every(product => selectedIds.has(product.id));
@@ -224,12 +253,14 @@ async function handleBulkDeactivate() {
 
 onMounted(() => {
   store.fetchProducts();
+  loadManifest();
 });
 </script>
 
 <style scoped>
 .products-view { background: white; padding: 20px; border-radius: 8px; }
 .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.header-actions { display: flex; align-items: center; gap: 12px; }
 .bulk-toolbar { display: flex; align-items: center; gap: 10px; padding: 10px 15px; background: #eef2ff; border-radius: 6px; margin-bottom: 16px; }
 .bulk-count { font-size: 14px; font-weight: 600; color: #4338ca; }
 .data-table { width: 100%; border-collapse: collapse; }

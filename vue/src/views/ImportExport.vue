@@ -37,7 +37,10 @@ const dataExchangeTabs = computed<DataExchangeTab[]>(() =>
     .map((tab) => ({
       id: tab.id,
       label: tab.label,
-      component: tab.component,
+      // fe-admin and vbwd-fe-core can resolve to separate @vue/runtime-core
+      // copies in CI (fe-core builds with its own install), so the two
+      // structurally-identical `Component` types don't unify — bridge it here.
+      component: tab.component as DataExchangeTab['component'],
       props: tab.props,
       order: tab.order,
     })),

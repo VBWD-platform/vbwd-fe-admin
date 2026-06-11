@@ -5,31 +5,43 @@
   >
     <div class="page-header">
       <h1>Orders</h1>
-      <select
-        v-model="statusFilter"
-        class="status-filter"
-        data-testid="order-status-filter"
-        @change="handleFilterChange"
-      >
-        <option value="">
-          All Statuses
-        </option>
-        <option value="pending">
-          Pending
-        </option>
-        <option value="confirmed">
-          Confirmed
-        </option>
-        <option value="shipped">
-          Shipped
-        </option>
-        <option value="completed">
-          Completed
-        </option>
-        <option value="cancelled">
-          Cancelled
-        </option>
-      </select>
+      <div class="header-actions">
+        <ImportExportControls
+          v-if="showImportExport"
+          :api="dataExchangeApi"
+          entity-key="shop_orders"
+          :selected-ids="selectedOrderIds"
+          :can-export="ordersCaps.can_export"
+          :can-import="ordersCaps.can_import"
+          :can-export-pii="ordersCaps.can_export_pii"
+          :supported-formats="ordersCaps.supported_formats"
+        />
+        <select
+          v-model="statusFilter"
+          class="status-filter"
+          data-testid="order-status-filter"
+          @change="handleFilterChange"
+        >
+          <option value="">
+            All Statuses
+          </option>
+          <option value="pending">
+            Pending
+          </option>
+          <option value="confirmed">
+            Confirmed
+          </option>
+          <option value="shipped">
+            Shipped
+          </option>
+          <option value="completed">
+            Completed
+          </option>
+          <option value="cancelled">
+            Cancelled
+          </option>
+        </select>
+      </div>
     </div>
 
     <div
@@ -55,6 +67,14 @@
     >
       <thead>
         <tr>
+          <th class="checkbox-col">
+            <input
+              type="checkbox"
+              :checked="allSelected"
+              data-testid="select-all-orders"
+              @change="toggleAll"
+            >
+          </th>
           <th>Order Number</th>
           <th>Status</th>
           <th>Total</th>
@@ -70,6 +90,17 @@
           class="clickable-row"
           @click="$router.push(`/admin/shop/orders/${order.id}`)"
         >
+          <td
+            class="checkbox-col"
+            @click.stop
+          >
+            <input
+              type="checkbox"
+              :checked="selectedIds.has(order.id)"
+              :data-testid="`select-order-${order.id}`"
+              @change="toggleSelect(order.id)"
+            >
+          </td>
           <td>{{ order.order_number }}</td>
           <td>
             <span
@@ -98,11 +129,47 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
+import { ImportExportControls } from 'vbwd-view-component';
 import { useOrderAdminStore } from '../stores/orderAdmin';
+import { createDataExchangeApi } from '@/api/dataExchangeApi';
+import { useDataExchangeManifest } from '@/composables/useDataExchangeManifest';
 
 const store = useOrderAdminStore();
 const statusFilter = ref('');
+
+// Row selection (for "export selected"). Orders are export-only — the backend
+// `shop_orders` exchanger reports can_import=false, so the import button is
+// hidden by the control via the manifest.
+const selectedIds = reactive(new Set<string>());
+const allSelected = computed(
+  () => store.orders.length > 0 && store.orders.every(o => selectedIds.has(o.id)),
+);
+const selectedOrderIds = computed(() => Array.from(selectedIds));
+
+function toggleSelect(orderId: string) {
+  if (selectedIds.has(orderId)) {
+    selectedIds.delete(orderId);
+  } else {
+    selectedIds.add(orderId);
+  }
+}
+
+function toggleAll() {
+  if (allSelected.value) {
+    selectedIds.clear();
+  } else {
+    store.orders.forEach(o => selectedIds.add(o.id));
+  }
+}
+
+// Import/Export controls (export-only for orders).
+const dataExchangeApi = createDataExchangeApi();
+const { load: loadManifest, capabilitiesFor } = useDataExchangeManifest();
+const ordersCaps = computed(() => capabilitiesFor('shop_orders'));
+const showImportExport = computed(
+  () => ordersCaps.value.can_export || ordersCaps.value.can_import,
+);
 
 function formatDate(isoString: string): string {
   return new Date(isoString).toLocaleDateString();
@@ -114,12 +181,15 @@ function handleFilterChange() {
 
 onMounted(() => {
   store.fetchOrders();
+  loadManifest();
 });
 </script>
 
 <style scoped>
 .orders-view { background: white; padding: 20px; border-radius: 8px; }
 .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.header-actions { display: flex; align-items: center; gap: 12px; }
+.checkbox-col { width: 40px; text-align: center !important; }
 .status-filter { padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 14px; }
 .data-table { width: 100%; border-collapse: collapse; }
 .data-table th, .data-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; }
