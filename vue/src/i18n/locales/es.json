@@ -54,7 +54,9 @@
     "logout": "Cerrar Sesión",
     "sales": "Ventas",
     "accessLevels": "Access Levels",
-    "importExport": "Import / Export"
+    "importExport": "Import / Export",
+    "taxesAndCountries": "Impuestos y países",
+    "userGroups": "Grupos de usuarios"
   },
   "auth": {
     "login": "Iniciar Sesión",
@@ -97,7 +99,9 @@
     "roles": {
       "user": "Usuario",
       "admin": "Administrador",
-      "vendor": "Vendedor"
+      "vendor": "Vendedor",
+      "bot": "Bot",
+      "guest": "Invitado"
     },
     "createdAt": "Creado El",
     "lastLogin": "Último Acceso",
@@ -149,7 +153,11 @@
     "paymentStatus": "Pago",
     "firstInvoice": "Primera factura",
     "lastInvoice": "Última factura",
-    "noAddonsForUser": "No hay suscripciones de complementos para este usuario."
+    "noAddonsForUser": "No hay suscripciones de complementos para este usuario.",
+    "accountType": "Tipo de cuenta",
+    "accountTypePrivate": "Persona física",
+    "accountTypeBusiness": "Empresa",
+    "companyRequiredForBusiness": "El nombre de la empresa es obligatorio para una cuenta de empresa"
   },
   "plans": {
     "title": "Planes",
@@ -197,7 +205,20 @@
     "failedToArchivePlan": "Error al archivar el plan",
     "failedToReactivatePlan": "Error al reactivar el plan",
     "failedToCopyPlan": "Error al copiar el plan",
-    "trialDays": "Días de Prueba"
+    "trialDays": "Días de Prueba",
+    "taxes": {
+      "title": "Impuestos",
+      "available": "Impuestos disponibles",
+      "assigned": "Impuestos aplicados",
+      "allAssigned": "Todos los impuestos aplicados",
+      "noneAssigned": "Ningún impuesto aplicado"
+    },
+    "priceDisplay": {
+      "label": "Visualización de precios",
+      "inherit": "Heredar (predeterminado global)",
+      "netto": "Neto (sin impuestos)",
+      "brutto": "Bruto (con impuestos)"
+    }
   },
   "subscriptions": {
     "title": "Suscripciones",
@@ -411,15 +432,6 @@
       "placeholder": "La gestión de paquetes de tokens estará aquí"
     },
     "tax": {
-      "classesTitle": "Clases de Impuestos",
-      "addClass": "Añadir Clase",
-      "className": "Nombre",
-      "classCode": "Código",
-      "defaultRate": "Tasa predeterminada (%)",
-      "isDefault": "Predeterminado",
-      "noClasses": "No hay clases de impuestos configuradas.",
-      "classSaved": "Clase de impuesto guardada correctamente",
-      "confirmDeleteClass": "¿Eliminar esta clase de impuesto?",
       "ratesTitle": "Tasas de Impuestos",
       "addRate": "Añadir Tasa",
       "rateName": "Nombre",
@@ -432,11 +444,32 @@
       "region": "Región",
       "regionPlaceholder": "ej. CA-BC",
       "taxClass": "Clase de Impuesto",
+      "taxClassPlaceholder": "ej. standard, reduced, zero",
       "inclusive": "Impuesto incluido",
       "noRates": "No hay tasas de impuestos configuradas.",
       "rateSaved": "Tasa de impuesto guardada correctamente",
-      "confirmDeleteRate": "¿Eliminar esta tasa de impuesto?"
+      "confirmDeleteRate": "¿Eliminar esta tasa de impuesto?",
+      "bulkDelete": {
+        "selectedCount": "{count} seleccionado(s)",
+        "deleteSelected": "Eliminar seleccionados",
+        "confirmRates": "¿Eliminar {count} tasa(s) de impuesto?",
+        "someInUse": "Algunos elementos no se pudieron eliminar porque están en uso: {names}"
+      },
+      "priceDisplay": {
+        "label": "Modo de visualización de precios",
+        "hint": "Visualización de precios predeterminada para todos los artículos vendibles. Los artículos pueden anularlo individualmente.",
+        "brutto": "Bruto (con impuestos)",
+        "netto": "Neto (sin impuestos)",
+        "save": "Guardar",
+        "saved": "Modo de visualización de precios guardado"
+      }
     }
+  },
+  "taxAndCountries": {
+    "title": "Impuestos y países",
+    "countriesTab": "Países",
+    "taxTab": "Impuestos",
+    "currenciesTab": "Moneda"
   },
   "tokenBundles": {
     "title": "Configuración de Paquetes de Tokens",
@@ -463,7 +496,13 @@
     "bundleUpdated": "Paquete de tokens actualizado exitosamente",
     "bundleDeleted": "Paquete de tokens eliminado exitosamente",
     "activate": "Activar",
-    "deactivate": "Desactivar"
+    "deactivate": "Desactivar",
+    "bulkDelete": {
+      "selectedCount": "{count} seleccionados",
+      "deleteSelected": "Eliminar seleccionados",
+      "confirm": "¿Eliminar {count} paquete(s) de tokens?",
+      "someFailed": "Algunos paquetes no se pudieron eliminar: {names}"
+    }
   },
   "addOns": {
     "title": "Complementos",
@@ -688,5 +727,71 @@
     "revokeRole": "Revoke",
     "yes": "Yes",
     "no": "No"
+  },
+  "currencies": {
+    "description": "Gestione las monedas disponibles, la moneda en la que se almacenan los precios y los tipos de cambio.",
+    "default": "Predeterminada",
+    "loadError": "No se pudieron cargar las monedas",
+    "saveRates": "Guardar tipos",
+    "addCurrency": "Añadir moneda",
+    "deleteConfirm": "¿Eliminar la moneda {code}? Esta acción no se puede deshacer.",
+    "deleteFailed": "No se pudo eliminar la moneda.",
+    "newCurrency": {
+      "code": "Código",
+      "name": "Nombre",
+      "symbol": "Símbolo",
+      "decimals": "Decimales",
+      "rate": "Tipo de cambio",
+      "submit": "Crear",
+      "cancel": "Cancelar",
+      "codeFormat": "El código debe tener 3 letras mayúsculas (p. ej. CHF).",
+      "missingFields": "El nombre y el símbolo son obligatorios.",
+      "invalidRate": "El tipo de cambio debe ser mayor que cero.",
+      "duplicateHint": "La nueva moneda se añade a la lista de disponibles; actívela para usarla."
+    },
+    "activeAvailable": {
+      "title": "Monedas activas",
+      "hint": "Mueva monedas entre activas y disponibles. La moneda predeterminada siempre está activa.",
+      "active": "Activas",
+      "available": "Disponibles",
+      "activate": "Activar",
+      "deactivate": "Desactivar"
+    },
+    "defaultSelector": {
+      "title": "Moneda predeterminada",
+      "hint": "Los precios se almacenan en esta moneda.",
+      "confirm": "Cambiar la moneda predeterminada recalcula todos los tipos de cambio. ¿Continuar?"
+    },
+    "crossRateBase": {
+      "title": "Base de tipo cruzado",
+      "hint": "Exprese los tipos de cambio respecto a la moneda predeterminada o al USD.",
+      "optionDefault": "Respecto a predeterminada ({code})",
+      "optionUsd": "Respecto a USD"
+    },
+    "rateSheet": {
+      "title": "Tipos de cambio",
+      "hint": "Edite el tipo de cada moneda activa. Los valores se almacenan respecto a la moneda predeterminada.",
+      "pair": "Par",
+      "rate": "Tipo",
+      "inverse": "Inverso",
+      "empty": "No hay tipos editables para la selección actual.",
+      "invalidRate": "El tipo debe ser mayor que cero.",
+      "saveFailed": "Error al guardar: {pairs}"
+    }
+  },
+  "userGroups": {
+    "title": "Grupos de usuarios",
+    "newGroup": "Nuevo grupo",
+    "editGroup": "Editar grupo",
+    "slug": "Slug",
+    "name": "Nombre",
+    "lang": "Idioma",
+    "parentGroup": "Grupo principal",
+    "noParent": "Sin grupo principal",
+    "actions": "Acciones",
+    "searchPlaceholder": "Buscar grupos de usuarios…",
+    "selected": "seleccionados",
+    "deleteSelected": "Eliminar seleccionados",
+    "empty": "No hay grupos de usuarios definidos."
   }
 }

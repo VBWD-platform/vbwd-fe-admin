@@ -38,7 +38,11 @@
     "none": "Keine",
     "na": "N/V",
     "clear": "Löschen",
-    "searching": "Suche..."
+    "searching": "Suche...",
+    "add": "Hinzufügen",
+    "saved": "Gespeichert",
+    "activate": "Aktivieren",
+    "deactivate": "Deaktivieren"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -57,7 +61,10 @@
     "logout": "Abmelden",
     "sales": "Verkauf",
     "accessLevels": "Access Levels",
-    "importExport": "Import / Export"
+    "importExport": "Import / Export",
+    "taxesAndCountries": "Steuern & Länder",
+    "userGroups": "Benutzergruppen",
+    "customFields": "Benutzerdefinierte Felder"
   },
   "auth": {
     "login": "Anmelden",
@@ -101,7 +108,9 @@
     "roles": {
       "user": "Benutzer",
       "admin": "Administrator",
-      "vendor": "Verkäufer"
+      "vendor": "Verkäufer",
+      "bot": "Bot",
+      "guest": "Gast"
     },
     "createdAt": "Erstellt am",
     "lastLogin": "Letzte Anmeldung",
@@ -137,6 +146,10 @@
     "phone": "Telefon",
     "company": "Firma",
     "taxNumber": "Steuer- / USt-IdNr.",
+    "accountType": "Kontotyp",
+    "accountTypePrivate": "Privatperson",
+    "accountTypeBusiness": "Unternehmen",
+    "companyRequiredForBusiness": "Für ein Geschäftskonto ist ein Firmenname erforderlich",
     "selectCountry": "Land auswählen",
     "creating": "Erstellen...",
     "tokenBalance": "Token-Guthaben",
@@ -203,7 +216,20 @@
     "failedToArchivePlan": "Tarif konnte nicht archiviert werden",
     "failedToReactivatePlan": "Tarif konnte nicht reaktiviert werden",
     "failedToCopyPlan": "Tarif konnte nicht kopiert werden",
-    "trialDays": "Probetage"
+    "trialDays": "Probetage",
+    "taxes": {
+      "title": "Steuern",
+      "available": "Verfügbare Steuern",
+      "assigned": "Angewendete Steuern",
+      "allAssigned": "Alle Steuern angewendet",
+      "noneAssigned": "Keine Steuern angewendet"
+    },
+    "priceDisplay": {
+      "label": "Preisanzeige",
+      "inherit": "Übernehmen (globaler Standard)",
+      "netto": "Netto (ohne Steuer)",
+      "brutto": "Brutto (inkl. Steuer)"
+    }
   },
   "subscriptions": {
     "title": "Abonnements",
@@ -419,15 +445,6 @@
       "placeholder": "Token-Paket-Verwaltung wird hier verfügbar sein"
     },
     "tax": {
-      "classesTitle": "Steuerklassen",
-      "addClass": "Klasse hinzufügen",
-      "className": "Name",
-      "classCode": "Code",
-      "defaultRate": "Standardsatz (%)",
-      "isDefault": "Standard",
-      "noClasses": "Keine Steuerklassen konfiguriert.",
-      "classSaved": "Steuerklasse erfolgreich gespeichert",
-      "confirmDeleteClass": "Diese Steuerklasse löschen?",
       "ratesTitle": "Steuersätze",
       "addRate": "Satz hinzufügen",
       "rateName": "Name",
@@ -440,10 +457,25 @@
       "region": "Region",
       "regionPlaceholder": "z.B. CA-BC",
       "taxClass": "Steuerklasse",
+      "taxClassPlaceholder": "z.B. standard, reduced, zero",
       "inclusive": "Steuer inklusiv",
       "noRates": "Keine Steuersätze konfiguriert.",
       "rateSaved": "Steuersatz erfolgreich gespeichert",
-      "confirmDeleteRate": "Diesen Steuersatz löschen?"
+      "confirmDeleteRate": "Diesen Steuersatz löschen?",
+      "bulkDelete": {
+        "selectedCount": "{count} ausgewählt",
+        "deleteSelected": "Ausgewählte löschen",
+        "confirmRates": "{count} Steuersatz/-sätze löschen?",
+        "someInUse": "Einige Elemente konnten nicht gelöscht werden, da sie verwendet werden: {names}"
+      },
+      "priceDisplay": {
+        "label": "Preisanzeigemodus",
+        "hint": "Standard-Preisanzeige für alle verkäuflichen Artikel. Artikel können dies einzeln überschreiben.",
+        "brutto": "Brutto (inkl. Steuer)",
+        "netto": "Netto (ohne Steuer)",
+        "save": "Speichern",
+        "saved": "Preisanzeigemodus gespeichert"
+      }
     }
   },
   "tokenBundles": {
@@ -471,7 +503,13 @@
     "bundleUpdated": "Token-Paket erfolgreich aktualisiert",
     "bundleDeleted": "Token-Paket erfolgreich gelöscht",
     "activate": "Aktivieren",
-    "deactivate": "Deaktivieren"
+    "deactivate": "Deaktivieren",
+    "bulkDelete": {
+      "selectedCount": "{count} ausgewählt",
+      "deleteSelected": "Auswahl löschen",
+      "confirm": "{count} Token-Paket(e) löschen?",
+      "someFailed": "Einige Pakete konnten nicht gelöscht werden: {names}"
+    }
   },
   "addOns": {
     "title": "Add-Ons",
@@ -514,6 +552,12 @@
     "noPlansAvailable": "Keine aktiven Tarife verfügbar",
     "allPlans": "Alle Tarife",
     "plans": "Tarife"
+  },
+  "taxAndCountries": {
+    "title": "Steuern & Länder",
+    "countriesTab": "Länder",
+    "taxTab": "Steuern",
+    "currenciesTab": "Währung"
   },
   "countriesConfig": {
     "title": "Länderkonfiguration",
@@ -704,5 +748,120 @@
     "revokeRole": "Revoke",
     "yes": "Yes",
     "no": "No"
+  },
+  "currencies": {
+    "description": "Verwalten Sie verfügbare Währungen, die Speicherwährung der Preise und die Wechselkurse.",
+    "default": "Standard",
+    "loadError": "Währungen konnten nicht geladen werden",
+    "saveRates": "Kurse speichern",
+    "addCurrency": "Währung hinzufügen",
+    "deleteConfirm": "Währung {code} löschen? Dies kann nicht rückgängig gemacht werden.",
+    "deleteFailed": "Währung konnte nicht gelöscht werden.",
+    "newCurrency": {
+      "code": "Code",
+      "name": "Name",
+      "symbol": "Symbol",
+      "decimals": "Nachkommastellen",
+      "rate": "Wechselkurs",
+      "submit": "Erstellen",
+      "cancel": "Abbrechen",
+      "codeFormat": "Der Code muss aus 3 Großbuchstaben bestehen (z. B. CHF).",
+      "missingFields": "Name und Symbol sind erforderlich.",
+      "invalidRate": "Der Wechselkurs muss größer als null sein.",
+      "duplicateHint": "Eine neue Währung wird zur Liste der verfügbaren Währungen hinzugefügt; aktivieren Sie sie zur Nutzung."
+    },
+    "activeAvailable": {
+      "title": "Aktive Währungen",
+      "hint": "Verschieben Sie Währungen zwischen aktiv und verfügbar. Die Standardwährung ist immer aktiv.",
+      "active": "Aktiv",
+      "available": "Verfügbar",
+      "activate": "Aktivieren",
+      "deactivate": "Deaktivieren"
+    },
+    "defaultSelector": {
+      "title": "Standardwährung",
+      "hint": "Preise werden in dieser Währung gespeichert.",
+      "confirm": "Das Ändern der Standardwährung berechnet alle Wechselkurse neu. Fortfahren?"
+    },
+    "crossRateBase": {
+      "title": "Cross-Rate-Basis",
+      "hint": "Wechselkurse gegen die Standardwährung oder gegen USD ausdrücken.",
+      "optionDefault": "Gegen Standard ({code})",
+      "optionUsd": "Gegen USD"
+    },
+    "rateSheet": {
+      "title": "Wechselkurse",
+      "hint": "Bearbeiten Sie den Kurs für jede aktive Währung. Werte werden relativ zur Standardwährung gespeichert.",
+      "pair": "Paar",
+      "rate": "Kurs",
+      "inverse": "Kehrwert",
+      "empty": "Keine bearbeitbaren Kurse für die aktuelle Auswahl.",
+      "invalidRate": "Der Kurs muss größer als null sein.",
+      "saveFailed": "Speichern fehlgeschlagen: {pairs}"
+    }
+  },
+  "userGroups": {
+    "title": "Benutzergruppen",
+    "newGroup": "Neue Gruppe",
+    "editGroup": "Gruppe bearbeiten",
+    "slug": "Slug",
+    "name": "Name",
+    "lang": "Sprache",
+    "parentGroup": "Übergeordnete Gruppe",
+    "noParent": "Keine übergeordnete Gruppe",
+    "actions": "Aktionen",
+    "searchPlaceholder": "Benutzergruppen suchen…",
+    "selected": "ausgewählt",
+    "deleteSelected": "Ausgewählte löschen",
+    "empty": "Keine Benutzergruppen definiert."
+  },
+  "tagsCustomFields": {
+    "tagsLabel": "Tags",
+    "customFieldsLabel": "Benutzerdefinierte Felder",
+    "noTags": "Keine Tags",
+    "addTag": "Tag hinzufügen…",
+    "removeTag": "Tag entfernen",
+    "saveTags": "Tags speichern",
+    "saveCustomFields": "Felder speichern",
+    "noCustomFields": "Keine benutzerdefinierten Felder für diese Entität.",
+    "pageTitle": "Benutzerdefinierte Felder",
+    "tabCustomFields": "Benutzerdefinierte Felder",
+    "tabGlobalTags": "Globale Tags",
+    "filterByEntity": "Übergeordnete Entität",
+    "filterByType": "Datentyp",
+    "allEntities": "Alle Entitäten",
+    "allTypes": "Alle Typen",
+    "globalScope": "Global",
+    "quickSearch": "Schnellsuche…",
+    "createCustomField": "Feld erstellen",
+    "createTag": "Tag erstellen",
+    "colKey": "Schlüssel",
+    "colLabel": "Bezeichnung",
+    "colParentEntity": "Übergeordnete Entität",
+    "colType": "Typ",
+    "colOptions": "Optionen",
+    "colSortOrder": "Sortierung",
+    "colActive": "Aktiv",
+    "colName": "Name",
+    "colSlug": "Slug",
+    "colParentType": "Übergeordneter Typ",
+    "colStats": "Verwendung",
+    "fieldKey": "Schlüssel",
+    "fieldLabel": "Bezeichnung",
+    "fieldType": "Typ",
+    "fieldOptions": "Optionen (eine pro Zeile)",
+    "fieldSortOrder": "Sortierung",
+    "fieldActive": "Aktiv",
+    "fieldSlug": "Slug",
+    "fieldName": "Name",
+    "fieldParentEntity": "Übergeordnete Entität (leer = global)",
+    "fieldMetaData": "Metadaten (JSON)",
+    "fieldColor": "Farbe",
+    "deleteSelected": "Auswahl löschen",
+    "activateSelected": "Auswahl aktivieren",
+    "deactivateSelected": "Auswahl deaktivieren",
+    "noRows": "Keine Einträge",
+    "selectAll": "Alle auswählen",
+    "confirmDelete": "Ausgewählte Zeilen löschen?"
   }
 }

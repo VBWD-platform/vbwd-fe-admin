@@ -1,4 +1,9 @@
 {
+  "price": {
+    "net": "Net",
+    "gross": "Gross",
+    "taxLine": "{name} {rate}%"
+  },
   "common": {
     "save": "Save",
     "cancel": "Cancel",
@@ -40,7 +45,11 @@
     "clear": "Clear",
     "searching": "Searching...",
     "selected": "{count} selected",
-    "deleting": "Deleting..."
+    "deleting": "Deleting...",
+    "add": "Add",
+    "saved": "Saved",
+    "activate": "Activate",
+    "deactivate": "Deactivate"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -59,7 +68,10 @@
     "logout": "Logout",
     "sales": "Sales",
     "accessLevels": "Access Levels",
-    "importExport": "Import / Export"
+    "importExport": "Import / Export",
+    "taxesAndCountries": "Taxes & Countries",
+    "userGroups": "User Groups",
+    "customFields": "Custom Fields"
   },
   "auth": {
     "login": "Login",
@@ -142,6 +154,10 @@
     "phone": "Phone",
     "company": "Company",
     "taxNumber": "Tax / VAT Number",
+    "accountType": "Account Type",
+    "accountTypePrivate": "Private person",
+    "accountTypeBusiness": "Business",
+    "companyRequiredForBusiness": "Company is required for a business account",
     "selectCountry": "Select Country",
     "creating": "Creating...",
     "tokenBalance": "Token Balance",
@@ -213,7 +229,20 @@
     "bulkDelete": "Delete Selected",
     "trialDays": "Trial Days",
     "plansTab": "Plans",
-    "categories": "Categories"
+    "categories": "Categories",
+    "taxes": {
+      "title": "Taxes",
+      "available": "Available taxes",
+      "assigned": "Applied taxes",
+      "allAssigned": "All taxes applied",
+      "noneAssigned": "No taxes applied"
+    },
+    "priceDisplay": {
+      "label": "Price display",
+      "inherit": "Inherit (global default)",
+      "netto": "Netto (net, excl. tax)",
+      "brutto": "Brutto (incl. tax)"
+    }
   },
   "categories": {
     "categoriesTab": "Categories",
@@ -467,15 +496,6 @@
       "placeholder": "Token bundles management will be available here"
     },
     "tax": {
-      "classesTitle": "Tax Classes",
-      "addClass": "Add Class",
-      "className": "Name",
-      "classCode": "Code",
-      "defaultRate": "Default Rate (%)",
-      "isDefault": "Default",
-      "noClasses": "No tax classes configured.",
-      "classSaved": "Tax class saved successfully",
-      "confirmDeleteClass": "Delete this tax class?",
       "ratesTitle": "Tax Rates",
       "addRate": "Add Rate",
       "rateName": "Name",
@@ -488,10 +508,25 @@
       "region": "Region",
       "regionPlaceholder": "e.g. CA-BC",
       "taxClass": "Tax Class",
+      "taxClassPlaceholder": "e.g. standard, reduced, zero",
       "inclusive": "Tax Inclusive",
       "noRates": "No tax rates configured.",
       "rateSaved": "Tax rate saved successfully",
-      "confirmDeleteRate": "Delete this tax rate?"
+      "confirmDeleteRate": "Delete this tax rate?",
+      "bulkDelete": {
+        "selectedCount": "{count} selected",
+        "deleteSelected": "Delete Selected",
+        "confirmRates": "Delete {count} tax rate(s)?",
+        "someInUse": "Some items could not be deleted because they are in use: {names}"
+      },
+      "priceDisplay": {
+        "label": "Price display mode",
+        "hint": "Default price display for all sellable items. Items can override this individually.",
+        "brutto": "Brutto (incl. tax)",
+        "netto": "Netto (net, excl. tax)",
+        "save": "Save",
+        "saved": "Price display mode saved"
+      }
     }
   },
   "tokenBundles": {
@@ -519,7 +554,13 @@
     "bundleUpdated": "Token bundle updated successfully",
     "bundleDeleted": "Token bundle deleted successfully",
     "activate": "Activate",
-    "deactivate": "Deactivate"
+    "deactivate": "Deactivate",
+    "bulkDelete": {
+      "selectedCount": "{count} selected",
+      "deleteSelected": "Delete Selected",
+      "confirm": "Delete {count} token bundle(s)?",
+      "someFailed": "Some bundles could not be deleted: {names}"
+    }
   },
   "addOns": {
     "title": "Add-Ons",
@@ -562,6 +603,12 @@
     "noPlansAvailable": "No active plans available",
     "allPlans": "All Plans",
     "plans": "Plans"
+  },
+  "taxAndCountries": {
+    "title": "Taxes & Countries",
+    "countriesTab": "Countries",
+    "taxTab": "Taxes",
+    "currenciesTab": "Currency"
   },
   "countriesConfig": {
     "title": "Countries Configuration",
@@ -819,5 +866,120 @@
   },
   "apiKeys": {
     "tabTitle": "API"
+  },
+  "currencies": {
+    "description": "Manage which currencies are available, the currency prices are stored in, and the exchange rates.",
+    "default": "Default",
+    "loadError": "Failed to load currencies",
+    "saveRates": "Save rates",
+    "addCurrency": "Add currency",
+    "deleteConfirm": "Delete currency {code}? This cannot be undone.",
+    "deleteFailed": "Failed to delete currency.",
+    "newCurrency": {
+      "code": "Code",
+      "name": "Name",
+      "symbol": "Symbol",
+      "decimals": "Decimal places",
+      "rate": "Exchange rate",
+      "submit": "Create",
+      "cancel": "Cancel",
+      "codeFormat": "Code must be 3 uppercase letters (e.g. CHF).",
+      "missingFields": "Name and symbol are required.",
+      "invalidRate": "Exchange rate must be greater than zero.",
+      "duplicateHint": "A new currency is added to the available list; activate it to start using it."
+    },
+    "activeAvailable": {
+      "title": "Active currencies",
+      "hint": "Move currencies between active and available. The default currency is always active.",
+      "active": "Active",
+      "available": "Available",
+      "activate": "Activate",
+      "deactivate": "Deactivate"
+    },
+    "defaultSelector": {
+      "title": "Default currency",
+      "hint": "Prices are stored in this currency.",
+      "confirm": "Changing the default re-bases all exchange rates. Continue?"
+    },
+    "crossRateBase": {
+      "title": "Cross-rate base",
+      "hint": "Express exchange rates against the default currency or against USD.",
+      "optionDefault": "Against default ({code})",
+      "optionUsd": "Against USD"
+    },
+    "rateSheet": {
+      "title": "Exchange rates",
+      "hint": "Edit the rate for each active currency. Values are stored relative to the default currency.",
+      "pair": "Pair",
+      "rate": "Rate",
+      "inverse": "Inverse",
+      "empty": "No editable rates for the current selection.",
+      "invalidRate": "Rate must be greater than zero.",
+      "saveFailed": "Failed to save: {pairs}"
+    }
+  },
+  "userGroups": {
+    "title": "User Groups",
+    "newGroup": "New Group",
+    "editGroup": "Edit Group",
+    "slug": "Slug",
+    "name": "Name",
+    "lang": "Language",
+    "parentGroup": "Parent Group",
+    "noParent": "No parent",
+    "actions": "Actions",
+    "searchPlaceholder": "Search user groups…",
+    "selected": "selected",
+    "deleteSelected": "Delete Selected",
+    "empty": "No user groups defined."
+  },
+  "tagsCustomFields": {
+    "tagsLabel": "Tags",
+    "customFieldsLabel": "Custom fields",
+    "noTags": "No tags",
+    "addTag": "Add a tag…",
+    "removeTag": "Remove tag",
+    "saveTags": "Save tags",
+    "saveCustomFields": "Save custom fields",
+    "noCustomFields": "No custom fields defined for this entity.",
+    "pageTitle": "Custom Fields",
+    "tabCustomFields": "Custom fields",
+    "tabGlobalTags": "Global tags",
+    "filterByEntity": "Parent entity",
+    "filterByType": "Data type",
+    "allEntities": "All entities",
+    "allTypes": "All types",
+    "globalScope": "Global",
+    "quickSearch": "Quick search…",
+    "createCustomField": "Create CF",
+    "createTag": "Create tag",
+    "colKey": "Key",
+    "colLabel": "Label",
+    "colParentEntity": "Parent entity",
+    "colType": "Type",
+    "colOptions": "Options",
+    "colSortOrder": "Sort order",
+    "colActive": "Active",
+    "colName": "Name",
+    "colSlug": "Slug",
+    "colParentType": "Parent type",
+    "colStats": "Usage",
+    "fieldKey": "Key",
+    "fieldLabel": "Label",
+    "fieldType": "Type",
+    "fieldOptions": "Options (one per line)",
+    "fieldSortOrder": "Sort order",
+    "fieldActive": "Active",
+    "fieldSlug": "Slug",
+    "fieldName": "Name",
+    "fieldParentEntity": "Parent entity (blank = global)",
+    "fieldMetaData": "Meta data (JSON)",
+    "fieldColor": "Color",
+    "deleteSelected": "Delete selected",
+    "activateSelected": "Activate selected",
+    "deactivateSelected": "Deactivate selected",
+    "noRows": "No rows",
+    "selectAll": "Select all",
+    "confirmDelete": "Delete the selected rows?"
   }
 }

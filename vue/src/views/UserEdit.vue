@@ -213,6 +213,21 @@
               </div>
             </div>
 
+            <!-- User Groups (S73) -->
+            <div
+              class="form-row"
+              data-testid="user-groups-block"
+            >
+              <div class="form-group">
+                <label>{{ $t('nav.userGroups') }}</label>
+                <DualListSelector
+                  v-model="selectedGroupSlugs"
+                  testid="user-groups"
+                  :options="groupOptions"
+                />
+              </div>
+            </div>
+
             <div class="form-group">
               <label for="newPassword">{{ $t('users.newPassword') }}</label>
               <input
@@ -276,25 +291,53 @@
             </div>
 
             <div class="form-group">
-              <label for="company">{{ $t('users.company') }}</label>
-              <input
-                id="company"
-                v-model="formData.company"
-                name="company"
-                type="text"
+              <label for="accountType">{{ $t('users.accountType') }}</label>
+              <select
+                id="accountType"
+                v-model="formData.account_type"
+                name="accountType"
+                data-testid="account-type-select"
                 class="form-input"
               >
+                <option value="private">
+                  {{ $t('users.accountTypePrivate') }}
+                </option>
+                <option value="business">
+                  {{ $t('users.accountTypeBusiness') }}
+                </option>
+              </select>
             </div>
 
-            <div class="form-group">
-              <label for="taxNumber">{{ $t('users.taxNumber') }}</label>
-              <input
-                id="taxNumber"
-                v-model="formData.tax_number"
-                name="taxNumber"
-                type="text"
-                class="form-input"
-              >
+            <div
+              v-show="isBusinessAccount"
+              data-testid="business-fields"
+            >
+              <div class="form-group">
+                <label for="company">
+                  {{ $t('users.company') }} <span class="required-mark">*</span>
+                </label>
+                <input
+                  id="company"
+                  v-model="formData.company"
+                  name="company"
+                  type="text"
+                  :required="isBusinessAccount"
+                  data-testid="company-input"
+                  class="form-input"
+                >
+              </div>
+
+              <div class="form-group">
+                <label for="taxNumber">{{ $t('users.taxNumber') }}</label>
+                <input
+                  id="taxNumber"
+                  v-model="formData.tax_number"
+                  name="taxNumber"
+                  type="text"
+                  data-testid="tax-number-input"
+                  class="form-input"
+                >
+              </div>
             </div>
           </section>
 
@@ -384,6 +427,22 @@
                 {{ $t('users.tokenBalanceHelp') }}
               </small>
             </div>
+          </section>
+
+          <!-- Tags + Custom fields (S77, generic — zero entity-specific logic) -->
+          <section
+            v-if="userId"
+            class="form-section"
+            data-testid="user-tags-custom-fields"
+          >
+            <TagPicker
+              entity-type="user"
+              :entity-id="userId"
+            />
+            <CustomFieldsEditor
+              entity-type="user"
+              :entity-id="userId"
+            />
           </section>
 
           <!-- Plugin Extensions -->
@@ -555,6 +614,9 @@ import { useAuthStore } from '@/stores/auth';
 import { useApiKeysStore } from '@/stores/apiKeys';
 import { extensionRegistry } from '@/plugins/extensionRegistry';
 import { ApiKeysManager } from 'vbwd-view-component';
+import DualListSelector, { type DualListOption } from '@/components/DualListSelector.vue';
+import TagPicker from '@/components/TagPicker.vue';
+import CustomFieldsEditor from '@/components/CustomFieldsEditor.vue';
 import { api } from '@/api';
 
 const route = useRoute();
@@ -600,6 +662,7 @@ interface FormData {
   city: string;
   postal_code: string;
   country: string;
+  account_type: string;
   company: string;
   tax_number: string;
   new_password: string;
@@ -617,11 +680,15 @@ const formData = ref<FormData>({
   city: '',
   postal_code: '',
   country: '',
+  account_type: 'private',
   company: '',
   tax_number: '',
   new_password: '',
   token_balance: '0',
 });
+
+// S74 — company/tax fields are only relevant (and required) for businesses.
+const isBusinessAccount = computed(() => formData.value.account_type === 'business');
 
 // Role is handled separately as a single value
 const selectedRole = ref<string>('user');
@@ -647,6 +714,18 @@ interface UserLevel {
 const availableUserLevels = ref<UserLevel[]>([]);
 const assignedUserLevelIds = reactive(new Set<string>());
 
+// User Groups (S73) — slug-keyed membership via the core port.
+interface UserGroup {
+  id: string;
+  slug: string;
+  name: string;
+}
+const availableGroups = ref<UserGroup[]>([]);
+const selectedGroupSlugs = ref<string[]>([]);
+const groupOptions = computed<DualListOption[]>(() =>
+  availableGroups.value.map((group) => ({ value: group.slug, label: group.name }))
+);
+
 async function loadRoles() {
   try {
     const res = await api.get('/admin/access/levels') as { levels: RbacRole[] };
@@ -662,6 +741,24 @@ async function loadUserLevels() {
     availableUserLevels.value = res.levels;
   } catch {
     // User access levels API may not be available
+  }
+}
+
+async function loadGroups() {
+  try {
+    const res = await api.get('/admin/user-groups') as { groups?: UserGroup[] };
+    availableGroups.value = Array.isArray(res.groups) ? res.groups : [];
+  } catch {
+    // User groups API may not be available
+  }
+}
+
+async function loadUserGroups() {
+  try {
+    const res = await api.get(`/admin/users/${userId}/groups`) as { group_slugs?: string[] };
+    selectedGroupSlugs.value = Array.isArray(res.group_slugs) ? res.group_slugs : [];
+  } catch {
+    selectedGroupSlugs.value = [];
   }
 }
 
@@ -766,6 +863,7 @@ async function fetchUser(): Promise<void> {
       city: (details.city as string) || '',
       postal_code: (details.postal_code as string) || '',
       country: (details.country as string) || '',
+      account_type: (details.account_type as string) || 'private',
       company: (details.company as string) || '',
       tax_number: (details.tax_number as string) || '',
       new_password: '',
@@ -799,6 +897,12 @@ function validateForm(): boolean {
     return false;
   }
 
+  // S74 — a business account must declare a company name.
+  if (isBusinessAccount.value && !formData.value.company.trim()) {
+    validationError.value = t('users.companyRequiredForBusiness');
+    return false;
+  }
+
   return true;
 }
 
@@ -820,6 +924,7 @@ async function handleSubmit(): Promise<void> {
       city: formData.value.city,
       postal_code: formData.value.postal_code,
       country: formData.value.country,
+      account_type: formData.value.account_type,
       company: formData.value.company,
       tax_number: formData.value.tax_number,
     };
@@ -840,6 +945,11 @@ async function handleSubmit(): Promise<void> {
     if (originalRole.value !== selectedRole.value) {
       await usersStore.updateUserAccessLevels(userId, [selectedRole.value]);
     }
+
+    // Save user-group membership (S73) — replace-set of slugs via the core port.
+    await api.put(`/admin/users/${userId}/groups`, {
+      group_slugs: selectedGroupSlugs.value,
+    });
 
     router.push('/admin/users');
   } catch (error) {
@@ -932,6 +1042,8 @@ onMounted(() => {
   fetchUser();
   loadRoles();
   loadUserLevels();
+  loadGroups();
+  loadUserGroups();
 });
 </script>
 

@@ -37,7 +37,11 @@
     "none": "Aucun",
     "na": "N/D",
     "clear": "Effacer",
-    "searching": "Recherche..."
+    "searching": "Recherche...",
+    "add": "Ajouter",
+    "saved": "Enregistré",
+    "activate": "Activer",
+    "deactivate": "Désactiver"
   },
   "nav": {
     "dashboard": "Tableau de bord",
@@ -54,7 +58,10 @@
     "logout": "Déconnexion",
     "sales": "Ventes",
     "accessLevels": "Access Levels",
-    "importExport": "Import / Export"
+    "importExport": "Import / Export",
+    "taxesAndCountries": "Taxes et pays",
+    "userGroups": "Groupes d'utilisateurs",
+    "customFields": "Champs personnalisés"
   },
   "auth": {
     "login": "Connexion",
@@ -97,7 +104,9 @@
     "roles": {
       "user": "Utilisateur",
       "admin": "Administrateur",
-      "vendor": "Vendeur"
+      "vendor": "Vendeur",
+      "bot": "Bot",
+      "guest": "Invité"
     },
     "createdAt": "Créé le",
     "lastLogin": "Dernière connexion",
@@ -149,7 +158,11 @@
     "paymentStatus": "Paiement",
     "firstInvoice": "Première facture",
     "lastInvoice": "Dernière facture",
-    "noAddonsForUser": "Aucun abonnement d'extension pour cet utilisateur."
+    "noAddonsForUser": "Aucun abonnement d'extension pour cet utilisateur.",
+    "accountType": "Type de compte",
+    "accountTypePrivate": "Particulier",
+    "accountTypeBusiness": "Entreprise",
+    "companyRequiredForBusiness": "Le nom de l'entreprise est requis pour un compte professionnel"
   },
   "plans": {
     "title": "Plans",
@@ -197,7 +210,20 @@
     "failedToArchivePlan": "Échec de l'archivage du plan",
     "failedToReactivatePlan": "Échec de la réactivation du plan",
     "failedToCopyPlan": "Échec de la copie du plan",
-    "trialDays": "Jours d'essai"
+    "trialDays": "Jours d'essai",
+    "taxes": {
+      "title": "Taxes",
+      "available": "Taxes disponibles",
+      "assigned": "Taxes appliquées",
+      "allAssigned": "Toutes les taxes appliquées",
+      "noneAssigned": "Aucune taxe appliquée"
+    },
+    "priceDisplay": {
+      "label": "Affichage des prix",
+      "inherit": "Hériter (par défaut global)",
+      "netto": "Net (hors taxe)",
+      "brutto": "Brut (TTC)"
+    }
   },
   "subscriptions": {
     "title": "Abonnements",
@@ -411,15 +437,6 @@
       "placeholder": "La gestion des forfaits de jetons sera ici"
     },
     "tax": {
-      "classesTitle": "Classes de taxes",
-      "addClass": "Ajouter une classe",
-      "className": "Nom",
-      "classCode": "Code",
-      "defaultRate": "Taux par défaut (%)",
-      "isDefault": "Par défaut",
-      "noClasses": "Aucune classe de taxe configurée.",
-      "classSaved": "Classe de taxe enregistrée avec succès",
-      "confirmDeleteClass": "Supprimer cette classe de taxe ?",
       "ratesTitle": "Taux de taxes",
       "addRate": "Ajouter un taux",
       "rateName": "Nom",
@@ -432,11 +449,32 @@
       "region": "Région",
       "regionPlaceholder": "ex. CA-BC",
       "taxClass": "Classe de taxe",
+      "taxClassPlaceholder": "ex. standard, reduced, zero",
       "inclusive": "Taxe incluse",
       "noRates": "Aucun taux de taxe configuré.",
       "rateSaved": "Taux de taxe enregistré avec succès",
-      "confirmDeleteRate": "Supprimer ce taux de taxe ?"
+      "confirmDeleteRate": "Supprimer ce taux de taxe ?",
+      "bulkDelete": {
+        "selectedCount": "{count} sélectionné(s)",
+        "deleteSelected": "Supprimer la sélection",
+        "confirmRates": "Supprimer {count} taux de taxe ?",
+        "someInUse": "Certains éléments n'ont pas pu être supprimés car ils sont utilisés : {names}"
+      },
+      "priceDisplay": {
+        "label": "Mode d'affichage des prix",
+        "hint": "Affichage des prix par défaut pour tous les articles vendables. Les articles peuvent le remplacer individuellement.",
+        "brutto": "Brut (TTC)",
+        "netto": "Net (hors taxe)",
+        "save": "Enregistrer",
+        "saved": "Mode d'affichage des prix enregistré"
+      }
     }
+  },
+  "taxAndCountries": {
+    "title": "Taxes et pays",
+    "countriesTab": "Pays",
+    "taxTab": "Taxes",
+    "currenciesTab": "Devise"
   },
   "tokenBundles": {
     "title": "Configuration des forfaits de jetons",
@@ -463,7 +501,13 @@
     "bundleUpdated": "Forfait de jetons mis à jour avec succès",
     "bundleDeleted": "Forfait de jetons supprimé avec succès",
     "activate": "Activer",
-    "deactivate": "Désactiver"
+    "deactivate": "Désactiver",
+    "bulkDelete": {
+      "selectedCount": "{count} sélectionné(s)",
+      "deleteSelected": "Supprimer la sélection",
+      "confirm": "Supprimer {count} forfait(s) de jetons ?",
+      "someFailed": "Certains forfaits n'ont pas pu être supprimés : {names}"
+    }
   },
   "addOns": {
     "title": "Modules complémentaires",
@@ -688,5 +732,120 @@
     "revokeRole": "Revoke",
     "yes": "Yes",
     "no": "No"
+  },
+  "currencies": {
+    "description": "Gérez les devises disponibles, la devise de stockage des prix et les taux de change.",
+    "default": "Par défaut",
+    "loadError": "Échec du chargement des devises",
+    "saveRates": "Enregistrer les taux",
+    "addCurrency": "Ajouter une devise",
+    "deleteConfirm": "Supprimer la devise {code} ? Cette action est irréversible.",
+    "deleteFailed": "Échec de la suppression de la devise.",
+    "newCurrency": {
+      "code": "Code",
+      "name": "Nom",
+      "symbol": "Symbole",
+      "decimals": "Décimales",
+      "rate": "Taux de change",
+      "submit": "Créer",
+      "cancel": "Annuler",
+      "codeFormat": "Le code doit comporter 3 lettres majuscules (ex. CHF).",
+      "missingFields": "Le nom et le symbole sont requis.",
+      "invalidRate": "Le taux de change doit être supérieur à zéro.",
+      "duplicateHint": "La nouvelle devise est ajoutée à la liste des devises disponibles ; activez-la pour l'utiliser."
+    },
+    "activeAvailable": {
+      "title": "Devises actives",
+      "hint": "Déplacez les devises entre actives et disponibles. La devise par défaut est toujours active.",
+      "active": "Actives",
+      "available": "Disponibles",
+      "activate": "Activer",
+      "deactivate": "Désactiver"
+    },
+    "defaultSelector": {
+      "title": "Devise par défaut",
+      "hint": "Les prix sont stockés dans cette devise.",
+      "confirm": "Changer la devise par défaut recalcule tous les taux de change. Continuer ?"
+    },
+    "crossRateBase": {
+      "title": "Base de taux croisé",
+      "hint": "Exprimez les taux de change par rapport à la devise par défaut ou au USD.",
+      "optionDefault": "Par rapport au défaut ({code})",
+      "optionUsd": "Par rapport au USD"
+    },
+    "rateSheet": {
+      "title": "Taux de change",
+      "hint": "Modifiez le taux de chaque devise active. Les valeurs sont stockées par rapport à la devise par défaut.",
+      "pair": "Paire",
+      "rate": "Taux",
+      "inverse": "Inverse",
+      "empty": "Aucun taux modifiable pour la sélection actuelle.",
+      "invalidRate": "Le taux doit être supérieur à zéro.",
+      "saveFailed": "Échec de l'enregistrement : {pairs}"
+    }
+  },
+  "userGroups": {
+    "title": "Groupes d'utilisateurs",
+    "newGroup": "Nouveau groupe",
+    "editGroup": "Modifier le groupe",
+    "slug": "Slug",
+    "name": "Nom",
+    "lang": "Langue",
+    "parentGroup": "Groupe parent",
+    "noParent": "Aucun parent",
+    "actions": "Actions",
+    "searchPlaceholder": "Rechercher des groupes d'utilisateurs…",
+    "selected": "sélectionné(s)",
+    "deleteSelected": "Supprimer la sélection",
+    "empty": "Aucun groupe d'utilisateurs défini."
+  },
+  "tagsCustomFields": {
+    "tagsLabel": "Étiquettes",
+    "customFieldsLabel": "Champs personnalisés",
+    "noTags": "Aucune étiquette",
+    "addTag": "Ajouter une étiquette…",
+    "removeTag": "Retirer",
+    "saveTags": "Enregistrer les étiquettes",
+    "saveCustomFields": "Enregistrer les champs",
+    "noCustomFields": "Aucun champ personnalisé pour cette entité.",
+    "pageTitle": "Champs personnalisés",
+    "tabCustomFields": "Champs personnalisés",
+    "tabGlobalTags": "Étiquettes globales",
+    "filterByEntity": "Entité parente",
+    "filterByType": "Type de données",
+    "allEntities": "Toutes les entités",
+    "allTypes": "Tous les types",
+    "globalScope": "Global",
+    "quickSearch": "Recherche rapide…",
+    "createCustomField": "Créer un champ",
+    "createTag": "Créer une étiquette",
+    "colKey": "Clé",
+    "colLabel": "Libellé",
+    "colParentEntity": "Entité parente",
+    "colType": "Type",
+    "colOptions": "Options",
+    "colSortOrder": "Ordre",
+    "colActive": "Actif",
+    "colName": "Nom",
+    "colSlug": "Slug",
+    "colParentType": "Type parent",
+    "colStats": "Utilisation",
+    "fieldKey": "Clé",
+    "fieldLabel": "Libellé",
+    "fieldType": "Type",
+    "fieldOptions": "Options (une par ligne)",
+    "fieldSortOrder": "Ordre",
+    "fieldActive": "Actif",
+    "fieldSlug": "Slug",
+    "fieldName": "Nom",
+    "fieldParentEntity": "Entité parente (vide = global)",
+    "fieldMetaData": "Métadonnées (JSON)",
+    "fieldColor": "Couleur",
+    "deleteSelected": "Supprimer la sélection",
+    "activateSelected": "Activer la sélection",
+    "deactivateSelected": "Désactiver la sélection",
+    "noRows": "Aucune ligne",
+    "selectAll": "Tout sélectionner",
+    "confirmDelete": "Supprimer les lignes sélectionnées ?"
   }
 }

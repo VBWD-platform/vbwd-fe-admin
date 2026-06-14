@@ -184,7 +184,10 @@ const coreSections = computed((): NavSection[] => [
     items: [
       { label: t('nav.settings'), to: '/admin/settings', id: 'settings', requiredPermission: 'settings.view' },
       { label: t('nav.paymentMethods'), to: '/admin/payment-methods', id: 'payment-methods', requiredPermission: 'settings.manage' },
+      { label: t('nav.taxesAndCountries'), to: '/admin/settings/tax-and-countries', id: 'taxes-and-countries', requiredPermission: 'settings.manage' },
+      { label: t('nav.customFields'), to: '/admin/settings/custom-fields', id: 'custom-fields', requiredPermission: 'settings.manage' },
       { label: t('nav.accessLevels'), to: '/admin/settings/access', id: 'access-levels', requiredPermission: 'settings.system' },
+      { label: t('nav.userGroups'), to: '/admin/settings/user_groups', id: 'user-groups', requiredPermission: 'settings.manage' },
       { label: t('nav.importExport'), to: '/admin/import-export', id: 'import-export', requiredPermission: 'settings.view' },
     ],
   },

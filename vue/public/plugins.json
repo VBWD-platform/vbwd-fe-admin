@@ -53,6 +53,18 @@
       "version": "0.1.0",
       "installedAt": "",
       "source": "local"
+    },
+    "wp-import": {
+      "enabled": true,
+      "version": "1.0.0",
+      "installedAt": "2026-06-12T00:00:00.000Z",
+      "source": "local"
+    },
+    "meinchat-admin": {
+      "enabled": true,
+      "version": "1.0.0",
+      "installedAt": "2026-06-14T00:00:00.000Z",
+      "source": "local"
     }
   }
 }

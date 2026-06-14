@@ -37,7 +37,11 @@
     "none": "ไม่มี",
     "na": "ไม่ระบุ",
     "clear": "ล้าง",
-    "searching": "กำลังค้นหา..."
+    "searching": "กำลังค้นหา...",
+    "add": "เพิ่ม",
+    "saved": "บันทึกแล้ว",
+    "activate": "เปิดใช้งาน",
+    "deactivate": "ปิดใช้งาน"
   },
   "nav": {
     "dashboard": "แดชบอร์ด",
@@ -54,7 +58,10 @@
     "logout": "ออกจากระบบ",
     "sales": "ยอดขาย",
     "accessLevels": "Access Levels",
-    "importExport": "Import / Export"
+    "importExport": "Import / Export",
+    "taxesAndCountries": "ภาษีและประเทศ",
+    "userGroups": "กลุ่มผู้ใช้",
+    "customFields": "ฟิลด์ที่กำหนดเอง"
   },
   "auth": {
     "login": "เข้าสู่ระบบ",
@@ -97,7 +104,9 @@
     "roles": {
       "user": "ผู้ใช้",
       "admin": "ผู้ดูแลระบบ",
-      "vendor": "ผู้ขาย"
+      "vendor": "ผู้ขาย",
+      "bot": "บอท",
+      "guest": "ผู้เยี่ยมชม"
     },
     "createdAt": "สร้างเมื่อ",
     "lastLogin": "เข้าสู่ระบบล่าสุด",
@@ -149,7 +158,11 @@
     "paymentStatus": "การชำระเงิน",
     "firstInvoice": "ใบแจ้งหนี้แรก",
     "lastInvoice": "ใบแจ้งหนี้ล่าสุด",
-    "noAddonsForUser": "ไม่มีการสมัครส่วนเสริมสำหรับผู้ใช้นี้"
+    "noAddonsForUser": "ไม่มีการสมัครส่วนเสริมสำหรับผู้ใช้นี้",
+    "accountType": "ประเภทบัญชี",
+    "accountTypePrivate": "บุคคลธรรมดา",
+    "accountTypeBusiness": "ธุรกิจ",
+    "companyRequiredForBusiness": "บัญชีธุรกิจต้องระบุชื่อบริษัท"
   },
   "plans": {
     "title": "แผน",
@@ -197,7 +210,20 @@
     "failedToArchivePlan": "เก็บถาวรแผนไม่สำเร็จ",
     "failedToReactivatePlan": "เปิดใช้งานแผนใหม่ไม่สำเร็จ",
     "failedToCopyPlan": "คัดลอกแผนไม่สำเร็จ",
-    "trialDays": "จำนวนวันทดลอง"
+    "trialDays": "จำนวนวันทดลอง",
+    "taxes": {
+      "title": "ภาษี",
+      "available": "ภาษีที่ใช้ได้",
+      "assigned": "ภาษีที่ใช้",
+      "allAssigned": "ใช้ภาษีทั้งหมดแล้ว",
+      "noneAssigned": "ยังไม่ได้ใช้ภาษี"
+    },
+    "priceDisplay": {
+      "label": "การแสดงราคา",
+      "inherit": "สืบทอด (ค่าเริ่มต้นทั่วไป)",
+      "netto": "เน็ตโต (ไม่รวมภาษี)",
+      "brutto": "บรุตโต (รวมภาษี)"
+    }
   },
   "subscriptions": {
     "title": "การสมัครสมาชิก",
@@ -411,15 +437,6 @@
       "placeholder": "การจัดการแพ็คเกจโทเค็นจะอยู่ที่นี่"
     },
     "tax": {
-      "classesTitle": "ประเภทภาษี",
-      "addClass": "เพิ่มประเภท",
-      "className": "ชื่อ",
-      "classCode": "รหัส",
-      "defaultRate": "อัตราเริ่มต้น (%)",
-      "isDefault": "ค่าเริ่มต้น",
-      "noClasses": "ยังไม่มีประเภทภาษี",
-      "classSaved": "บันทึกประเภทภาษีสำเร็จ",
-      "confirmDeleteClass": "ลบประเภทภาษีนี้?",
       "ratesTitle": "อัตราภาษี",
       "addRate": "เพิ่มอัตรา",
       "rateName": "ชื่อ",
@@ -432,11 +449,32 @@
       "region": "ภูมิภาค",
       "regionPlaceholder": "เช่น CA-BC",
       "taxClass": "ประเภทภาษี",
+      "taxClassPlaceholder": "เช่น standard, reduced, zero",
       "inclusive": "รวมภาษี",
       "noRates": "ยังไม่มีอัตราภาษี",
       "rateSaved": "บันทึกอัตราภาษีสำเร็จ",
-      "confirmDeleteRate": "ลบอัตราภาษีนี้?"
+      "confirmDeleteRate": "ลบอัตราภาษีนี้?",
+      "bulkDelete": {
+        "selectedCount": "เลือกแล้ว {count} รายการ",
+        "deleteSelected": "ลบรายการที่เลือก",
+        "confirmRates": "ลบอัตราภาษี {count} รายการ?",
+        "someInUse": "ไม่สามารถลบบางรายการได้เนื่องจากกำลังใช้งานอยู่: {names}"
+      },
+      "priceDisplay": {
+        "label": "โหมดการแสดงราคา",
+        "hint": "การแสดงราคาเริ่มต้นสำหรับสินค้าที่ขายได้ทั้งหมด รายการสามารถแทนที่ได้ทีละรายการ",
+        "brutto": "บรุตโต (รวมภาษี)",
+        "netto": "เน็ตโต (ไม่รวมภาษี)",
+        "save": "บันทึก",
+        "saved": "บันทึกโหมดการแสดงราคาแล้ว"
+      }
     }
+  },
+  "taxAndCountries": {
+    "title": "ภาษีและประเทศ",
+    "countriesTab": "ประเทศ",
+    "taxTab": "ภาษี",
+    "currenciesTab": "สกุลเงิน"
   },
   "tokenBundles": {
     "title": "การกำหนดค่าแพ็คเกจโทเค็น",
@@ -463,7 +501,13 @@
     "bundleUpdated": "อัปเดตแพ็คเกจโทเค็นสำเร็จ",
     "bundleDeleted": "ลบแพ็คเกจโทเค็นสำเร็จ",
     "activate": "เปิดใช้งาน",
-    "deactivate": "ปิดใช้งาน"
+    "deactivate": "ปิดใช้งาน",
+    "bulkDelete": {
+      "selectedCount": "เลือกแล้ว {count} รายการ",
+      "deleteSelected": "ลบรายการที่เลือก",
+      "confirm": "ลบแพ็คเกจโทเค็น {count} รายการ?",
+      "someFailed": "ไม่สามารถลบบางแพ็คเกจได้: {names}"
+    }
   },
   "addOns": {
     "title": "ส่วนเสริม",
@@ -684,5 +728,120 @@
     "revokeRole": "Revoke",
     "yes": "Yes",
     "no": "No"
+  },
+  "currencies": {
+    "description": "จัดการสกุลเงินที่ใช้ได้ สกุลเงินที่ใช้จัดเก็บราคา และอัตราแลกเปลี่ยน",
+    "default": "ค่าเริ่มต้น",
+    "loadError": "โหลดสกุลเงินไม่สำเร็จ",
+    "saveRates": "บันทึกอัตรา",
+    "addCurrency": "เพิ่มสกุลเงิน",
+    "deleteConfirm": "ลบสกุลเงิน {code}? ไม่สามารถยกเลิกการกระทำนี้ได้",
+    "deleteFailed": "ลบสกุลเงินไม่สำเร็จ",
+    "newCurrency": {
+      "code": "รหัส",
+      "name": "ชื่อ",
+      "symbol": "สัญลักษณ์",
+      "decimals": "ตำแหน่งทศนิยม",
+      "rate": "อัตราแลกเปลี่ยน",
+      "submit": "สร้าง",
+      "cancel": "ยกเลิก",
+      "codeFormat": "รหัสต้องเป็นตัวอักษรพิมพ์ใหญ่ 3 ตัว (เช่น CHF)",
+      "missingFields": "ต้องระบุชื่อและสัญลักษณ์",
+      "invalidRate": "อัตราแลกเปลี่ยนต้องมากกว่าศูนย์",
+      "duplicateHint": "สกุลเงินใหม่จะถูกเพิ่มในรายการที่มีให้ใช้ เปิดใช้งานเพื่อเริ่มใช้"
+    },
+    "activeAvailable": {
+      "title": "สกุลเงินที่ใช้งาน",
+      "hint": "ย้ายสกุลเงินระหว่างที่ใช้งานและที่มีอยู่ สกุลเงินเริ่มต้นจะใช้งานเสมอ",
+      "active": "ใช้งาน",
+      "available": "มีอยู่",
+      "activate": "เปิดใช้งาน",
+      "deactivate": "ปิดใช้งาน"
+    },
+    "defaultSelector": {
+      "title": "สกุลเงินเริ่มต้น",
+      "hint": "ราคาจะถูกจัดเก็บในสกุลเงินนี้",
+      "confirm": "การเปลี่ยนสกุลเงินเริ่มต้นจะคำนวณอัตราแลกเปลี่ยนใหม่ทั้งหมด ต้องการดำเนินการต่อหรือไม่?"
+    },
+    "crossRateBase": {
+      "title": "ฐานอัตราแลกเปลี่ยนข้าม",
+      "hint": "แสดงอัตราแลกเปลี่ยนเทียบกับสกุลเงินเริ่มต้นหรือเทียบกับ USD",
+      "optionDefault": "เทียบกับค่าเริ่มต้น ({code})",
+      "optionUsd": "เทียบกับ USD"
+    },
+    "rateSheet": {
+      "title": "อัตราแลกเปลี่ยน",
+      "hint": "แก้ไขอัตราสำหรับแต่ละสกุลเงินที่ใช้งาน ค่าจะถูกจัดเก็บโดยอ้างอิงกับสกุลเงินเริ่มต้น",
+      "pair": "คู่สกุลเงิน",
+      "rate": "อัตรา",
+      "inverse": "ส่วนกลับ",
+      "empty": "ไม่มีอัตราที่แก้ไขได้สำหรับการเลือกปัจจุบัน",
+      "invalidRate": "อัตราต้องมากกว่าศูนย์",
+      "saveFailed": "บันทึกไม่สำเร็จ: {pairs}"
+    }
+  },
+  "userGroups": {
+    "title": "กลุ่มผู้ใช้",
+    "newGroup": "กลุ่มใหม่",
+    "editGroup": "แก้ไขกลุ่ม",
+    "slug": "สลัก",
+    "name": "ชื่อ",
+    "lang": "ภาษา",
+    "parentGroup": "กลุ่มหลัก",
+    "noParent": "ไม่มีกลุ่มหลัก",
+    "actions": "การดำเนินการ",
+    "searchPlaceholder": "ค้นหากลุ่มผู้ใช้…",
+    "selected": "ที่เลือก",
+    "deleteSelected": "ลบที่เลือก",
+    "empty": "ยังไม่มีการกำหนดกลุ่มผู้ใช้"
+  },
+  "tagsCustomFields": {
+    "tagsLabel": "แท็ก",
+    "customFieldsLabel": "ฟิลด์ที่กำหนดเอง",
+    "noTags": "ไม่มีแท็ก",
+    "addTag": "เพิ่มแท็ก…",
+    "removeTag": "ลบแท็ก",
+    "saveTags": "บันทึกแท็ก",
+    "saveCustomFields": "บันทึกฟิลด์",
+    "noCustomFields": "ไม่มีฟิลด์ที่กำหนดเองสำหรับเอนทิตีนี้",
+    "pageTitle": "ฟิลด์ที่กำหนดเอง",
+    "tabCustomFields": "ฟิลด์ที่กำหนดเอง",
+    "tabGlobalTags": "แท็กส่วนกลาง",
+    "filterByEntity": "เอนทิตีหลัก",
+    "filterByType": "ชนิดข้อมูล",
+    "allEntities": "ทุกเอนทิตี",
+    "allTypes": "ทุกชนิด",
+    "globalScope": "ส่วนกลาง",
+    "quickSearch": "ค้นหาด่วน…",
+    "createCustomField": "สร้างฟิลด์",
+    "createTag": "สร้างแท็ก",
+    "colKey": "คีย์",
+    "colLabel": "ป้าย",
+    "colParentEntity": "เอนทิตีหลัก",
+    "colType": "ชนิด",
+    "colOptions": "ตัวเลือก",
+    "colSortOrder": "ลำดับ",
+    "colActive": "ใช้งาน",
+    "colName": "ชื่อ",
+    "colSlug": "สลัก",
+    "colParentType": "ชนิดหลัก",
+    "colStats": "การใช้งาน",
+    "fieldKey": "คีย์",
+    "fieldLabel": "ป้าย",
+    "fieldType": "ชนิด",
+    "fieldOptions": "ตัวเลือก (บรรทัดละหนึ่ง)",
+    "fieldSortOrder": "ลำดับ",
+    "fieldActive": "ใช้งาน",
+    "fieldSlug": "สลัก",
+    "fieldName": "ชื่อ",
+    "fieldParentEntity": "เอนทิตีหลัก (ว่าง = ส่วนกลาง)",
+    "fieldMetaData": "เมตาดาทา (JSON)",
+    "fieldColor": "สี",
+    "deleteSelected": "ลบที่เลือก",
+    "activateSelected": "เปิดใช้งานที่เลือก",
+    "deactivateSelected": "ปิดใช้งานที่เลือก",
+    "noRows": "ไม่มีแถว",
+    "selectAll": "เลือกทั้งหมด",
+    "confirmDelete": "ลบแถวที่เลือกหรือไม่?"
   }
 }

@@ -8,6 +8,11 @@ export interface Invoice {
   user_email?: string;
   user_name?: string;
   amount: number;
+  // Persisted invoice-level tax breakdown (S85). The backend payload carries
+  // these alongside ``amount``; they drive the tax-disclosure block.
+  subtotal?: number;
+  tax_amount?: number;
+  total_amount?: number;
   currency?: string;
   status: 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED' | 'REFUNDED';
   due_date?: string;
@@ -29,6 +34,13 @@ export interface InvoiceDetail extends Invoice {
   metadata?: Record<string, unknown> | null;
 }
 
+export interface LineItemTax {
+  code: string;
+  name?: string;
+  rate: number;
+  amount: number;
+}
+
 export interface LineItem {
   id?: string;
   type?: string;
@@ -37,6 +49,14 @@ export interface LineItem {
   quantity?: number;
   unit_price?: number;
   amount: number;
+  // S85.4: persisted per-line tax disclosure (net / tax / per-rate breakdown).
+  net_amount?: string;
+  tax_amount?: string;
+  tax_breakdown?: LineItemTax[];
+  // S77: frozen snapshot of the source item's tags + custom-fields, copied
+  // onto the line at issue time (read-only — never live-joined to the source).
+  tags?: string[];
+  custom_fields?: Record<string, unknown>;
 }
 
 export interface BillingAddress {

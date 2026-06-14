@@ -26,22 +26,6 @@
         {{ $t('settings.tabs.tokens') }}
       </button>
       <button
-        data-testid="tab-countries"
-        class="tab-btn"
-        :class="{ active: activeTab === 'countries' }"
-        @click="activeTab = 'countries'"
-      >
-        {{ $t('settings.tabs.countries') }}
-      </button>
-      <button
-        data-testid="tab-tax"
-        class="tab-btn"
-        :class="{ active: activeTab === 'tax' }"
-        @click="activeTab = 'tax'"
-      >
-        {{ $t('settings.tabs.tax') }}
-      </button>
-      <button
         data-testid="tab-admin-plugins"
         class="tab-btn"
         :class="{ active: activeTab === 'adminPlugins' }"
@@ -297,14 +281,28 @@
                 {{ $t('settings.tokens.description') }}
               </p>
             </div>
-            <router-link
-              v-if="canManage"
-              to="/admin/settings/token-bundles/new"
-              class="create-btn"
-              data-testid="create-bundle-btn"
-            >
-              {{ $t('tokenBundles.createBundle') }}
-            </router-link>
+            <div class="section-actions">
+              <ImportExportControls
+                v-if="showBundlesImportExport"
+                data-testid="token-bundles-import-export"
+                :api="dataExchangeApi"
+                entity-key="token_bundles"
+                :can-export="bundlesCapabilities.can_export"
+                :can-import="bundlesCapabilities.can_import"
+                :can-export-pii="bundlesCapabilities.can_export_pii"
+                :is-superadmin="isSuperAdmin"
+                :supported-formats="bundlesCapabilities.supported_formats"
+                @refresh="loadTokenBundles(bundlesPagination.page)"
+              />
+              <router-link
+                v-if="canManage"
+                to="/admin/settings/token-bundles/new"
+                class="create-btn"
+                data-testid="create-bundle-btn"
+              >
+                {{ $t('tokenBundles.createBundle') }}
+              </router-link>
+            </div>
           </div>
 
           <!-- Loading State -->
@@ -349,12 +347,45 @@
             v-else
             class="bundles-table-container"
           >
+            <!-- Bulk toolbar -->
+            <div
+              v-if="selectedBundleIds.size > 0"
+              class="bulk-toolbar"
+              data-testid="bundles-bulk-toolbar"
+            >
+              <span
+                class="bulk-count"
+                data-testid="bundles-bulk-selected-count"
+              >
+                {{ $t('tokenBundles.bulkDelete.selectedCount', { count: selectedBundleIds.size }) }}
+              </span>
+              <button
+                v-if="canManage"
+                class="action-btn delete-btn"
+                data-testid="bundles-bulk-delete-btn"
+                @click="handleBulkDeleteBundles"
+              >
+                {{ $t('tokenBundles.bulkDelete.deleteSelected') }}
+              </button>
+            </div>
+
             <table
               class="bundles-table"
               data-testid="token-bundles-table"
             >
               <thead>
                 <tr>
+                  <th
+                    v-if="canManage"
+                    class="checkbox-col"
+                  >
+                    <input
+                      type="checkbox"
+                      :checked="allBundlesSelected"
+                      data-testid="select-all-bundles"
+                      @change="toggleAllBundles"
+                    >
+                  </th>
                   <th>{{ $t('tokenBundles.name') }}</th>
                   <th>{{ $t('tokenBundles.tokens') }}</th>
                   <th>{{ $t('tokenBundles.price') }}</th>
@@ -368,6 +399,17 @@
                   :key="bundle.id"
                   data-testid="bundle-row"
                 >
+                  <td
+                    v-if="canManage"
+                    class="checkbox-col"
+                  >
+                    <input
+                      type="checkbox"
+                      :checked="selectedBundleIds.has(bundle.id)"
+                      :data-testid="`select-bundle-${bundle.id}`"
+                      @change="toggleSelectBundle(bundle.id)"
+                    >
+                  </td>
                   <td class="bundle-name">
                     <router-link :to="`/admin/settings/token-bundles/${bundle.id}`">
                       {{ bundle.name }}
@@ -455,510 +497,6 @@
               </button>
             </div>
           </div>
-        </div>
-      </div>
-
-      <!-- Countries Tab -->
-      <div
-        v-show="activeTab === 'countries'"
-        data-testid="countries-content"
-        class="countries-tab"
-      >
-        <p class="section-description">
-          {{ $t('countriesConfig.description') }}
-        </p>
-
-        <div
-          v-if="countriesLoading && !countriesHasData"
-          class="bundles-loading"
-        >
-          <div class="spinner" />
-          <p>{{ $t('common.loading') }}</p>
-        </div>
-
-        <div
-          v-else-if="countriesError"
-          class="bundles-error"
-        >
-          <p>{{ countriesError }}</p>
-          <button
-            class="retry-btn"
-            @click="loadCountries"
-          >
-            {{ $t('common.retry') }}
-          </button>
-        </div>
-
-        <div
-          v-else
-          class="countries-layout"
-        >
-          <!-- Enabled Countries (Drag & Drop) -->
-          <div class="countries-panel enabled-panel">
-            <div class="countries-panel-header">
-              <h3>{{ $t('countriesConfig.enabledCountries') }}</h3>
-              <span class="count-badge enabled-badge">{{ enabledCountries.length }}</span>
-            </div>
-
-            <div
-              v-if="enabledCountries.length === 0"
-              class="empty-panel"
-            >
-              {{ $t('countriesConfig.noEnabledCountries') }}
-            </div>
-
-            <ul
-              v-else
-              class="country-list sortable-list"
-              data-testid="enabled-countries-list"
-              @dragover.prevent
-              @drop="handleDrop"
-            >
-              <li
-                v-for="(country, index) in enabledCountries"
-                :key="country.code"
-                class="country-item enabled-item"
-                :data-testid="`enabled-country-${country.code}`"
-                draggable="true"
-                :class="{ 'drag-over': dragOverIndex === index }"
-                @dragstart="handleDragStart($event, index)"
-                @dragenter="handleDragEnter($event, index)"
-                @dragleave="handleDragLeave"
-                @dragend="handleDragEnd"
-              >
-                <span class="drag-handle">&#x2630;</span>
-                <span class="country-flag">{{ getFlagEmoji(country.code) }}</span>
-                <span class="country-name">{{ country.name }}</span>
-                <span class="country-code">{{ country.code }}</span>
-                <button
-                  v-if="canManage"
-                  class="action-btn deactivate-btn"
-                  :disabled="countryActionLoading === country.code"
-                  :title="$t('countriesConfig.disable')"
-                  @click="handleDisableCountry(country.code)"
-                >
-                  {{ $t('countriesConfig.disable') }}
-                </button>
-              </li>
-            </ul>
-          </div>
-
-          <!-- Disabled Countries -->
-          <div class="countries-panel disabled-panel">
-            <div class="countries-panel-header">
-              <h3>{{ $t('countriesConfig.disabledCountries') }}</h3>
-              <span class="count-badge">{{ disabledCountries.length }}</span>
-            </div>
-
-            <div class="search-box">
-              <input
-                v-model="countrySearchQuery"
-                type="text"
-                :placeholder="$t('common.search')"
-                class="search-input"
-                data-testid="country-search"
-              >
-            </div>
-
-            <div
-              v-if="filteredDisabledCountries.length === 0"
-              class="empty-panel"
-            >
-              {{ countrySearchQuery ? $t('common.noResults') : $t('countriesConfig.noDisabledCountries') }}
-            </div>
-
-            <ul
-              v-else
-              class="country-list"
-              data-testid="disabled-countries-list"
-            >
-              <li
-                v-for="country in filteredDisabledCountries"
-                :key="country.code"
-                class="country-item disabled-item"
-                :data-testid="`disabled-country-${country.code}`"
-              >
-                <span class="country-flag">{{ getFlagEmoji(country.code) }}</span>
-                <span class="country-name">{{ country.name }}</span>
-                <span class="country-code">{{ country.code }}</span>
-                <button
-                  v-if="canManage"
-                  class="action-btn activate-btn"
-                  :disabled="countryActionLoading === country.code"
-                  :title="$t('countriesConfig.enable')"
-                  @click="handleEnableCountry(country.code)"
-                >
-                  {{ $t('countriesConfig.enable') }}
-                </button>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tax Tab -->
-      <div
-        v-show="activeTab === 'tax'"
-        data-testid="tax-content"
-        class="tax-tab"
-      >
-        <!-- Tax Classes Section -->
-        <div class="form-section">
-          <div class="section-header">
-            <h3>{{ $t('settings.tax.classesTitle') }}</h3>
-            <button
-              v-if="canManage"
-              class="create-btn"
-              data-testid="add-tax-class-btn"
-              @click="showTaxClassForm = true; editingTaxClass = null; Object.assign(taxClassForm, { name: '', code: '', description: '', default_rate: '0', is_default: false })"
-            >
-              {{ $t('settings.tax.addClass') }}
-            </button>
-          </div>
-
-          <!-- Tax Class Form -->
-          <div
-            v-if="showTaxClassForm"
-            class="inline-form"
-            data-testid="tax-class-form"
-          >
-            <div class="form-row">
-              <div class="form-group">
-                <label>{{ $t('settings.tax.className') }}</label>
-                <input
-                  v-model="taxClassForm.name"
-                  type="text"
-                  class="form-input"
-                  data-testid="tax-class-name-input"
-                >
-              </div>
-              <div class="form-group">
-                <label>{{ $t('settings.tax.classCode') }}</label>
-                <input
-                  v-model="taxClassForm.code"
-                  type="text"
-                  class="form-input"
-                  data-testid="tax-class-code-input"
-                >
-              </div>
-              <div class="form-group">
-                <label>{{ $t('settings.tax.defaultRate') }}</label>
-                <input
-                  v-model="taxClassForm.default_rate"
-                  type="number"
-                  step="0.01"
-                  class="form-input"
-                  data-testid="tax-class-rate-input"
-                >
-              </div>
-              <div class="form-group form-group--checkbox">
-                <label>
-                  <input
-                    v-model="taxClassForm.is_default"
-                    type="checkbox"
-                    data-testid="tax-class-default-input"
-                  >
-                  {{ $t('settings.tax.isDefault') }}
-                </label>
-              </div>
-            </div>
-            <div class="form-group">
-              <label>{{ $t('common.description') }}</label>
-              <input
-                v-model="taxClassForm.description"
-                type="text"
-                class="form-input"
-                data-testid="tax-class-desc-input"
-              >
-            </div>
-            <div class="form-actions-inline">
-              <button
-                class="save-btn"
-                data-testid="save-tax-class-btn"
-                :disabled="taxLoading"
-                @click="handleSaveTaxClass"
-              >
-                {{ editingTaxClass ? $t('common.save') : $t('common.create') }}
-              </button>
-              <button
-                class="cancel-btn"
-                @click="showTaxClassForm = false"
-              >
-                {{ $t('common.cancel') }}
-              </button>
-            </div>
-          </div>
-
-          <!-- Tax Classes Table -->
-          <table
-            v-if="taxClasses.length > 0"
-            class="data-table"
-            data-testid="tax-classes-table"
-          >
-            <thead>
-              <tr>
-                <th>{{ $t('settings.tax.className') }}</th>
-                <th>{{ $t('settings.tax.classCode') }}</th>
-                <th>{{ $t('settings.tax.defaultRate') }}</th>
-                <th>{{ $t('settings.tax.isDefault') }}</th>
-                <th>{{ $t('common.actions') }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="taxClass in taxClasses"
-                :key="taxClass.id"
-              >
-                <td>{{ taxClass.name }}</td>
-                <td><code>{{ taxClass.code }}</code></td>
-                <td>{{ taxClass.default_rate }}%</td>
-                <td>
-                  <span
-                    class="badge"
-                    :class="taxClass.is_default ? 'badge--green' : 'badge--gray'"
-                  >
-                    {{ taxClass.is_default ? $t('common.yes') : $t('common.no') }}
-                  </span>
-                </td>
-                <td>
-                  <button
-                    v-if="canManage"
-                    class="btn btn--sm"
-                    @click="handleEditTaxClass(taxClass)"
-                  >
-                    {{ $t('common.edit') }}
-                  </button>
-                  <button
-                    v-if="canManage"
-                    class="btn btn--sm btn--danger"
-                    @click="handleDeleteTaxClass(taxClass.id)"
-                  >
-                    {{ $t('common.delete') }}
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <p
-            v-else-if="!taxLoading"
-            class="empty-state"
-          >
-            {{ $t('settings.tax.noClasses') }}
-          </p>
-        </div>
-
-        <!-- Tax Rates Section -->
-        <div class="form-section">
-          <div class="section-header">
-            <h3>{{ $t('settings.tax.ratesTitle') }}</h3>
-            <button
-              v-if="canManage"
-              class="create-btn"
-              data-testid="add-tax-rate-btn"
-              @click="showTaxRateForm = true; editingTaxRate = null; Object.assign(taxRateForm, { name: '', code: '', rate: '0', country_code: '', region_code: '', tax_class_id: '', is_active: true, is_inclusive: false, description: '' })"
-            >
-              {{ $t('settings.tax.addRate') }}
-            </button>
-          </div>
-
-          <!-- Tax Rate Form -->
-          <div
-            v-if="showTaxRateForm"
-            class="inline-form"
-            data-testid="tax-rate-form"
-          >
-            <div class="form-row">
-              <div class="form-group">
-                <label>{{ $t('settings.tax.rateName') }}</label>
-                <input
-                  v-model="taxRateForm.name"
-                  type="text"
-                  class="form-input"
-                  data-testid="tax-rate-name-input"
-                  :placeholder="$t('settings.tax.rateNamePlaceholder')"
-                >
-              </div>
-              <div class="form-group">
-                <label>{{ $t('settings.tax.rateCode') }}</label>
-                <input
-                  v-model="taxRateForm.code"
-                  type="text"
-                  class="form-input"
-                  data-testid="tax-rate-code-input"
-                  :placeholder="$t('settings.tax.rateCodePlaceholder')"
-                >
-              </div>
-              <div class="form-group">
-                <label>{{ $t('settings.tax.ratePercent') }}</label>
-                <input
-                  v-model="taxRateForm.rate"
-                  type="number"
-                  step="0.01"
-                  class="form-input"
-                  data-testid="tax-rate-rate-input"
-                >
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>{{ $t('settings.tax.country') }}</label>
-                <input
-                  v-model="taxRateForm.country_code"
-                  type="text"
-                  maxlength="2"
-                  class="form-input"
-                  data-testid="tax-rate-country-input"
-                  :placeholder="$t('settings.tax.countryPlaceholder')"
-                >
-              </div>
-              <div class="form-group">
-                <label>{{ $t('settings.tax.region') }}</label>
-                <input
-                  v-model="taxRateForm.region_code"
-                  type="text"
-                  class="form-input"
-                  data-testid="tax-rate-region-input"
-                  :placeholder="$t('settings.tax.regionPlaceholder')"
-                >
-              </div>
-              <div class="form-group">
-                <label>{{ $t('settings.tax.taxClass') }}</label>
-                <select
-                  v-model="taxRateForm.tax_class_id"
-                  class="form-input"
-                  data-testid="tax-rate-class-select"
-                >
-                  <option value="">
-                    {{ $t('common.none') }}
-                  </option>
-                  <option
-                    v-for="taxClass in taxClasses"
-                    :key="taxClass.id"
-                    :value="taxClass.id"
-                  >
-                    {{ taxClass.name }}
-                  </option>
-                </select>
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group form-group--checkbox">
-                <label>
-                  <input
-                    v-model="taxRateForm.is_active"
-                    type="checkbox"
-                    data-testid="tax-rate-active-input"
-                  >
-                  {{ $t('common.active') }}
-                </label>
-              </div>
-              <div class="form-group form-group--checkbox">
-                <label>
-                  <input
-                    v-model="taxRateForm.is_inclusive"
-                    type="checkbox"
-                    data-testid="tax-rate-inclusive-input"
-                  >
-                  {{ $t('settings.tax.inclusive') }}
-                </label>
-              </div>
-            </div>
-            <div class="form-group">
-              <label>{{ $t('common.description') }}</label>
-              <input
-                v-model="taxRateForm.description"
-                type="text"
-                class="form-input"
-              >
-            </div>
-            <div class="form-actions-inline">
-              <button
-                class="save-btn"
-                data-testid="save-tax-rate-btn"
-                :disabled="taxLoading"
-                @click="handleSaveTaxRate"
-              >
-                {{ editingTaxRate ? $t('common.save') : $t('common.create') }}
-              </button>
-              <button
-                class="cancel-btn"
-                @click="showTaxRateForm = false"
-              >
-                {{ $t('common.cancel') }}
-              </button>
-            </div>
-          </div>
-
-          <!-- Tax Rates Table -->
-          <table
-            v-if="taxRates.length > 0"
-            class="data-table"
-            data-testid="tax-rates-table"
-          >
-            <thead>
-              <tr>
-                <th>{{ $t('settings.tax.rateName') }}</th>
-                <th>{{ $t('settings.tax.rateCode') }}</th>
-                <th>{{ $t('settings.tax.country') }}</th>
-                <th>{{ $t('settings.tax.region') }}</th>
-                <th>{{ $t('settings.tax.ratePercent') }}</th>
-                <th>{{ $t('settings.tax.taxClass') }}</th>
-                <th>{{ $t('common.status') }}</th>
-                <th>{{ $t('common.actions') }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="rate in taxRates"
-                :key="rate.id"
-              >
-                <td>{{ rate.name }}</td>
-                <td><code>{{ rate.code }}</code></td>
-                <td>{{ rate.country_code || '—' }}</td>
-                <td>{{ rate.region_code || '—' }}</td>
-                <td>{{ rate.rate }}%</td>
-                <td>{{ getTaxClassName(rate.tax_class_id) }}</td>
-                <td>
-                  <span
-                    class="badge"
-                    :class="rate.is_active ? 'badge--green' : 'badge--gray'"
-                  >
-                    {{ rate.is_active ? $t('common.active') : $t('common.inactive') }}
-                  </span>
-                </td>
-                <td>
-                  <button
-                    v-if="canManage"
-                    class="btn btn--sm"
-                    @click="handleEditTaxRate(rate)"
-                  >
-                    {{ $t('common.edit') }}
-                  </button>
-                  <button
-                    v-if="canManage"
-                    class="btn btn--sm btn--danger"
-                    @click="handleDeleteTaxRate(rate.id)"
-                  >
-                    {{ $t('common.delete') }}
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <p
-            v-else-if="!taxLoading"
-            class="empty-state"
-          >
-            {{ $t('settings.tax.noRates') }}
-          </p>
-        </div>
-
-        <div
-          v-if="taxLoading"
-          class="loading-state"
-        >
-          <div class="spinner" />
-          <p>{{ $t('common.loading') }}</p>
         </div>
       </div>
 
@@ -1469,33 +1007,40 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { ImportExportControls } from 'vbwd-view-component';
 import { api } from '@/api';
 import { useAuthStore } from '@/stores/auth';
 import { useTokenBundlesStore } from '@/stores/tokenBundles';
-import { useCountriesStore } from '@/stores/countries';
 import { usePluginsStore } from '@/stores/plugins';
 import type { PluginEntry } from '@/stores/plugins';
 import { useUserPluginsStore } from '@/stores/userPlugins';
 import type { UserPluginEntry } from '@/stores/userPlugins';
-import { useTaxAdminStore } from '@/stores/taxAdmin';
-import type { TaxRate, TaxClass } from '@/stores/taxAdmin';
+import { createDataExchangeApi } from '@/api/dataExchangeApi';
+import { useDataExchangeManifest } from '@/composables/useDataExchangeManifest';
 
 const { t } = useI18n();
 const authStore = useAuthStore();
 const tokenBundlesStore = useTokenBundlesStore();
-const countriesStore = useCountriesStore();
 const pluginsStore = usePluginsStore();
 const userPluginsStore = useUserPluginsStore();
-const taxAdminStore = useTaxAdminStore();
 
 const canManage = computed(() => authStore.hasPermission('settings.manage'));
+const isSuperAdmin = computed(() => authStore.isSuperAdmin);
+
+// Import/Export: the Token Bundles section embeds the shared core
+// data-exchange controls, scoped to the `token_bundles` exchanger and gated by
+// the same manifest the Import/Export page consumes.
+const dataExchangeApi = createDataExchangeApi();
+const { load: loadManifest, capabilitiesFor } = useDataExchangeManifest();
+const bundlesCapabilities = computed(() => capabilitiesFor('token_bundles'));
+const showBundlesImportExport = computed(
+  () => bundlesCapabilities.value.can_export || bundlesCapabilities.value.can_import,
+);
 
 // Tab state
 type MainTab =
   | 'core'
   | 'tokens'
-  | 'countries'
-  | 'tax'
   | 'adminPlugins'
   | 'backendPlugins'
   | 'userPlugins';
@@ -1654,6 +1199,59 @@ async function handleDelete(bundleId: string): Promise<void> {
   }
 }
 
+// Bulk select + bulk delete (mirrors the house pattern in
+// views/tax-countries/TaxesTab.vue): a `selectedBundleIds` Set, a per-row
+// checkbox + select-all, and a Delete-selected action that loops the existing
+// single-delete endpoint DELETE /admin/token-bundles/<id> directly via the api
+// (not the store's delete-then-reload, which would abort the batch). A bundle
+// with purchases may be protected: we do not abort — delete what we can and
+// surface which could not, then reload + clear selection once at the end.
+const selectedBundleIds = reactive(new Set<string>());
+
+const allBundlesSelected = computed(
+  () => tokenBundles.value.length > 0 && tokenBundles.value.every(bundle => selectedBundleIds.has(bundle.id)),
+);
+
+function toggleSelectBundle(bundleId: string): void {
+  if (selectedBundleIds.has(bundleId)) {
+    selectedBundleIds.delete(bundleId);
+  } else {
+    selectedBundleIds.add(bundleId);
+  }
+}
+
+function toggleAllBundles(): void {
+  if (allBundlesSelected.value) {
+    selectedBundleIds.clear();
+  } else {
+    tokenBundles.value.forEach(bundle => selectedBundleIds.add(bundle.id));
+  }
+}
+
+async function handleBulkDeleteBundles(): Promise<void> {
+  const bundleIds = Array.from(selectedBundleIds);
+  if (bundleIds.length === 0) return;
+  if (!confirm(t('tokenBundles.bulkDelete.confirm', { count: bundleIds.length }))) return;
+  saveError.value = null;
+
+  const failedNames: string[] = [];
+  for (const bundleId of bundleIds) {
+    try {
+      await api.delete(`/admin/token-bundles/${bundleId}`);
+    } catch {
+      const bundle = tokenBundles.value.find(candidate => candidate.id === bundleId);
+      failedNames.push(bundle ? bundle.name : bundleId);
+    }
+  }
+
+  selectedBundleIds.clear();
+  await loadTokenBundles(bundlesPagination.value.page);
+
+  if (failedNames.length > 0) {
+    saveError.value = t('tokenBundles.bulkDelete.someFailed', { names: failedNames.join(', ') });
+  }
+}
+
 function formatNumber(value: number): string {
   return value.toLocaleString();
 }
@@ -1664,128 +1262,6 @@ function formatPrice(price: string | number): string {
     style: 'currency',
     currency: 'USD',
   }).format(numPrice);
-}
-
-// Countries
-const countriesLoading = ref(false);
-const countriesError = ref<string | null>(null);
-const countriesLoaded = ref(false);
-const countryActionLoading = ref<string | null>(null);
-const countrySearchQuery = ref('');
-const draggedIndex = ref<number | null>(null);
-const dragOverIndex = ref<number | null>(null);
-
-const enabledCountries = computed(() => countriesStore.sortedEnabled);
-const disabledCountries = computed(() => countriesStore.sortedDisabled);
-const countriesHasData = computed(() => countriesStore.countries.length > 0);
-
-const filteredDisabledCountries = computed(() => {
-  if (!countrySearchQuery.value) {
-    return disabledCountries.value;
-  }
-  const query = countrySearchQuery.value.toLowerCase();
-  return disabledCountries.value.filter(
-    c => c.name.toLowerCase().includes(query) || c.code.toLowerCase().includes(query)
-  );
-});
-
-function getFlagEmoji(countryCode: string): string {
-  const codePoints = countryCode
-    .toUpperCase()
-    .split('')
-    .map(char => 127397 + char.charCodeAt(0));
-  return String.fromCodePoint(...codePoints);
-}
-
-async function loadCountries(): Promise<void> {
-  countriesLoading.value = true;
-  countriesError.value = null;
-  try {
-    await countriesStore.fetchAllCountries();
-    countriesLoaded.value = true;
-  } catch (e) {
-    countriesError.value = (e as Error).message || t('countriesConfig.loadError');
-  } finally {
-    countriesLoading.value = false;
-  }
-}
-
-
-async function handleEnableCountry(code: string): Promise<void> {
-  countryActionLoading.value = code;
-  try {
-    await countriesStore.enableCountry(code);
-  } catch (e) {
-    countriesError.value = (e as Error).message;
-  } finally {
-    countryActionLoading.value = null;
-  }
-}
-
-async function handleDisableCountry(code: string): Promise<void> {
-  countryActionLoading.value = code;
-  try {
-    await countriesStore.disableCountry(code);
-  } catch (e) {
-    countriesError.value = (e as Error).message;
-  } finally {
-    countryActionLoading.value = null;
-  }
-}
-
-function handleDragStart(event: DragEvent, index: number): void {
-  draggedIndex.value = index;
-  if (event.dataTransfer) {
-    event.dataTransfer.effectAllowed = 'move';
-    event.dataTransfer.setData('text/plain', String(index));
-  }
-}
-
-function handleDragEnter(_event: DragEvent, index: number): void {
-  if (draggedIndex.value !== null && draggedIndex.value !== index) {
-    dragOverIndex.value = index;
-  }
-}
-
-function handleDragLeave(): void {
-  dragOverIndex.value = null;
-}
-
-function handleDragEnd(): void {
-  draggedIndex.value = null;
-  dragOverIndex.value = null;
-}
-
-async function handleDrop(): Promise<void> {
-  if (draggedIndex.value === null || dragOverIndex.value === null) {
-    return;
-  }
-
-  const fromIndex = draggedIndex.value;
-  const toIndex = dragOverIndex.value;
-
-  if (fromIndex === toIndex) {
-    draggedIndex.value = null;
-    dragOverIndex.value = null;
-    return;
-  }
-
-  const countries = [...enabledCountries.value];
-  const [movedCountry] = countries.splice(fromIndex, 1);
-  countries.splice(toIndex, 0, movedCountry);
-
-  countriesStore.updateEnabledOrder(countries);
-
-  draggedIndex.value = null;
-  dragOverIndex.value = null;
-
-  try {
-    const codes = countries.map(c => c.code);
-    await countriesStore.reorderCountries(codes);
-  } catch (e) {
-    await loadCountries();
-    countriesError.value = (e as Error).message;
-  }
 }
 
 // Admin Plugins
@@ -1998,185 +1474,11 @@ function handleUserPluginSort(key: string): void {
   }
 }
 
-// Tax
-const taxLoading = ref(false);
-const taxLoaded = ref(false);
-const showTaxClassForm = ref(false);
-const showTaxRateForm = ref(false);
-const editingTaxClass = ref<TaxClass | null>(null);
-const editingTaxRate = ref<TaxRate | null>(null);
-
-const taxClasses = computed(() => taxAdminStore.classes);
-const taxRates = computed(() => taxAdminStore.rates);
-
-interface TaxClassFormData {
-  name: string;
-  code: string;
-  description: string;
-  default_rate: string;
-  is_default: boolean;
-}
-
-interface TaxRateFormData {
-  name: string;
-  code: string;
-  rate: string;
-  country_code: string;
-  region_code: string;
-  tax_class_id: string;
-  is_active: boolean;
-  is_inclusive: boolean;
-  description: string;
-}
-
-const taxClassForm = reactive<TaxClassFormData>({
-  name: '',
-  code: '',
-  description: '',
-  default_rate: '0',
-  is_default: false,
-});
-
-const taxRateForm = reactive<TaxRateFormData>({
-  name: '',
-  code: '',
-  rate: '0',
-  country_code: '',
-  region_code: '',
-  tax_class_id: '',
-  is_active: true,
-  is_inclusive: false,
-  description: '',
-});
-
-async function loadTaxData(): Promise<void> {
-  taxLoading.value = true;
-  try {
-    await Promise.all([
-      taxAdminStore.fetchClasses(),
-      taxAdminStore.fetchRates(),
-    ]);
-    taxLoaded.value = true;
-  } catch (error) {
-    saveError.value = (error as Error).message || 'Failed to load tax data';
-  } finally {
-    taxLoading.value = false;
-  }
-}
-
-function getTaxClassName(classId: string | null): string {
-  if (!classId) return '—';
-  const taxClass = taxClasses.value.find(c => c.id === classId);
-  return taxClass ? taxClass.name : '—';
-}
-
-function handleEditTaxClass(taxClass: TaxClass): void {
-  editingTaxClass.value = taxClass;
-  taxClassForm.name = taxClass.name;
-  taxClassForm.code = taxClass.code;
-  taxClassForm.description = taxClass.description || '';
-  taxClassForm.default_rate = taxClass.default_rate;
-  taxClassForm.is_default = taxClass.is_default;
-  showTaxClassForm.value = true;
-}
-
-async function handleSaveTaxClass(): Promise<void> {
-  if (!taxClassForm.name || !taxClassForm.code) return;
-  try {
-    if (editingTaxClass.value) {
-      await taxAdminStore.updateClass(editingTaxClass.value.id, {
-        name: taxClassForm.name,
-        code: taxClassForm.code,
-        description: taxClassForm.description,
-        default_rate: taxClassForm.default_rate,
-        is_default: taxClassForm.is_default,
-      } as Partial<TaxClass>);
-    } else {
-      await taxAdminStore.createClass({
-        name: taxClassForm.name,
-        code: taxClassForm.code,
-        description: taxClassForm.description,
-        default_rate: taxClassForm.default_rate,
-        is_default: taxClassForm.is_default,
-      } as Partial<TaxClass>);
-    }
-    showTaxClassForm.value = false;
-    successMessage.value = t('settings.tax.classSaved');
-    setTimeout(() => { successMessage.value = null; }, 3000);
-  } catch (error) {
-    saveError.value = (error as Error).message;
-  }
-}
-
-async function handleDeleteTaxClass(classId: string): Promise<void> {
-  if (!confirm(t('settings.tax.confirmDeleteClass'))) return;
-  try {
-    await taxAdminStore.deleteClass(classId);
-  } catch (error) {
-    saveError.value = (error as Error).message;
-  }
-}
-
-function handleEditTaxRate(rate: TaxRate): void {
-  editingTaxRate.value = rate;
-  taxRateForm.name = rate.name;
-  taxRateForm.code = rate.code;
-  taxRateForm.rate = rate.rate;
-  taxRateForm.country_code = rate.country_code || '';
-  taxRateForm.region_code = rate.region_code || '';
-  taxRateForm.tax_class_id = rate.tax_class_id || '';
-  taxRateForm.is_active = rate.is_active;
-  taxRateForm.is_inclusive = rate.is_inclusive;
-  taxRateForm.description = rate.description || '';
-  showTaxRateForm.value = true;
-}
-
-async function handleSaveTaxRate(): Promise<void> {
-  if (!taxRateForm.name || !taxRateForm.code) return;
-  try {
-    const payload = {
-      name: taxRateForm.name,
-      code: taxRateForm.code,
-      rate: taxRateForm.rate,
-      country_code: taxRateForm.country_code || null,
-      region_code: taxRateForm.region_code || null,
-      tax_class_id: taxRateForm.tax_class_id || null,
-      is_active: taxRateForm.is_active,
-      is_inclusive: taxRateForm.is_inclusive,
-      description: taxRateForm.description,
-    };
-    if (editingTaxRate.value) {
-      await taxAdminStore.updateRate(editingTaxRate.value.id, payload as Partial<TaxRate>);
-    } else {
-      await taxAdminStore.createRate(payload as Partial<TaxRate>);
-    }
-    showTaxRateForm.value = false;
-    successMessage.value = t('settings.tax.rateSaved');
-    setTimeout(() => { successMessage.value = null; }, 3000);
-  } catch (error) {
-    saveError.value = (error as Error).message;
-  }
-}
-
-async function handleDeleteTaxRate(rateId: string): Promise<void> {
-  if (!confirm(t('settings.tax.confirmDeleteRate'))) return;
-  try {
-    await taxAdminStore.deleteRate(rateId);
-  } catch (error) {
-    saveError.value = (error as Error).message;
-  }
-}
-
 // Lazy-load tab data
 watch(activeTab, (newTab) => {
   if (newTab === 'tokens' && !bundlesLoaded.value) {
     loadTokenBundles();
-  }
-  if (newTab === 'countries' && !countriesLoaded.value) {
-    loadCountries();
-  }
-  if (newTab === 'tax' && !taxLoaded.value) {
-    loadTaxData();
+    loadManifest();
   }
   if (newTab === 'adminPlugins' && !pluginsLoaded.value) {
     loadPlugins();
@@ -2432,6 +1734,34 @@ onMounted(() => {
   margin-bottom: 0;
 }
 
+.token-bundles-section .section-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.bulk-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 15px;
+  background: #eef2ff;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.bulk-count {
+  font-size: 14px;
+  font-weight: 600;
+  color: #4338ca;
+}
+
+.checkbox-col {
+  width: 40px;
+  text-align: center;
+}
+
 .create-btn {
   padding: 10px 20px;
   background: #28a745;
@@ -2630,143 +1960,6 @@ onMounted(() => {
   color: #999;
 }
 
-/* Countries Tab */
-.countries-layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-
-@media (max-width: 768px) {
-  .countries-layout {
-    grid-template-columns: 1fr;
-  }
-}
-
-.countries-panel {
-  border: 1px solid #e9ecef;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.countries-panel-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
-  background: #f8f9fa;
-  border-bottom: 1px solid #e9ecef;
-}
-
-.countries-panel-header h3 {
-  margin: 0;
-  font-size: 16px;
-  color: #495057;
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.count-badge {
-  background: #6c757d;
-  color: white;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-}
-
-.enabled-badge {
-  background: #28a745;
-}
-
-.search-box {
-  padding: 10px;
-  background: #fff;
-  border-bottom: 1px solid #e9ecef;
-}
-
-.search-input {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  font-size: 14px;
-  box-sizing: border-box;
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: #80bdff;
-  box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
-}
-
-.empty-panel {
-  padding: 40px 20px;
-  text-align: center;
-  color: #6c757d;
-}
-
-.country-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  max-height: 500px;
-  overflow-y: auto;
-}
-
-.country-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  border-bottom: 1px solid #e9ecef;
-  transition: background-color 0.15s;
-}
-
-.country-item:last-child {
-  border-bottom: none;
-}
-
-.country-item:hover {
-  background: #f8f9fa;
-}
-
-.enabled-item {
-  cursor: grab;
-}
-
-.enabled-item:active {
-  cursor: grabbing;
-}
-
-.enabled-item.drag-over {
-  background: #e3f2fd;
-  border-top: 2px solid #2196f3;
-}
-
-.drag-handle {
-  color: #adb5bd;
-  cursor: grab;
-  font-size: 14px;
-}
-
-.country-flag {
-  font-size: 20px;
-}
-
-.country-name {
-  flex: 1;
-  color: #212529;
-}
-
-.country-code {
-  color: #6c757d;
-  font-family: monospace;
-  font-size: 12px;
-  background: #e9ecef;
-  padding: 2px 6px;
-  border-radius: 3px;
-}
-
 /* Plugins Tab */
 .plugins-tab .form-section {
   max-width: 100%;
@@ -2819,128 +2012,4 @@ onMounted(() => {
   color: #721c24;
 }
 
-/* Tax Tab */
-.tax-tab .form-section {
-  margin-bottom: 30px;
-}
-
-.tax-tab .section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-}
-
-.tax-tab .section-header h3 {
-  margin: 0;
-}
-
-.tax-tab .data-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-}
-
-.tax-tab .data-table th,
-.tax-tab .data-table td {
-  padding: 10px 12px;
-  text-align: left;
-  border-bottom: 1px solid #eee;
-  font-size: 14px;
-}
-
-.tax-tab .data-table th {
-  background: #f8f9fa;
-  font-weight: 600;
-}
-
-.tax-tab .badge {
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.tax-tab .badge--green {
-  background: #d4edda;
-  color: #155724;
-}
-
-.tax-tab .badge--gray {
-  background: #e9ecef;
-  color: #6c757d;
-}
-
-.tax-tab .btn {
-  padding: 6px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 13px;
-  background: white;
-}
-
-.tax-tab .btn--sm {
-  padding: 4px 8px;
-  font-size: 12px;
-  margin-right: 4px;
-}
-
-.tax-tab .btn--danger {
-  color: #dc3545;
-  border-color: #dc3545;
-}
-
-.tax-tab .btn--danger:hover {
-  background: #dc3545;
-  color: white;
-}
-
-.tax-tab .inline-form {
-  background: #f8f9fa;
-  padding: 16px;
-  border-radius: 8px;
-  margin-bottom: 15px;
-}
-
-.tax-tab .inline-form .form-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.tax-tab .form-group--checkbox {
-  display: flex;
-  align-items: center;
-}
-
-.tax-tab .form-group--checkbox label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-}
-
-.tax-tab .form-actions-inline {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.tax-tab .cancel-btn {
-  padding: 8px 16px;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  background: white;
-}
-
-.tax-tab code {
-  background: #e9ecef;
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-size: 13px;
-}
 </style>

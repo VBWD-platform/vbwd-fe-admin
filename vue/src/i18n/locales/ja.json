@@ -37,7 +37,11 @@
     "none": "なし",
     "na": "該当なし",
     "clear": "クリア",
-    "searching": "検索中..."
+    "searching": "検索中...",
+    "add": "追加",
+    "saved": "保存しました",
+    "activate": "有効化",
+    "deactivate": "無効化"
   },
   "nav": {
     "dashboard": "ダッシュボード",
@@ -54,7 +58,10 @@
     "logout": "ログアウト",
     "sales": "売上",
     "accessLevels": "Access Levels",
-    "importExport": "Import / Export"
+    "importExport": "Import / Export",
+    "taxesAndCountries": "税金と国",
+    "userGroups": "ユーザーグループ",
+    "customFields": "カスタムフィールド"
   },
   "auth": {
     "login": "ログイン",
@@ -97,7 +104,9 @@
     "roles": {
       "user": "ユーザー",
       "admin": "管理者",
-      "vendor": "ベンダー"
+      "vendor": "ベンダー",
+      "bot": "ボット",
+      "guest": "ゲスト"
     },
     "createdAt": "作成日",
     "lastLogin": "最終ログイン",
@@ -149,7 +158,11 @@
     "paymentStatus": "支払い",
     "firstInvoice": "最初の請求書",
     "lastInvoice": "最新の請求書",
-    "noAddonsForUser": "このユーザーのアドオンサブスクリプションはありません。"
+    "noAddonsForUser": "このユーザーのアドオンサブスクリプションはありません。",
+    "accountType": "アカウントタイプ",
+    "accountTypePrivate": "個人",
+    "accountTypeBusiness": "法人",
+    "companyRequiredForBusiness": "法人アカウントには会社名が必要です"
   },
   "plans": {
     "title": "プラン",
@@ -197,7 +210,20 @@
     "failedToArchivePlan": "プランのアーカイブに失敗しました",
     "failedToReactivatePlan": "プランの再有効化に失敗しました",
     "failedToCopyPlan": "プランのコピーに失敗しました",
-    "trialDays": "試用日数"
+    "trialDays": "試用日数",
+    "taxes": {
+      "title": "税",
+      "available": "利用可能な税",
+      "assigned": "適用された税",
+      "allAssigned": "すべての税が適用されました",
+      "noneAssigned": "適用された税はありません"
+    },
+    "priceDisplay": {
+      "label": "価格表示",
+      "inherit": "継承（グローバル既定）",
+      "netto": "税抜（ネット）",
+      "brutto": "税込（ブルット）"
+    }
   },
   "subscriptions": {
     "title": "サブスクリプション",
@@ -411,15 +437,6 @@
       "placeholder": "トークンバンドル管理はここに表示されます"
     },
     "tax": {
-      "classesTitle": "税区分",
-      "addClass": "区分追加",
-      "className": "名前",
-      "classCode": "コード",
-      "defaultRate": "デフォルト率 (%)",
-      "isDefault": "デフォルト",
-      "noClasses": "税区分が設定されていません。",
-      "classSaved": "税区分が保存されました",
-      "confirmDeleteClass": "この税区分を削除しますか？",
       "ratesTitle": "税率",
       "addRate": "税率追加",
       "rateName": "名前",
@@ -432,11 +449,32 @@
       "region": "地域",
       "regionPlaceholder": "例: CA-BC",
       "taxClass": "税区分",
+      "taxClassPlaceholder": "例: standard, reduced, zero",
       "inclusive": "税込み",
       "noRates": "税率が設定されていません。",
       "rateSaved": "税率が保存されました",
-      "confirmDeleteRate": "この税率を削除しますか？"
+      "confirmDeleteRate": "この税率を削除しますか？",
+      "bulkDelete": {
+        "selectedCount": "{count} 件選択中",
+        "deleteSelected": "選択項目を削除",
+        "confirmRates": "{count} 件の税率を削除しますか？",
+        "someInUse": "使用中のため削除できなかった項目があります：{names}"
+      },
+      "priceDisplay": {
+        "label": "価格表示モード",
+        "hint": "すべての販売可能なアイテムの既定の価格表示。アイテムごとに個別に上書きできます。",
+        "brutto": "税込（ブルット）",
+        "netto": "税抜（ネット）",
+        "save": "保存",
+        "saved": "価格表示モードを保存しました"
+      }
     }
+  },
+  "taxAndCountries": {
+    "title": "税金と国",
+    "countriesTab": "国",
+    "taxTab": "税金",
+    "currenciesTab": "通貨"
   },
   "tokenBundles": {
     "title": "トークンバンドル設定",
@@ -463,7 +501,13 @@
     "bundleUpdated": "トークンバンドルが正常に更新されました",
     "bundleDeleted": "トークンバンドルが正常に削除されました",
     "activate": "有効化",
-    "deactivate": "無効化"
+    "deactivate": "無効化",
+    "bulkDelete": {
+      "selectedCount": "{count} 件選択中",
+      "deleteSelected": "選択を削除",
+      "confirm": "{count} 件のトークンバンドルを削除しますか？",
+      "someFailed": "一部のバンドルを削除できませんでした: {names}"
+    }
   },
   "addOns": {
     "title": "アドオン",
@@ -686,5 +730,120 @@
     "revokeRole": "Revoke",
     "yes": "Yes",
     "no": "No"
+  },
+  "currencies": {
+    "description": "利用可能な通貨、価格の保存通貨、為替レートを管理します。",
+    "default": "デフォルト",
+    "loadError": "通貨の読み込みに失敗しました",
+    "saveRates": "レートを保存",
+    "addCurrency": "通貨を追加",
+    "deleteConfirm": "通貨 {code} を削除しますか？この操作は取り消せません。",
+    "deleteFailed": "通貨の削除に失敗しました。",
+    "newCurrency": {
+      "code": "コード",
+      "name": "名称",
+      "symbol": "記号",
+      "decimals": "小数桁数",
+      "rate": "為替レート",
+      "submit": "作成",
+      "cancel": "キャンセル",
+      "codeFormat": "コードは3文字の大文字で入力してください（例: CHF）。",
+      "missingFields": "名称と記号は必須です。",
+      "invalidRate": "為替レートはゼロより大きい必要があります。",
+      "duplicateHint": "新しい通貨は利用可能リストに追加されます。使用するには有効化してください。"
+    },
+    "activeAvailable": {
+      "title": "有効な通貨",
+      "hint": "通貨を有効と利用可能の間で移動します。デフォルト通貨は常に有効です。",
+      "active": "有効",
+      "available": "利用可能",
+      "activate": "有効化",
+      "deactivate": "無効化"
+    },
+    "defaultSelector": {
+      "title": "デフォルト通貨",
+      "hint": "価格はこの通貨で保存されます。",
+      "confirm": "デフォルト通貨を変更すると、すべての為替レートが再計算されます。続行しますか？"
+    },
+    "crossRateBase": {
+      "title": "クロスレート基準",
+      "hint": "為替レートをデフォルト通貨またはUSDに対して表示します。",
+      "optionDefault": "デフォルト基準 ({code})",
+      "optionUsd": "USD基準"
+    },
+    "rateSheet": {
+      "title": "為替レート",
+      "hint": "各有効通貨のレートを編集します。値はデフォルト通貨に対して保存されます。",
+      "pair": "ペア",
+      "rate": "レート",
+      "inverse": "逆数",
+      "empty": "現在の選択には編集可能なレートがありません。",
+      "invalidRate": "レートはゼロより大きい必要があります。",
+      "saveFailed": "保存に失敗しました: {pairs}"
+    }
+  },
+  "userGroups": {
+    "title": "ユーザーグループ",
+    "newGroup": "新規グループ",
+    "editGroup": "グループを編集",
+    "slug": "スラッグ",
+    "name": "名前",
+    "lang": "言語",
+    "parentGroup": "親グループ",
+    "noParent": "親なし",
+    "actions": "操作",
+    "searchPlaceholder": "ユーザーグループを検索…",
+    "selected": "件選択中",
+    "deleteSelected": "選択項目を削除",
+    "empty": "ユーザーグループが定義されていません。"
+  },
+  "tagsCustomFields": {
+    "tagsLabel": "タグ",
+    "customFieldsLabel": "カスタムフィールド",
+    "noTags": "タグなし",
+    "addTag": "タグを追加…",
+    "removeTag": "タグを削除",
+    "saveTags": "タグを保存",
+    "saveCustomFields": "フィールドを保存",
+    "noCustomFields": "このエンティティのカスタムフィールドはありません。",
+    "pageTitle": "カスタムフィールド",
+    "tabCustomFields": "カスタムフィールド",
+    "tabGlobalTags": "グローバルタグ",
+    "filterByEntity": "親エンティティ",
+    "filterByType": "データ型",
+    "allEntities": "すべてのエンティティ",
+    "allTypes": "すべての型",
+    "globalScope": "グローバル",
+    "quickSearch": "クイック検索…",
+    "createCustomField": "フィールド作成",
+    "createTag": "タグ作成",
+    "colKey": "キー",
+    "colLabel": "ラベル",
+    "colParentEntity": "親エンティティ",
+    "colType": "型",
+    "colOptions": "オプション",
+    "colSortOrder": "並び順",
+    "colActive": "有効",
+    "colName": "名前",
+    "colSlug": "スラッグ",
+    "colParentType": "親タイプ",
+    "colStats": "使用数",
+    "fieldKey": "キー",
+    "fieldLabel": "ラベル",
+    "fieldType": "型",
+    "fieldOptions": "オプション（1行に1つ）",
+    "fieldSortOrder": "並び順",
+    "fieldActive": "有効",
+    "fieldSlug": "スラッグ",
+    "fieldName": "名前",
+    "fieldParentEntity": "親エンティティ（空＝グローバル）",
+    "fieldMetaData": "メタデータ (JSON)",
+    "fieldColor": "色",
+    "deleteSelected": "選択を削除",
+    "activateSelected": "選択を有効化",
+    "deactivateSelected": "選択を無効化",
+    "noRows": "行がありません",
+    "selectAll": "すべて選択",
+    "confirmDelete": "選択した行を削除しますか？"
   }
 }

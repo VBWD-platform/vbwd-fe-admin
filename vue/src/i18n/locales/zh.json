@@ -37,7 +37,11 @@
     "none": "无",
     "na": "不适用",
     "clear": "清除",
-    "searching": "搜索中..."
+    "searching": "搜索中...",
+    "add": "添加",
+    "saved": "已保存",
+    "activate": "启用",
+    "deactivate": "停用"
   },
   "nav": {
     "dashboard": "仪表板",
@@ -54,7 +58,10 @@
     "logout": "退出登录",
     "sales": "销售",
     "accessLevels": "Access Levels",
-    "importExport": "Import / Export"
+    "importExport": "Import / Export",
+    "taxesAndCountries": "税务与国家",
+    "userGroups": "用户组",
+    "customFields": "自定义字段"
   },
   "auth": {
     "login": "登录",
@@ -97,7 +104,9 @@
     "roles": {
       "user": "用户",
       "admin": "管理员",
-      "vendor": "供应商"
+      "vendor": "供应商",
+      "bot": "机器人",
+      "guest": "访客"
     },
     "createdAt": "创建时间",
     "lastLogin": "最后登录",
@@ -149,7 +158,11 @@
     "paymentStatus": "付款",
     "firstInvoice": "首次发票",
     "lastInvoice": "最近发票",
-    "noAddonsForUser": "该用户没有附加组件订阅。"
+    "noAddonsForUser": "该用户没有附加组件订阅。",
+    "accountType": "账户类型",
+    "accountTypePrivate": "个人",
+    "accountTypeBusiness": "企业",
+    "companyRequiredForBusiness": "企业账户必须填写公司名称"
   },
   "plans": {
     "title": "计划",
@@ -197,7 +210,20 @@
     "failedToArchivePlan": "归档计划失败",
     "failedToReactivatePlan": "重新激活计划失败",
     "failedToCopyPlan": "复制计划失败",
-    "trialDays": "试用天数"
+    "trialDays": "试用天数",
+    "taxes": {
+      "title": "税",
+      "available": "可用税",
+      "assigned": "已应用税",
+      "allAssigned": "所有税已应用",
+      "noneAssigned": "未应用任何税"
+    },
+    "priceDisplay": {
+      "label": "价格显示",
+      "inherit": "继承（全局默认）",
+      "netto": "净价（不含税）",
+      "brutto": "毛价（含税）"
+    }
   },
   "subscriptions": {
     "title": "订阅",
@@ -411,15 +437,6 @@
       "placeholder": "代币包管理将在此处显示"
     },
     "tax": {
-      "classesTitle": "税种",
-      "addClass": "添加税种",
-      "className": "名称",
-      "classCode": "代码",
-      "defaultRate": "默认税率 (%)",
-      "isDefault": "默认",
-      "noClasses": "暂无税种配置。",
-      "classSaved": "税种保存成功",
-      "confirmDeleteClass": "删除此税种？",
       "ratesTitle": "税率",
       "addRate": "添加税率",
       "rateName": "名称",
@@ -432,11 +449,32 @@
       "region": "地区",
       "regionPlaceholder": "如：CA-BC",
       "taxClass": "税种",
+      "taxClassPlaceholder": "如：standard、reduced、zero",
       "inclusive": "含税",
       "noRates": "暂无税率配置。",
       "rateSaved": "税率保存成功",
-      "confirmDeleteRate": "删除此税率？"
+      "confirmDeleteRate": "删除此税率？",
+      "bulkDelete": {
+        "selectedCount": "已选择 {count} 项",
+        "deleteSelected": "删除所选",
+        "confirmRates": "删除 {count} 个税率？",
+        "someInUse": "部分项目因正在使用而无法删除：{names}"
+      },
+      "priceDisplay": {
+        "label": "价格显示模式",
+        "hint": "所有可售商品的默认价格显示。商品可单独覆盖此设置。",
+        "brutto": "毛价（含税）",
+        "netto": "净价（不含税）",
+        "save": "保存",
+        "saved": "已保存价格显示模式"
+      }
     }
+  },
+  "taxAndCountries": {
+    "title": "税费与国家/地区",
+    "countriesTab": "国家/地区",
+    "taxTab": "税费",
+    "currenciesTab": "货币"
   },
   "tokenBundles": {
     "title": "代币包配置",
@@ -463,7 +501,13 @@
     "bundleUpdated": "代币包更新成功",
     "bundleDeleted": "代币包删除成功",
     "activate": "启用",
-    "deactivate": "禁用"
+    "deactivate": "禁用",
+    "bulkDelete": {
+      "selectedCount": "已选择 {count} 项",
+      "deleteSelected": "删除所选",
+      "confirm": "删除 {count} 个代币包？",
+      "someFailed": "部分代币包无法删除：{names}"
+    }
   },
   "addOns": {
     "title": "附加组件",
@@ -686,5 +730,120 @@
     "revokeRole": "Revoke",
     "yes": "Yes",
     "no": "No"
+  },
+  "currencies": {
+    "description": "管理可用货币、价格存储货币以及汇率。",
+    "default": "默认",
+    "loadError": "加载货币失败",
+    "saveRates": "保存汇率",
+    "addCurrency": "添加货币",
+    "deleteConfirm": "删除货币 {code}？此操作无法撤销。",
+    "deleteFailed": "删除货币失败。",
+    "newCurrency": {
+      "code": "代码",
+      "name": "名称",
+      "symbol": "符号",
+      "decimals": "小数位数",
+      "rate": "汇率",
+      "submit": "创建",
+      "cancel": "取消",
+      "codeFormat": "代码必须为 3 个大写字母（例如 CHF）。",
+      "missingFields": "名称和符号为必填项。",
+      "invalidRate": "汇率必须大于零。",
+      "duplicateHint": "新货币将添加到可用列表；激活后即可使用。"
+    },
+    "activeAvailable": {
+      "title": "启用的货币",
+      "hint": "在启用和可用之间移动货币。默认货币始终启用。",
+      "active": "启用",
+      "available": "可用",
+      "activate": "启用",
+      "deactivate": "停用"
+    },
+    "defaultSelector": {
+      "title": "默认货币",
+      "hint": "价格以此货币存储。",
+      "confirm": "更改默认货币将重新计算所有汇率。是否继续？"
+    },
+    "crossRateBase": {
+      "title": "交叉汇率基准",
+      "hint": "以默认货币或美元表示汇率。",
+      "optionDefault": "相对默认 ({code})",
+      "optionUsd": "相对美元"
+    },
+    "rateSheet": {
+      "title": "汇率",
+      "hint": "编辑每种启用货币的汇率。数值相对于默认货币存储。",
+      "pair": "货币对",
+      "rate": "汇率",
+      "inverse": "倒数",
+      "empty": "当前选择没有可编辑的汇率。",
+      "invalidRate": "汇率必须大于零。",
+      "saveFailed": "保存失败：{pairs}"
+    }
+  },
+  "userGroups": {
+    "title": "用户组",
+    "newGroup": "新建组",
+    "editGroup": "编辑组",
+    "slug": "标识",
+    "name": "名称",
+    "lang": "语言",
+    "parentGroup": "父级组",
+    "noParent": "无父级",
+    "actions": "操作",
+    "searchPlaceholder": "搜索用户组…",
+    "selected": "已选择",
+    "deleteSelected": "删除所选",
+    "empty": "尚未定义用户组。"
+  },
+  "tagsCustomFields": {
+    "tagsLabel": "标签",
+    "customFieldsLabel": "自定义字段",
+    "noTags": "无标签",
+    "addTag": "添加标签…",
+    "removeTag": "移除标签",
+    "saveTags": "保存标签",
+    "saveCustomFields": "保存字段",
+    "noCustomFields": "此实体没有自定义字段。",
+    "pageTitle": "自定义字段",
+    "tabCustomFields": "自定义字段",
+    "tabGlobalTags": "全局标签",
+    "filterByEntity": "父实体",
+    "filterByType": "数据类型",
+    "allEntities": "所有实体",
+    "allTypes": "所有类型",
+    "globalScope": "全局",
+    "quickSearch": "快速搜索…",
+    "createCustomField": "创建字段",
+    "createTag": "创建标签",
+    "colKey": "键",
+    "colLabel": "标签",
+    "colParentEntity": "父实体",
+    "colType": "类型",
+    "colOptions": "选项",
+    "colSortOrder": "排序",
+    "colActive": "启用",
+    "colName": "名称",
+    "colSlug": "别名",
+    "colParentType": "父类型",
+    "colStats": "使用量",
+    "fieldKey": "键",
+    "fieldLabel": "标签",
+    "fieldType": "类型",
+    "fieldOptions": "选项（每行一个）",
+    "fieldSortOrder": "排序",
+    "fieldActive": "启用",
+    "fieldSlug": "别名",
+    "fieldName": "名称",
+    "fieldParentEntity": "父实体（留空＝全局）",
+    "fieldMetaData": "元数据 (JSON)",
+    "fieldColor": "颜色",
+    "deleteSelected": "删除所选",
+    "activateSelected": "启用所选",
+    "deactivateSelected": "停用所选",
+    "noRows": "无数据",
+    "selectAll": "全选",
+    "confirmDelete": "删除所选行？"
   }
 }

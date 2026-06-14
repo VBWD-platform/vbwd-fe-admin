@@ -37,7 +37,11 @@
     "none": "Нет",
     "na": "Н/Д",
     "clear": "Очистить",
-    "searching": "Поиск..."
+    "searching": "Поиск...",
+    "add": "Добавить",
+    "saved": "Сохранено",
+    "activate": "Активировать",
+    "deactivate": "Деактивировать"
   },
   "nav": {
     "dashboard": "Главная",
@@ -54,7 +58,10 @@
     "logout": "Выйти",
     "sales": "Продажи",
     "accessLevels": "Access Levels",
-    "importExport": "Import / Export"
+    "importExport": "Import / Export",
+    "taxesAndCountries": "Налоги и страны",
+    "userGroups": "Группы пользователей",
+    "customFields": "Дополнительные поля"
   },
   "auth": {
     "login": "Вход",
@@ -97,7 +104,9 @@
     "roles": {
       "user": "Пользователь",
       "admin": "Администратор",
-      "vendor": "Продавец"
+      "vendor": "Продавец",
+      "bot": "Бот",
+      "guest": "Гость"
     },
     "createdAt": "Дата создания",
     "lastLogin": "Последний вход",
@@ -149,7 +158,11 @@
     "paymentStatus": "Оплата",
     "firstInvoice": "Первый счёт",
     "lastInvoice": "Последний счёт",
-    "noAddonsForUser": "Нет подписок на дополнения для этого пользователя."
+    "noAddonsForUser": "Нет подписок на дополнения для этого пользователя.",
+    "accountType": "Тип аккаунта",
+    "accountTypePrivate": "Частное лицо",
+    "accountTypeBusiness": "Компания",
+    "companyRequiredForBusiness": "Для бизнес-аккаунта требуется название компании"
   },
   "plans": {
     "title": "Тарифы",
@@ -197,7 +210,20 @@
     "failedToArchivePlan": "Не удалось архивировать тариф",
     "failedToReactivatePlan": "Не удалось реактивировать тариф",
     "failedToCopyPlan": "Не удалось скопировать тариф",
-    "trialDays": "Пробные дни"
+    "trialDays": "Пробные дни",
+    "taxes": {
+      "title": "Налоги",
+      "available": "Доступные налоги",
+      "assigned": "Применённые налоги",
+      "allAssigned": "Все налоги применены",
+      "noneAssigned": "Налоги не применены"
+    },
+    "priceDisplay": {
+      "label": "Отображение цен",
+      "inherit": "Наследовать (глобально по умолчанию)",
+      "netto": "Нетто (без налога)",
+      "brutto": "Брутто (с налогом)"
+    }
   },
   "subscriptions": {
     "title": "Подписки",
@@ -411,15 +437,6 @@
       "placeholder": "Управление пакетами токенов будет здесь"
     },
     "tax": {
-      "classesTitle": "Классы налогов",
-      "addClass": "Добавить класс",
-      "className": "Название",
-      "classCode": "Код",
-      "defaultRate": "Ставка по умолчанию (%)",
-      "isDefault": "По умолчанию",
-      "noClasses": "Классы налогов не настроены.",
-      "classSaved": "Класс налога сохранён",
-      "confirmDeleteClass": "Удалить этот класс налога?",
       "ratesTitle": "Налоговые ставки",
       "addRate": "Добавить ставку",
       "rateName": "Название",
@@ -432,11 +449,32 @@
       "region": "Регион",
       "regionPlaceholder": "напр. CA-BC",
       "taxClass": "Класс налога",
+      "taxClassPlaceholder": "напр. standard, reduced, zero",
       "inclusive": "Налог включён",
       "noRates": "Налоговые ставки не настроены.",
       "rateSaved": "Налоговая ставка сохранена",
-      "confirmDeleteRate": "Удалить эту налоговую ставку?"
+      "confirmDeleteRate": "Удалить эту налоговую ставку?",
+      "bulkDelete": {
+        "selectedCount": "Выбрано: {count}",
+        "deleteSelected": "Удалить выбранные",
+        "confirmRates": "Удалить налоговые ставки ({count})?",
+        "someInUse": "Некоторые элементы не удалось удалить, так как они используются: {names}"
+      },
+      "priceDisplay": {
+        "label": "Режим отображения цен",
+        "hint": "Отображение цен по умолчанию для всех продаваемых позиций. Позиции могут переопределять это индивидуально.",
+        "brutto": "Брутто (с налогом)",
+        "netto": "Нетто (без налога)",
+        "save": "Сохранить",
+        "saved": "Режим отображения цен сохранён"
+      }
     }
+  },
+  "taxAndCountries": {
+    "title": "Налоги и страны",
+    "countriesTab": "Страны",
+    "taxTab": "Налоги",
+    "currenciesTab": "Валюта"
   },
   "tokenBundles": {
     "title": "Настройка пакетов токенов",
@@ -463,7 +501,13 @@
     "bundleUpdated": "Пакет токенов успешно обновлен",
     "bundleDeleted": "Пакет токенов успешно удален",
     "activate": "Активировать",
-    "deactivate": "Деактивировать"
+    "deactivate": "Деактивировать",
+    "bulkDelete": {
+      "selectedCount": "Выбрано: {count}",
+      "deleteSelected": "Удалить выбранное",
+      "confirm": "Удалить пакеты токенов ({count})?",
+      "someFailed": "Некоторые пакеты не удалось удалить: {names}"
+    }
   },
   "addOns": {
     "title": "Дополнения",
@@ -682,5 +726,120 @@
     "revokeRole": "Revoke",
     "yes": "Yes",
     "no": "No"
+  },
+  "currencies": {
+    "description": "Управляйте доступными валютами, валютой хранения цен и обменными курсами.",
+    "default": "По умолчанию",
+    "loadError": "Не удалось загрузить валюты",
+    "saveRates": "Сохранить курсы",
+    "addCurrency": "Добавить валюту",
+    "deleteConfirm": "Удалить валюту {code}? Это действие необратимо.",
+    "deleteFailed": "Не удалось удалить валюту.",
+    "newCurrency": {
+      "code": "Код",
+      "name": "Название",
+      "symbol": "Символ",
+      "decimals": "Знаков после запятой",
+      "rate": "Обменный курс",
+      "submit": "Создать",
+      "cancel": "Отмена",
+      "codeFormat": "Код должен состоять из 3 заглавных букв (например, CHF).",
+      "missingFields": "Название и символ обязательны.",
+      "invalidRate": "Обменный курс должен быть больше нуля.",
+      "duplicateHint": "Новая валюта добавляется в список доступных; активируйте её для использования."
+    },
+    "activeAvailable": {
+      "title": "Активные валюты",
+      "hint": "Перемещайте валюты между активными и доступными. Валюта по умолчанию всегда активна.",
+      "active": "Активные",
+      "available": "Доступные",
+      "activate": "Активировать",
+      "deactivate": "Деактивировать"
+    },
+    "defaultSelector": {
+      "title": "Валюта по умолчанию",
+      "hint": "Цены хранятся в этой валюте.",
+      "confirm": "Изменение валюты по умолчанию пересчитает все обменные курсы. Продолжить?"
+    },
+    "crossRateBase": {
+      "title": "База кросс-курса",
+      "hint": "Выражать курсы относительно валюты по умолчанию или USD.",
+      "optionDefault": "Относительно по умолчанию ({code})",
+      "optionUsd": "Относительно USD"
+    },
+    "rateSheet": {
+      "title": "Обменные курсы",
+      "hint": "Измените курс для каждой активной валюты. Значения хранятся относительно валюты по умолчанию.",
+      "pair": "Пара",
+      "rate": "Курс",
+      "inverse": "Обратный",
+      "empty": "Нет редактируемых курсов для текущего выбора.",
+      "invalidRate": "Курс должен быть больше нуля.",
+      "saveFailed": "Не удалось сохранить: {pairs}"
+    }
+  },
+  "userGroups": {
+    "title": "Группы пользователей",
+    "newGroup": "Новая группа",
+    "editGroup": "Изменить группу",
+    "slug": "Слаг",
+    "name": "Название",
+    "lang": "Язык",
+    "parentGroup": "Родительская группа",
+    "noParent": "Без родителя",
+    "actions": "Действия",
+    "searchPlaceholder": "Поиск групп пользователей…",
+    "selected": "выбрано",
+    "deleteSelected": "Удалить выбранные",
+    "empty": "Группы пользователей не заданы."
+  },
+  "tagsCustomFields": {
+    "tagsLabel": "Теги",
+    "customFieldsLabel": "Доп. поля",
+    "noTags": "Нет тегов",
+    "addTag": "Добавить тег…",
+    "removeTag": "Удалить тег",
+    "saveTags": "Сохранить теги",
+    "saveCustomFields": "Сохранить поля",
+    "noCustomFields": "Для этой сущности нет доп. полей.",
+    "pageTitle": "Дополнительные поля",
+    "tabCustomFields": "Доп. поля",
+    "tabGlobalTags": "Глобальные теги",
+    "filterByEntity": "Родительская сущность",
+    "filterByType": "Тип данных",
+    "allEntities": "Все сущности",
+    "allTypes": "Все типы",
+    "globalScope": "Глобальный",
+    "quickSearch": "Быстрый поиск…",
+    "createCustomField": "Создать поле",
+    "createTag": "Создать тег",
+    "colKey": "Ключ",
+    "colLabel": "Метка",
+    "colParentEntity": "Родит. сущность",
+    "colType": "Тип",
+    "colOptions": "Опции",
+    "colSortOrder": "Порядок",
+    "colActive": "Активно",
+    "colName": "Имя",
+    "colSlug": "Slug",
+    "colParentType": "Родит. тип",
+    "colStats": "Использование",
+    "fieldKey": "Ключ",
+    "fieldLabel": "Метка",
+    "fieldType": "Тип",
+    "fieldOptions": "Опции (по одной в строке)",
+    "fieldSortOrder": "Порядок",
+    "fieldActive": "Активно",
+    "fieldSlug": "Slug",
+    "fieldName": "Имя",
+    "fieldParentEntity": "Родит. сущность (пусто = глобально)",
+    "fieldMetaData": "Метаданные (JSON)",
+    "fieldColor": "Цвет",
+    "deleteSelected": "Удалить выбранное",
+    "activateSelected": "Активировать выбранное",
+    "deactivateSelected": "Деактивировать выбранное",
+    "noRows": "Нет строк",
+    "selectAll": "Выбрать все",
+    "confirmDelete": "Удалить выбранные строки?"
   }
 }

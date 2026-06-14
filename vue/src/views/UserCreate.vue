@@ -110,6 +110,12 @@
               <option value="SUPER_ADMIN">
                 {{ $t('users.roles.superAdmin') }}
               </option>
+              <option value="BOT">
+                {{ $t('users.roles.bot') }}
+              </option>
+              <option value="GUEST">
+                {{ $t('users.roles.guest') }}
+              </option>
             </select>
           </div>
         </div>

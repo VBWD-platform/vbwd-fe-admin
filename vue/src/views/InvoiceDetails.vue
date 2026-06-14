@@ -160,6 +160,17 @@
                     {{ item.description }}
                   </router-link>
                   <span v-else>{{ item.description }}</span>
+                  <!-- S77: frozen tags + custom-fields snapshot (read-only). -->
+                  <TagChips
+                    v-if="item.tags?.length"
+                    :tags="item.tags"
+                    class="line-item-tags"
+                  />
+                  <CustomFieldsDisplay
+                    v-if="item.custom_fields && Object.keys(item.custom_fields).length"
+                    :custom-fields="item.custom_fields"
+                    class="line-item-custom-fields"
+                  />
                 </td>
                 <td>{{ item.quantity || 1 }}</td>
                 <td>{{ formatAmount(item.unit_price || item.amount, invoice.currency) }}</td>
@@ -186,6 +197,17 @@
           >
             {{ $t('invoices.noLineItems') }}
           </p>
+
+          <!-- Tax-disclosure block (S85.4): per-rate tax lines aggregated from
+               the persisted line-item tax_breakdown plus net / Σtax / gross
+               totals. Falls back to a single aggregate line for legacy invoices
+               with no per-line breakdown. No tax math here — the FE echoes the
+               payload through the shared <PriceBreakdown>. -->
+          <PriceBreakdown
+            class="invoice-tax-breakdown"
+            data-testid="invoice-tax-breakdown"
+            :price="priceBreakdown"
+          />
         </div>
 
         <!-- Plugin-contributed sections (e.g. subscription info) — core stays
@@ -276,10 +298,18 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { PaymentDataBlock, PaymentInformationBlock } from 'vbwd-view-component';
+import {
+  PaymentDataBlock,
+  PaymentInformationBlock,
+  TagChips,
+  CustomFieldsDisplay,
+} from 'vbwd-view-component';
 import { useInvoicesStore } from '@/stores/invoices';
+import type { LineItem, LineItemTax } from '@/stores/invoices';
 import { useAuthStore } from '@/stores/auth';
 import { extensionRegistry } from '@/plugins/extensionRegistry';
+import PriceBreakdown from '@/components/PriceBreakdown.vue';
+import type { PriceVO } from '@/utils/priceDisplay';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -296,6 +326,54 @@ const processing = ref(false);
 const invoice = computed(() => invoicesStore.selectedInvoice);
 const loading = computed(() => invoicesStore.loading);
 const error = computed(() => invoicesStore.error);
+
+// Persisted Price VO for the tax-disclosure block (S85.4). Built straight from
+// the stored fields — never recomputed. Per-rate tax lines are AGGREGATED from
+// the persisted line-item tax_breakdown (sum of already-computed amounts per
+// code+rate — a display sum, never a tax recompute). When no line carries a
+// breakdown (legacy invoices), it falls back to a single aggregate tax line
+// from the invoice-level ``tax_amount``; taxless invoices show net == gross.
+const priceBreakdown = computed<PriceVO>(() => {
+  const current = invoice.value;
+  const fallback = Number(current?.amount ?? 0);
+  const netto = Number(current?.subtotal ?? fallback);
+  const aggregateTax = Number(current?.tax_amount ?? 0);
+  const gross = Number(current?.total_amount ?? fallback);
+
+  const perRate = aggregateTaxBreakdown(current?.line_items);
+  const taxes = perRate.length > 0
+    ? perRate
+    : aggregateTax > 0
+      ? [{ code: 'TAX', rate: 0, amount: aggregateTax }]
+      : [];
+
+  return {
+    netto,
+    taxes,
+    brutto: gross,
+    currency: current?.currency || 'USD',
+  };
+});
+
+// Sum the persisted per-rate amounts across all line items, grouped by
+// code+rate, into one tax line per rate. Purely a display aggregation of values
+// the backend already computed — the FE performs no tax arithmetic.
+function aggregateTaxBreakdown(lineItems?: LineItem[]): LineItemTax[] {
+  if (!lineItems?.length) return [];
+  const byRate = new Map<string, LineItemTax>();
+  for (const item of lineItems) {
+    for (const tax of item.tax_breakdown ?? []) {
+      const key = `${tax.code}-${tax.rate}`;
+      const existing = byRate.get(key);
+      if (existing) {
+        existing.amount += tax.amount;
+      } else {
+        byRate.set(key, { code: tax.code, name: tax.name, rate: tax.rate, amount: tax.amount });
+      }
+    }
+  }
+  return Array.from(byRate.values());
+}
 
 async function fetchInvoice(): Promise<void> {
   const invoiceId = route.params.id as string;

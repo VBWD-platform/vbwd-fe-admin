@@ -71,10 +71,22 @@ describe('Settings.vue', () => {
     expect(wrapper.find('[data-testid="settings-tabs"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="tab-core-settings"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="tab-tokens"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="tab-countries"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="tab-admin-plugins"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="tab-backend-plugins"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="tab-user-plugins"]').exists()).toBe(true);
+  });
+
+  it('no longer renders the Countries and Tax tabs (moved to /admin/settings/tax-and-countries)', async () => {
+    const wrapper = mount(Settings, {
+      global: { plugins: [router] }
+    });
+
+    await flushPromises();
+
+    expect(wrapper.find('[data-testid="tab-countries"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="tab-tax"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="countries-content"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="tax-content"]').exists()).toBe(false);
   });
 
   it('displays current settings values in core settings tab', async () => {

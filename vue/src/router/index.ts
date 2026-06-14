@@ -91,6 +91,18 @@ const routes: RouteRecordRaw[] = [
         meta: { requiredPermission: 'settings.view' }
       },
       {
+        path: 'settings/tax-and-countries',
+        name: 'tax-and-countries',
+        component: () => import('@/views/TaxAndCountriesSettings.vue'),
+        meta: { requiredPermission: 'settings.manage' }
+      },
+      {
+        path: 'settings/custom-fields',
+        name: 'custom-fields',
+        component: () => import('@/views/CustomFieldsSettings.vue'),
+        meta: { requiredPermission: 'settings.manage' }
+      },
+      {
         path: 'settings/token-bundles/new',
         name: 'token-bundle-new',
         component: () => import('@/views/TokenBundleForm.vue'),
@@ -147,6 +159,12 @@ const routes: RouteRecordRaw[] = [
         name: 'access-level-new',
         component: () => import('@/views/AccessLevelForm.vue'),
         meta: { requiredPermission: 'settings.system' }
+      },
+      {
+        path: 'settings/user_groups',
+        name: 'user-groups',
+        component: () => import('@/views/UserGroups.vue'),
+        meta: { requiredPermission: 'settings.manage' }
       },
       {
         path: 'import-export',

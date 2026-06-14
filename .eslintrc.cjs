@@ -21,6 +21,24 @@ module.exports = {
     'vue/multi-word-component-names': 'off',
     'no-console': ['error', { allow: ['warn', 'error'] }]
   },
+  overrides: [
+    {
+      // Root-level CommonJS Node scripts (walkthrough / verification helpers).
+      // require(), console output and intentional empty catch blocks are
+      // idiomatic for these standalone CLI scripts, not browser app code.
+      files: ['*.cjs'],
+      parser: 'espree',
+      parserOptions: { sourceType: 'script' },
+      // browser stays enabled: some scripts run Playwright page.waitForFunction
+      // callbacks that reference DOM globals (document, etc.).
+      env: { node: true, browser: true },
+      rules: {
+        '@typescript-eslint/no-require-imports': 'off',
+        'no-console': 'off',
+        'no-empty': 'off'
+      }
+    }
+  ],
   env: {
     browser: true,
     es2022: true,
