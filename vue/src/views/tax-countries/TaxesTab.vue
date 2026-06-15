@@ -59,6 +59,46 @@
       </div>
     </div>
 
+    <!-- Stored price interpretation mode (S85.3) -->
+    <div
+      class="form-section"
+      data-testid="prices-mode-in-db-section"
+    >
+      <div class="section-header">
+        <h3>{{ $t('settings.tax.pricesModeInDb.label') }}</h3>
+      </div>
+      <p class="section-hint">
+        {{ $t('settings.tax.pricesModeInDb.hint') }}
+      </p>
+      <div class="form-row">
+        <div class="form-group">
+          <select
+            v-model="pricesModeInDb"
+            class="form-input"
+            data-testid="prices-mode-in-db-select"
+          >
+            <option value="NETTO">
+              {{ $t('settings.tax.pricesModeInDb.netto') }}
+            </option>
+            <option value="BRUTTO">
+              {{ $t('settings.tax.pricesModeInDb.brutto') }}
+            </option>
+          </select>
+        </div>
+        <div class="form-group form-group--inline-action">
+          <button
+            v-if="canManage"
+            class="save-btn"
+            :disabled="savingPricesModeInDb"
+            data-testid="save-prices-mode-in-db-btn"
+            @click="handleSavePricesModeInDb"
+          >
+            {{ $t('settings.tax.pricesModeInDb.save') }}
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Tax Rates Section -->
     <div class="form-section">
       <div class="section-header">
@@ -367,6 +407,14 @@ const successMessage = ref<string | null>(null);
 const DEFAULT_PRICES_DISPLAY_MODE = 'brutto';
 const pricesDisplayMode = ref<string>(DEFAULT_PRICES_DISPLAY_MODE);
 const savingPricesDisplayMode = ref(false);
+
+// Stored price interpretation mode (S85.3): the core `prices_mode_in_db`
+// setting (NETTO|BRUTTO) controls how the stored sellable `price` is
+// interpreted; it is independent of `prices_display_mode` above. Same
+// GET|PUT /admin/settings round-trip.
+const DEFAULT_PRICES_MODE_IN_DB = 'NETTO';
+const pricesModeInDb = ref<string>(DEFAULT_PRICES_MODE_IN_DB);
+const savingPricesModeInDb = ref(false);
 const showTaxRateForm = ref(false);
 const editingTaxRate = ref<TaxRate | null>(null);
 
@@ -526,8 +574,10 @@ async function handleBulkDeleteRates(): Promise<void> {
 async function loadPricesDisplayMode(): Promise<void> {
   try {
     const response = await api.get('/admin/settings') as { settings?: Record<string, unknown> };
-    const mode = response.settings?.prices_display_mode;
-    pricesDisplayMode.value = mode === 'netto' ? 'netto' : DEFAULT_PRICES_DISPLAY_MODE;
+    const displayMode = response.settings?.prices_display_mode;
+    pricesDisplayMode.value = displayMode === 'netto' ? 'netto' : DEFAULT_PRICES_DISPLAY_MODE;
+    const dbMode = response.settings?.prices_mode_in_db;
+    pricesModeInDb.value = dbMode === 'BRUTTO' ? 'BRUTTO' : DEFAULT_PRICES_MODE_IN_DB;
   } catch (error) {
     saveError.value = (error as Error).message || 'Failed to load price display mode';
   }
@@ -543,6 +593,19 @@ async function handleSavePricesDisplayMode(): Promise<void> {
     saveError.value = (error as Error).message;
   } finally {
     savingPricesDisplayMode.value = false;
+  }
+}
+
+async function handleSavePricesModeInDb(): Promise<void> {
+  savingPricesModeInDb.value = true;
+  try {
+    await api.put('/admin/settings', { prices_mode_in_db: pricesModeInDb.value });
+    successMessage.value = t('settings.tax.pricesModeInDb.saved');
+    setTimeout(() => { successMessage.value = null; }, 3000);
+  } catch (error) {
+    saveError.value = (error as Error).message;
+  } finally {
+    savingPricesModeInDb.value = false;
   }
 }
 

@@ -1,6 +1,19 @@
 server {
     listen 80;
 
+    # AI generation routes (cms-ai) call out to slow LLM / image providers and
+    # can take minutes; raise the read/send timeout so long generations don't
+    # 504. nginx matches the longest prefix, so the general /api/ block keeps its
+    # 60s cap. (More specific location must precede /api/.)
+    location /api/v1/plugins/cms-ai/ {
+        proxy_pass http://${API_UPSTREAM};
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_read_timeout 300s;
+        proxy_send_timeout 300s;
+    }
+
     # Proxy all /api/ requests to the backend container
     location /api/ {
         proxy_pass http://${API_UPSTREAM};

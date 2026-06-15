@@ -31,3 +31,5 @@ plugins/taro-admin/
 plugins/token-payment-admin/
 plugins/toss-payments-admin/
 plugins/truemoney-admin/
+plugins/cms-ai/
+plugins/wp-import/

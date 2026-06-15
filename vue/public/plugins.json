@@ -18,6 +18,12 @@
       "installedAt": "2026-03-02T00:00:00.000Z",
       "source": "local"
     },
+    "cms-ai": {
+      "enabled": true,
+      "version": "1.0.0",
+      "installedAt": "2026-06-14T00:00:00.000Z",
+      "source": "local"
+    },
     "ghrm-admin": {
       "enabled": true,
       "version": "1.0.0",

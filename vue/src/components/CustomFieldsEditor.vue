@@ -153,6 +153,23 @@ function defaultFor(def: CustomFieldDef): unknown {
   return '';
 }
 
+/**
+ * External write seam (S41): merge supplied values into the live inputs so a
+ * parent (e.g. cms-ai's applyPatch) can fill custom fields exactly as if the
+ * operator typed them. Only keys with a matching field definition are applied —
+ * unknown keys are ignored. Keys absent from the partial are left untouched, so
+ * operator edits the patch does not mention are preserved. A subsequent save()
+ * persists the merged values through the unchanged save path.
+ */
+function setValues(partial: Record<string, unknown>): void {
+  const knownKeys = new Set(defs.value.map((def) => def.key));
+  for (const [key, value] of Object.entries(partial)) {
+    if (knownKeys.has(key)) {
+      values[key] = value;
+    }
+  }
+}
+
 async function save(): Promise<void> {
   saving.value = true;
   saved.value = false;
@@ -196,7 +213,7 @@ onMounted(async () => {
   }
 });
 
-defineExpose({ save });
+defineExpose({ save, setValues });
 </script>
 
 <style scoped>

@@ -462,6 +462,14 @@
         "netto": "Neto (sin impuestos)",
         "save": "Guardar",
         "saved": "Modo de visualización de precios guardado"
+      },
+      "pricesModeInDb": {
+        "label": "Modo de precio almacenado",
+        "hint": "Cómo se interpretan los precios almacenados (neto o bruto). El modo de visualización anterior es independiente.",
+        "brutto": "Bruto (con impuestos)",
+        "netto": "Neto (sin impuestos)",
+        "save": "Guardar",
+        "saved": "Modo de precio almacenado guardado"
       }
     }
   },

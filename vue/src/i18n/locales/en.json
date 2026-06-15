@@ -526,6 +526,14 @@
         "netto": "Netto (net, excl. tax)",
         "save": "Save",
         "saved": "Price display mode saved"
+      },
+      "pricesModeInDb": {
+        "label": "Stored price mode",
+        "hint": "How stored prices are interpreted (net vs gross). The display mode above is independent.",
+        "brutto": "Brutto (incl. tax)",
+        "netto": "Netto (net, excl. tax)",
+        "save": "Save",
+        "saved": "Stored price mode saved"
       }
     }
   },

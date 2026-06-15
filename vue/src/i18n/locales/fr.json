@@ -467,6 +467,14 @@
         "netto": "Net (hors taxe)",
         "save": "Enregistrer",
         "saved": "Mode d'affichage des prix enregistré"
+      },
+      "pricesModeInDb": {
+        "label": "Mode de prix stocké",
+        "hint": "Comment les prix stockés sont interprétés (net ou brut). Le mode d'affichage ci-dessus est indépendant.",
+        "brutto": "Brut (TTC)",
+        "netto": "Net (hors taxe)",
+        "save": "Enregistrer",
+        "saved": "Mode de prix stocké enregistré"
       }
     }
   },

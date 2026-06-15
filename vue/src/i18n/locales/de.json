@@ -475,6 +475,14 @@
         "netto": "Netto (ohne Steuer)",
         "save": "Speichern",
         "saved": "Preisanzeigemodus gespeichert"
+      },
+      "pricesModeInDb": {
+        "label": "Gespeicherter Preismodus",
+        "hint": "Wie gespeicherte Preise interpretiert werden (netto vs. brutto). Der Anzeigemodus oben ist davon unabhängig.",
+        "brutto": "Brutto (inkl. Steuer)",
+        "netto": "Netto (ohne Steuer)",
+        "save": "Speichern",
+        "saved": "Gespeicherter Preismodus gespeichert"
       }
     }
   },
