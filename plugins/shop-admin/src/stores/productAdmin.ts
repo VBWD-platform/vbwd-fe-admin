@@ -19,6 +19,8 @@ export interface ProductAdmin {
   images: Array<{ id: string; url: string; alt: string; is_primary: boolean }>;
   variants: Array<{ id: string; name: string; sku: string | null; price: string | null; attributes: Record<string, string> }>;
   categories: Array<{ id: string; name: string; slug: string }>;
+  tax_ids: string[];
+  taxes: Array<{ id: string; code: string; name: string; rate: string }>;
   created_at: string;
 }
 

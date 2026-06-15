@@ -125,6 +125,39 @@
               </option>
             </select>
           </div>
+          <div
+            class="form-group full-width taxes-section"
+            data-testid="product-taxes-section"
+          >
+            <label>Taxes</label>
+            <DualListSelector
+              v-model="taxIds"
+              testid="tax"
+              :options="taxOptions"
+              available-label="Available taxes"
+              assigned-label="Applied taxes"
+              empty-available-label="All taxes applied"
+              empty-assigned-label="No taxes applied"
+            />
+          </div>
+          <!-- Price display override (S72.4) -->
+          <div class="form-group">
+            <label>Price display</label>
+            <select
+              v-model="form.price_display_mode"
+              data-testid="product-price-display-mode"
+            >
+              <option value="">
+                Inherit (global default)
+              </option>
+              <option value="netto">
+                Netto (net, excl. tax)
+              </option>
+              <option value="brutto">
+                Brutto (incl. tax)
+              </option>
+            </select>
+          </div>
           <div class="form-group full-width">
             <label>Description</label>
             <textarea
@@ -361,6 +394,22 @@
         </div>
       </div>
 
+      <!-- Tags + Custom fields (S77, generic editors) -->
+      <div
+        v-if="isEditMode && productId"
+        class="form-section"
+        data-testid="product-tags-custom-fields"
+      >
+        <TagPicker
+          entity-type="shop_product"
+          :entity-id="productId"
+        />
+        <CustomFieldsEditor
+          entity-type="shop_product"
+          :entity-id="productId"
+        />
+      </div>
+
       <!-- Plugin extension tabs -->
       <div
         v-for="pluginTab in pluginTabs"
@@ -386,6 +435,10 @@ import { useAuthStore } from '@/stores/auth';
 import { api } from '@/api';
 import { extensionRegistry } from '../../../../vue/src/plugins/extensionRegistry';
 import ProductImageGallery from '../components/ProductImageGallery.vue';
+import DualListSelector from '@/components/DualListSelector.vue';
+import TagPicker from '@/components/TagPicker.vue';
+import CustomFieldsEditor from '@/components/CustomFieldsEditor.vue';
+import { useTaxOptions } from '@/composables/useTaxOptions';
 
 const route = useRoute();
 const router = useRouter();
@@ -408,7 +461,12 @@ const form = reactive({
   is_digital: false,
   weight: '',
   tax_class: 'standard',
+  // '' = inherit the global mode; 'netto'/'brutto' = per-product override (S72.4)
+  price_display_mode: '' as string,
 });
+
+const { taxOptions, loadTaxOptions } = useTaxOptions();
+const taxIds = ref<string[]>([]);
 
 // Stock data
 const stockItems = ref<Array<Record<string, unknown>>>([]);
@@ -515,11 +573,15 @@ async function fetchProduct() {
     form.is_digital = product.is_digital;
     form.weight = product.weight || '';
     form.tax_class = product.tax_class || 'standard';
+    form.price_display_mode = (product as { price_display_mode?: string | null }).price_display_mode || '';
 
     // Load assigned categories
     if (product.categories) {
       assignedCategoryIds.value = product.categories.map((c: CategoryOption) => c.id);
     }
+
+    const productTaxIds = (product as { tax_ids?: string[] }).tax_ids;
+    taxIds.value = Array.isArray(productTaxIds) ? [...productTaxIds] : [];
   }
 
   // Load stock for this product
@@ -559,6 +621,9 @@ async function handleSubmit() {
     ...form,
     price: parseFloat(form.price) || 0,
     weight: form.weight ? parseFloat(form.weight) : null,
+    tax_ids: [...taxIds.value],
+    // Inherit (empty) maps to null so the backend falls back to the global mode.
+    price_display_mode: form.price_display_mode || null,
   };
 
   try {
@@ -576,6 +641,7 @@ async function handleSubmit() {
 }
 
 onMounted(() => {
+  loadTaxOptions();
   fetchCategories();
   fetchProduct();
   loadWarehouses();

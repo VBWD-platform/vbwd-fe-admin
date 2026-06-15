@@ -20,7 +20,20 @@
       "deleteConfirm": "Delete this product?",
       "created": "Product created",
       "updated": "Product updated",
-      "deleted": "Product deleted"
+      "deleted": "Product deleted",
+      "taxes": {
+        "title": "Taxes",
+        "available": "Available taxes",
+        "assigned": "Applied taxes",
+        "allAssigned": "All taxes applied",
+        "noneAssigned": "No taxes applied"
+      },
+      "priceDisplay": {
+        "label": "Price display",
+        "inherit": "Inherit (global default)",
+        "netto": "Netto (net, excl. tax)",
+        "brutto": "Brutto (incl. tax)"
+      }
     },
     "categories": {
       "title": "Product Categories"
