@@ -23,7 +23,11 @@ export default defineConfig({
     },
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        // IPv4 literal (not "localhost") — in CI Node resolves "localhost" to
+        // ::1 while the backend binds IPv4, so the proxy can't reach it and the
+        // dev server falls through to index.html (breaks e2e login). Overridable
+        // via VITE_BACKEND_URL, mirroring vbwd-fe-user.
+        target: process.env.VITE_BACKEND_URL || 'http://127.0.0.1:5000',
         changeOrigin: true
       }
     }
