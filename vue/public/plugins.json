@@ -60,6 +60,12 @@
       "installedAt": "",
       "source": "local"
     },
+    "referral-admin": {
+      "enabled": true,
+      "version": "0.1.0",
+      "installedAt": "2026-06-15T00:00:00.000Z",
+      "source": "local"
+    },
     "wp-import": {
       "enabled": true,
       "version": "1.0.0",

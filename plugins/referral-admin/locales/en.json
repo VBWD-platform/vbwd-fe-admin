@@ -1,0 +1,31 @@
+{
+  "referralAdmin": {
+    "title": "VBWD Referral",
+    "navItem": "VBWD Referral",
+    "settingsTab": "Settings",
+    "statisticsTab": "Referral Statistics",
+    "commissionBlockTitle": "Issuer's commission",
+    "commissionPercent": "% of sale",
+    "commissionTokens": "Absolute tokens",
+    "commissionValue": "Commission value",
+    "templateBlockTitle": "Coupon template",
+    "templateBlockHint": "Select the discount coupons that may be cloned as referral templates.",
+    "templatesAvailable": "Available coupons",
+    "templatesSelected": "Selected templates",
+    "saved": "Saved",
+    "searchPlaceholder": "Search issuer or code…",
+    "allStatuses": "All statuses",
+    "statusIssued": "Issued",
+    "statusUsed": "Used",
+    "statusExpired": "Expired",
+    "selected": "selected",
+    "deleteSelected": "Delete selected",
+    "empty": "No referral coupons yet.",
+    "colIssuer": "Issuer",
+    "colCouponCode": "Coupon code",
+    "colDiscountPercent": "Discount %",
+    "colDiscountAmount": "Discount amount",
+    "colCommissionTokens": "Commission tokens",
+    "colStatus": "Status"
+  }
+}

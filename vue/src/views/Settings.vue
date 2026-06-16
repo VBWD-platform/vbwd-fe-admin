@@ -26,6 +26,15 @@
         {{ $t('settings.tabs.tokens') }}
       </button>
       <button
+        v-if="canViewLlmConnections"
+        data-testid="tab-llm-connections"
+        class="tab-btn"
+        :class="{ active: activeTab === 'llmConnections' }"
+        @click="activeTab = 'llmConnections'"
+      >
+        {{ $t('llmConnections.title') }}
+      </button>
+      <button
         data-testid="tab-admin-plugins"
         class="tab-btn"
         :class="{ active: activeTab === 'adminPlugins' }"
@@ -497,6 +506,18 @@
               </button>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- LLM Connections Tab -->
+      <div
+        v-if="canViewLlmConnections"
+        v-show="activeTab === 'llmConnections'"
+        data-testid="llm-connections-tab-content"
+        class="plugins-tab"
+      >
+        <div class="form-section">
+          <LlmConnectionsTab v-if="llmConnectionsLoaded" />
         </div>
       </div>
 
@@ -1015,6 +1036,7 @@ import { usePluginsStore } from '@/stores/plugins';
 import type { PluginEntry } from '@/stores/plugins';
 import { useUserPluginsStore } from '@/stores/userPlugins';
 import type { UserPluginEntry } from '@/stores/userPlugins';
+import LlmConnectionsTab from '@/views/llm-connections/LlmConnectionsTab.vue';
 import { createDataExchangeApi } from '@/api/dataExchangeApi';
 import { useDataExchangeManifest } from '@/composables/useDataExchangeManifest';
 
@@ -1026,6 +1048,14 @@ const userPluginsStore = useUserPluginsStore();
 
 const canManage = computed(() => authStore.hasPermission('settings.manage'));
 const isSuperAdmin = computed(() => authStore.isSuperAdmin);
+
+// The LLM Connections tab is gated on the read permission; its own write
+// controls are further gated on `llm.connections.manage` inside the tab.
+const canViewLlmConnections = computed(
+  () =>
+    authStore.hasPermission('llm.connections.view') ||
+    authStore.hasPermission('llm.connections.manage'),
+);
 
 // Import/Export: the Token Bundles section embeds the shared core
 // data-exchange controls, scoped to the `token_bundles` exchanger and gated by
@@ -1041,11 +1071,16 @@ const showBundlesImportExport = computed(
 type MainTab =
   | 'core'
   | 'tokens'
+  | 'llmConnections'
   | 'adminPlugins'
   | 'backendPlugins'
   | 'userPlugins';
 
 const activeTab = ref<MainTab>('core');
+
+// The LLM Connections tab self-loads its data on mount, so we only render it
+// once its tab is first opened (lazy mount, mirroring the other tabs).
+const llmConnectionsLoaded = ref(false);
 
 // Loading/error states
 const loading = ref(true);
@@ -1479,6 +1514,9 @@ watch(activeTab, (newTab) => {
   if (newTab === 'tokens' && !bundlesLoaded.value) {
     loadTokenBundles();
     loadManifest();
+  }
+  if (newTab === 'llmConnections') {
+    llmConnectionsLoaded.value = true;
   }
   if (newTab === 'adminPlugins' && !pluginsLoaded.value) {
     loadPlugins();

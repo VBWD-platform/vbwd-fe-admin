@@ -853,5 +853,37 @@
     "noRows": "行がありません",
     "selectAll": "すべて選択",
     "confirmDelete": "選択した行を削除しますか？"
+  },
+  "llmConnections": {
+    "title": "LLM 接続",
+    "description": "プラグインが使用する LLM 接続を管理します。キーはサーバー側に保存され、マスクされて表示されます。",
+    "createConnection": "接続を作成",
+    "makeDefault": "デフォルトに設定",
+    "loadError": "LLM 接続の読み込みに失敗しました。",
+    "saveError": "接続の保存に失敗しました。",
+    "deleteConfirm": "この接続を削除しますか？この操作は元に戻せません。",
+    "columns": {
+      "name": "接続名",
+      "endpoint": "API エンドポイント",
+      "apiKey": "API キー",
+      "lastActive": "最終アクティブ",
+      "default": "デフォルト"
+    },
+    "fields": {
+      "name": "接続名",
+      "slug": "スラッグ",
+      "model": "モデル",
+      "endpoint": "API エンドポイント",
+      "key": "API キー",
+      "keyEdit": "API キー（変更しない場合は空欄）",
+      "active": "有効"
+    },
+    "bulk": {
+      "selected": "{count} 件選択中",
+      "activate": "有効化",
+      "deactivate": "無効化",
+      "delete": "削除",
+      "deleteConfirm": "{count} 件の接続を削除しますか？この操作は元に戻せません。"
+    }
   }
 }

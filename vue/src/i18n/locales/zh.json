@@ -853,5 +853,37 @@
     "noRows": "无数据",
     "selectAll": "全选",
     "confirmDelete": "删除所选行？"
+  },
+  "llmConnections": {
+    "title": "LLM 连接",
+    "description": "管理插件使用的 LLM 连接。密钥存储在服务器端并以掩码形式显示。",
+    "createConnection": "创建连接",
+    "makeDefault": "设为默认",
+    "loadError": "加载 LLM 连接失败。",
+    "saveError": "保存连接失败。",
+    "deleteConfirm": "删除此连接？此操作无法撤销。",
+    "columns": {
+      "name": "连接名称",
+      "endpoint": "API 端点",
+      "apiKey": "API 密钥",
+      "lastActive": "上次活跃",
+      "default": "默认"
+    },
+    "fields": {
+      "name": "连接名称",
+      "slug": "Slug",
+      "model": "模型",
+      "endpoint": "API 端点",
+      "key": "API 密钥",
+      "keyEdit": "API 密钥（留空以保留当前值）",
+      "active": "启用"
+    },
+    "bulk": {
+      "selected": "已选 {count} 项",
+      "activate": "启用",
+      "deactivate": "停用",
+      "delete": "删除",
+      "deleteConfirm": "删除 {count} 个连接？此操作无法撤销。"
+    }
   }
 }

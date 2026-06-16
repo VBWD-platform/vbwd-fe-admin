@@ -855,5 +855,37 @@
     "noRows": "Aucune ligne",
     "selectAll": "Tout sélectionner",
     "confirmDelete": "Supprimer les lignes sélectionnées ?"
+  },
+  "llmConnections": {
+    "title": "Connexions LLM",
+    "description": "Gérez les connexions LLM utilisées par les plugins. Les clés sont stockées côté serveur et affichées masquées.",
+    "createConnection": "Créer une connexion",
+    "makeDefault": "Définir par défaut",
+    "loadError": "Échec du chargement des connexions LLM.",
+    "saveError": "Échec de l enregistrement de la connexion.",
+    "deleteConfirm": "Supprimer cette connexion ? Cette action est irréversible.",
+    "columns": {
+      "name": "Nom de la connexion",
+      "endpoint": "Point de terminaison API",
+      "apiKey": "Clé API",
+      "lastActive": "Dernière activité",
+      "default": "Par défaut"
+    },
+    "fields": {
+      "name": "Nom de la connexion",
+      "slug": "Slug",
+      "model": "Modèle",
+      "endpoint": "Point de terminaison API",
+      "key": "Clé API",
+      "keyEdit": "Clé API (laisser vide pour conserver l actuelle)",
+      "active": "Active"
+    },
+    "bulk": {
+      "selected": "{count} sélectionnée(s)",
+      "activate": "Activer",
+      "deactivate": "Désactiver",
+      "delete": "Supprimer",
+      "deleteConfirm": "Supprimer {count} connexion(s) ? Cette action est irréversible."
+    }
   }
 }

@@ -871,5 +871,37 @@
     "noRows": "Keine Einträge",
     "selectAll": "Alle auswählen",
     "confirmDelete": "Ausgewählte Zeilen löschen?"
+  },
+  "llmConnections": {
+    "title": "LLM-Verbindungen",
+    "description": "Verwalten Sie die von Plugins genutzten LLM-Verbindungen. Schlüssel werden serverseitig gespeichert und maskiert angezeigt.",
+    "createConnection": "Verbindung erstellen",
+    "makeDefault": "Als Standard",
+    "loadError": "LLM-Verbindungen konnten nicht geladen werden.",
+    "saveError": "Verbindung konnte nicht gespeichert werden.",
+    "deleteConfirm": "Diese Verbindung löschen? Dies kann nicht rückgängig gemacht werden.",
+    "columns": {
+      "name": "Verbindungsname",
+      "endpoint": "API-Endpunkt",
+      "apiKey": "API-Schlüssel",
+      "lastActive": "Zuletzt aktiv",
+      "default": "Standard"
+    },
+    "fields": {
+      "name": "Verbindungsname",
+      "slug": "Slug",
+      "model": "Modell",
+      "endpoint": "API-Endpunkt",
+      "key": "API-Schlüssel",
+      "keyEdit": "API-Schlüssel (leer lassen, um den aktuellen zu behalten)",
+      "active": "Aktiv"
+    },
+    "bulk": {
+      "selected": "{count} ausgewählt",
+      "activate": "Aktivieren",
+      "deactivate": "Deaktivieren",
+      "delete": "Löschen",
+      "deleteConfirm": "{count} Verbindung(en) löschen? Dies kann nicht rückgängig gemacht werden."
+    }
   }
 }

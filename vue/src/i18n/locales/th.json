@@ -851,5 +851,37 @@
     "noRows": "ไม่มีแถว",
     "selectAll": "เลือกทั้งหมด",
     "confirmDelete": "ลบแถวที่เลือกหรือไม่?"
+  },
+  "llmConnections": {
+    "title": "การเชื่อมต่อ LLM",
+    "description": "จัดการการเชื่อมต่อ LLM ที่ปลั๊กอินใช้ คีย์จะถูกจัดเก็บฝั่งเซิร์ฟเวอร์และแสดงแบบปิดบัง",
+    "createConnection": "สร้างการเชื่อมต่อ",
+    "makeDefault": "ตั้งเป็นค่าเริ่มต้น",
+    "loadError": "ไม่สามารถโหลดการเชื่อมต่อ LLM ได้",
+    "saveError": "ไม่สามารถบันทึกการเชื่อมต่อได้",
+    "deleteConfirm": "ลบการเชื่อมต่อนี้หรือไม่? ไม่สามารถยกเลิกได้",
+    "columns": {
+      "name": "ชื่อการเชื่อมต่อ",
+      "endpoint": "API endpoint",
+      "apiKey": "คีย์ API",
+      "lastActive": "ใช้งานล่าสุด",
+      "default": "ค่าเริ่มต้น"
+    },
+    "fields": {
+      "name": "ชื่อการเชื่อมต่อ",
+      "slug": "Slug",
+      "model": "โมเดล",
+      "endpoint": "API endpoint",
+      "key": "คีย์ API",
+      "keyEdit": "คีย์ API (เว้นว่างเพื่อคงค่าปัจจุบัน)",
+      "active": "ใช้งาน"
+    },
+    "bulk": {
+      "selected": "เลือกแล้ว {count} รายการ",
+      "activate": "เปิดใช้งาน",
+      "deactivate": "ปิดใช้งาน",
+      "delete": "ลบ",
+      "deleteConfirm": "ลบการเชื่อมต่อ {count} รายการ? ไม่สามารถยกเลิกได้"
+    }
   }
 }

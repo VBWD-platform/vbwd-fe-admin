@@ -989,5 +989,37 @@
     "noRows": "No rows",
     "selectAll": "Select all",
     "confirmDelete": "Delete the selected rows?"
+  },
+  "llmConnections": {
+    "title": "LLM Connections",
+    "description": "Manage the LLM connections plugins use. Keys are stored server-side and shown masked.",
+    "createConnection": "Create connection",
+    "makeDefault": "Make default",
+    "loadError": "Failed to load LLM connections.",
+    "saveError": "Failed to save the connection.",
+    "deleteConfirm": "Delete this connection? This cannot be undone.",
+    "columns": {
+      "name": "Connection name",
+      "endpoint": "API endpoint",
+      "apiKey": "API key",
+      "lastActive": "Last active",
+      "default": "Default"
+    },
+    "fields": {
+      "name": "Connection name",
+      "slug": "Slug",
+      "model": "Model",
+      "endpoint": "API endpoint",
+      "key": "API key",
+      "keyEdit": "API key (leave blank to keep current)",
+      "active": "Active"
+    },
+    "bulk": {
+      "selected": "{count} selected",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "delete": "Delete",
+      "deleteConfirm": "Delete {count} connection(s)? This cannot be undone."
+    }
   }
 }
