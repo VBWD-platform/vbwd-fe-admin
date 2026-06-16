@@ -218,6 +218,82 @@ describe('ExtensionRegistry — buildSidebar', () => {
     expect(bookings.items[0].children![0].label).toBe('Agoda')
   })
 
+  it('position child:target nests the item as an L2 child of the target', () => {
+    extensionRegistry.register('discount', {
+      sectionItems: {
+        sales: [
+          {
+            label: 'Promotions',
+            to: '/admin/promotions/discounts',
+            id: 'promotions',
+            children: [
+              { label: 'Discounts', to: '/admin/promotions/discounts' },
+              { label: 'Coupons', to: '/admin/promotions/coupons' },
+            ],
+          },
+        ],
+      },
+    })
+    extensionRegistry.register('referral', {
+      sectionItems: {
+        sales: [
+          {
+            label: 'Referral',
+            to: '/admin/promotions/referral',
+            id: 'referral',
+            position: 'child:promotions',
+          },
+        ],
+      },
+    })
+    const result = extensionRegistry.buildSidebar(coreSections)
+    const sales = result.find((s) => s.id === 'sales')!
+    const promotions = sales.items.find((i) => i.id === 'promotions')!
+    // Referral nests as the 3rd child, not as a sibling under Sales.
+    expect(promotions.children!.map((c) => c.label)).toEqual(['Discounts', 'Coupons', 'Referral'])
+    expect(sales.items.find((i) => i.id === 'referral')).toBeUndefined()
+  })
+
+  it('child nesting works regardless of plugin registration order', () => {
+    // Register the child BEFORE its parent group.
+    extensionRegistry.register('referral', {
+      sectionItems: {
+        sales: [
+          { label: 'Referral', to: '/admin/promotions/referral', id: 'referral', position: 'child:promotions' },
+        ],
+      },
+    })
+    extensionRegistry.register('discount', {
+      sectionItems: {
+        sales: [
+          {
+            label: 'Promotions',
+            to: '/admin/promotions/discounts',
+            id: 'promotions',
+            children: [{ label: 'Discounts', to: '/admin/promotions/discounts' }],
+          },
+        ],
+      },
+    })
+    const result = extensionRegistry.buildSidebar(coreSections)
+    const sales = result.find((s) => s.id === 'sales')!
+    const promotions = sales.items.find((i) => i.id === 'promotions')!
+    expect(promotions.children!.map((c) => c.label)).toEqual(['Discounts', 'Referral'])
+  })
+
+  it('child:target falls back to a sibling when the target is absent', () => {
+    extensionRegistry.register('referral', {
+      sectionItems: {
+        sales: [
+          { label: 'Referral', to: '/admin/promotions/referral', id: 'referral', position: 'child:promotions' },
+        ],
+      },
+    })
+    const result = extensionRegistry.buildSidebar(coreSections)
+    const sales = result.find((s) => s.id === 'sales')!
+    expect(sales.items.find((i) => i.id === 'referral')).toBeDefined()
+  })
+
   it('merges settingsItems into settings section (backward compat)', () => {
     extensionRegistry.register('email', {
       settingsItems: [{ label: 'Email', to: '/admin/email' }],

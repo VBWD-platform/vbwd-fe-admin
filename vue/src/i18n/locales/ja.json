@@ -61,7 +61,8 @@
     "importExport": "Import / Export",
     "taxesAndCountries": "税金と国",
     "userGroups": "ユーザーグループ",
-    "customFields": "カスタムフィールド"
+    "customFields": "カスタムフィールド",
+    "rolesAndAccessLevels": "Roles & Access Levels"
   },
   "auth": {
     "login": "ログイン",
@@ -713,7 +714,7 @@
     }
   },
   "access": {
-    "title": "Access Levels",
+    "title": "Roles & Access Levels",
     "newLevel": "New Access Level",
     "editLevel": "Edit Access Level",
     "name": "Name",
@@ -737,7 +738,11 @@
     "assignedUsers": "Assigned Users",
     "revokeRole": "Revoke",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "newAdminRole": "New Admin Role",
+    "noAdminRoles": "No admin roles defined.",
+    "adminRolesTab": "Admin Roles",
+    "accessLevelsTab": "Access Levels"
   },
   "currencies": {
     "description": "利用可能な通貨、価格の保存通貨、為替レートを管理します。",

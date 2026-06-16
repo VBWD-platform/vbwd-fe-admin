@@ -11,13 +11,14 @@ import { configureAuthStore, useAuthStore } from '@/stores/auth'
 import { extensionRegistry } from '@/plugins/extensionRegistry'
 
 const mockGet = vi.fn()
+const mockDelete = vi.fn()
 
 vi.mock('@/api', () => ({
   api: {
     get: (...args: unknown[]) => mockGet(...args),
     post: vi.fn(),
     put: vi.fn(),
-    delete: vi.fn(),
+    delete: (...args: unknown[]) => mockDelete(...args),
     setToken: vi.fn(),
     clearToken: vi.fn(),
   },
@@ -53,10 +54,11 @@ describe('AccessLevels — checkbox selection keeps the table visible', () => {
       user: { id: '1', email: 'admin@test.com', role: 'SUPER_ADMIN', permissions: ['*'] },
       token: 'test-token',
     })
+    // System B (admin roles) → /admin/access/roles; System C → /admin/access/levels.
     mockGet.mockImplementation((url: string) =>
-      url.includes('user-levels')
-        ? Promise.resolve({ levels: [] })
-        : Promise.resolve({ levels: adminLevels })
+      url.endsWith('/admin/access/roles')
+        ? Promise.resolve({ levels: adminLevels })
+        : Promise.resolve({ levels: [] })
     )
   })
 
@@ -89,9 +91,9 @@ describe('AccessLevels — system roles deletable only by a super admin', () => 
       apiClient: { post: async () => ({}), get: async () => ({}), setToken: () => {} } as never,
     })
     mockGet.mockImplementation((url: string) =>
-      url.includes('user-levels')
-        ? Promise.resolve({ levels: [] })
-        : Promise.resolve({ levels: adminLevels })
+      url.endsWith('/admin/access/roles')
+        ? Promise.resolve({ levels: adminLevels })
+        : Promise.resolve({ levels: [] })
     )
   })
 
@@ -122,5 +124,67 @@ describe('AccessLevels — system roles deletable only by a super admin', () => 
     // Only the non-system row is deletable; the system row's Delete is hidden.
     const buttons = deleteButtons(wrapper)
     expect(buttons).toHaveLength(adminLevels.filter((l) => !l.is_system).length)
+  })
+})
+
+const userLevels = [
+  { id: 'u1', name: 'Free', slug: 'free', description: '', is_system: false, permissions: [] },
+]
+
+describe('AccessLevels — S94.6b terminology inversion is fixed', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    extensionRegistry.clear()
+    setActivePinia(createPinia())
+    configureAuthStore({
+      storageKey: 'test_token',
+      apiClient: { post: async () => ({}), get: async () => ({}), setToken: () => {} } as never,
+    })
+    useAuthStore().$patch({
+      user: { id: '1', email: 'admin@test.com', role: 'SUPER_ADMIN', permissions: ['*'] },
+      token: 'test-token',
+    })
+    // System B (admin roles) → /admin/access/roles; System C (access levels) → /admin/access/levels.
+    mockGet.mockImplementation((url: string) =>
+      url.endsWith('/admin/access/roles')
+        ? Promise.resolve({ levels: adminLevels })
+        : Promise.resolve({ levels: userLevels })
+    )
+    mockDelete.mockResolvedValue({})
+  })
+
+  it('loads System B (admin roles) from /admin/access/roles, NOT /admin/access/levels', async () => {
+    mountComponent()
+    await flushPromises()
+    expect(mockGet).toHaveBeenCalledWith('/admin/access/roles')
+  })
+
+  it('loads System C (access levels) from /admin/access/levels (the flipped endpoint)', async () => {
+    mountComponent()
+    await flushPromises()
+    expect(mockGet).toHaveBeenCalledWith('/admin/access/levels')
+    // The old C path must no longer be used.
+    expect(mockGet).not.toHaveBeenCalledWith('/admin/access/user-levels')
+  })
+
+  it('labels the System B tab "Admin Roles" and the System C tab "Access Levels"', async () => {
+    const wrapper = mountComponent()
+    await flushPromises()
+    const tabText = wrapper.findAll('.tabs__tab').map((tab) => tab.text())
+    expect(tabText).toContain('access.adminRolesTab')
+    expect(tabText).toContain('access.accessLevelsTab')
+  })
+
+  it('deletes a System B admin role via /admin/access/roles/<id>', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true)
+    const wrapper = mountComponent()
+    await flushPromises()
+    // Admin tab is active by default; click the first row's Delete.
+    const deleteButton = wrapper
+      .findAll('tbody button.btn--danger')
+      .find((button) => button.text().trim() === 'Delete')
+    await deleteButton!.trigger('click')
+    await flushPromises()
+    expect(mockDelete).toHaveBeenCalledWith('/admin/access/roles/a1')
   })
 })

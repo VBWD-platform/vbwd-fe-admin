@@ -61,7 +61,8 @@
     "importExport": "Import / Export",
     "taxesAndCountries": "ภาษีและประเทศ",
     "userGroups": "กลุ่มผู้ใช้",
-    "customFields": "ฟิลด์ที่กำหนดเอง"
+    "customFields": "ฟิลด์ที่กำหนดเอง",
+    "rolesAndAccessLevels": "Roles & Access Levels"
   },
   "auth": {
     "login": "เข้าสู่ระบบ",
@@ -711,7 +712,7 @@
     }
   },
   "access": {
-    "title": "Access Levels",
+    "title": "Roles & Access Levels",
     "newLevel": "New Access Level",
     "editLevel": "Edit Access Level",
     "name": "Name",
@@ -735,7 +736,11 @@
     "assignedUsers": "Assigned Users",
     "revokeRole": "Revoke",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "newAdminRole": "New Admin Role",
+    "noAdminRoles": "No admin roles defined.",
+    "adminRolesTab": "Admin Roles",
+    "accessLevelsTab": "Access Levels"
   },
   "currencies": {
     "description": "จัดการสกุลเงินที่ใช้ได้ สกุลเงินที่ใช้จัดเก็บราคา และอัตราแลกเปลี่ยน",

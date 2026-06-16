@@ -68,7 +68,8 @@ describe('UserEdit — native API tab (S52.6)', () => {
       if (url === '/admin/users/user-1/api-keys') {
         return Promise.resolve({ api_keys: [] });
       }
-      if (url.includes('user-levels')) return Promise.resolve({ levels: [] });
+      // S94.6b: System B (admin roles) → /admin/access/roles; System C → /admin/access/levels.
+      if (url.includes('/admin/access/roles')) return Promise.resolve({ levels: [] });
       if (url.includes('levels')) return Promise.resolve({ levels: [] });
       return Promise.resolve({});
     });

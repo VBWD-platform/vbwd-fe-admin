@@ -56,7 +56,8 @@
     "accessLevels": "Access Levels",
     "importExport": "Import / Export",
     "taxesAndCountries": "Impuestos y países",
-    "userGroups": "Grupos de usuarios"
+    "userGroups": "Grupos de usuarios",
+    "rolesAndAccessLevels": "Roles & Access Levels"
   },
   "auth": {
     "login": "Iniciar Sesión",
@@ -710,7 +711,7 @@
     }
   },
   "access": {
-    "title": "Access Levels",
+    "title": "Roles & Access Levels",
     "newLevel": "New Access Level",
     "editLevel": "Edit Access Level",
     "name": "Name",
@@ -734,7 +735,11 @@
     "assignedUsers": "Assigned Users",
     "revokeRole": "Revoke",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "newAdminRole": "New Admin Role",
+    "noAdminRoles": "No admin roles defined.",
+    "adminRolesTab": "Admin Roles",
+    "accessLevelsTab": "Access Levels"
   },
   "currencies": {
     "description": "Gestione las monedas disponibles, la moneda en la que se almacenan los precios y los tipos de cambio.",

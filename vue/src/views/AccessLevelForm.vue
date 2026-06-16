@@ -255,18 +255,20 @@ async function save() {
     }
 
     if (isUserType.value) {
-      if (isNew.value) {
-        const res = await api.post('/admin/access/user-levels', payload) as { level: { id: string } };
-        router.push(`/admin/settings/access/${res.level.id}?type=user`);
-      } else {
-        await api.put(`/admin/access/user-levels/${levelId.value}`, payload);
-      }
-    } else {
+      // System C (access levels) — flipped to /admin/access/levels*.
       if (isNew.value) {
         const res = await api.post('/admin/access/levels', payload) as { level: { id: string } };
-        router.push(`/admin/settings/access/${res.level.id}`);
+        router.push(`/admin/settings/access/${res.level.id}?type=user`);
       } else {
         await api.put(`/admin/access/levels/${levelId.value}`, payload);
+      }
+    } else {
+      // System B (admin roles) — flipped to /admin/access/roles*.
+      if (isNew.value) {
+        const res = await api.post('/admin/access/roles', payload) as { level: { id: string } };
+        router.push(`/admin/settings/access/${res.level.id}`);
+      } else {
+        await api.put(`/admin/access/roles/${levelId.value}`, payload);
       }
     }
   } finally {
@@ -290,8 +292,8 @@ onMounted(async () => {
     // Load existing level if editing
     if (!isNew.value && levelId.value) {
       const levelEndpoint = isUserType.value
-        ? `/admin/access/user-levels/${levelId.value}`
-        : `/admin/access/levels/${levelId.value}`;
+        ? `/admin/access/levels/${levelId.value}`
+        : `/admin/access/roles/${levelId.value}`;
       const res = await api.get(levelEndpoint) as {
         level: {
           name: string;
@@ -316,7 +318,7 @@ onMounted(async () => {
       // Load content visibility data for user access levels
       if (isUserType.value) {
         try {
-          const contentRes = await api.get(`/admin/access/user-levels/${levelId.value}/content`) as {
+          const contentRes = await api.get(`/admin/access/levels/${levelId.value}/content`) as {
             pages: { id: string; name: string; slug: string }[];
             widgets: { id: string; area_name: string; widget_id: string }[];
           };

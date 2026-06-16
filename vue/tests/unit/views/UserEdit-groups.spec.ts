@@ -70,7 +70,8 @@ describe('UserEdit — Groups selector (S73)', () => {
       if (url === '/admin/users/user-1/groups') {
         return Promise.resolve({ group_slugs: ['vip'] });
       }
-      if (url.includes('user-levels')) return Promise.resolve({ levels: [] });
+      // S94.6b: System B (admin roles) → /admin/access/roles; System C → /admin/access/levels.
+      if (url.includes('/admin/access/roles')) return Promise.resolve({ levels: [] });
       if (url.includes('levels')) return Promise.resolve({ levels: [] });
       return Promise.resolve({});
     });

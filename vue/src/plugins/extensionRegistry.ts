@@ -33,7 +33,15 @@ export interface NavItem {
 }
 
 export interface NavItemWithPosition extends NavItem {
-  /** Position hint: 'before:invoices', 'after:users', 'start', 'end' (default: 'end') */
+  /**
+   * Position hint relative to sibling items in the target section:
+   * 'before:invoices', 'after:users', 'start', 'end' (default: 'end').
+   *
+   * Also supports 'child:<targetId>' to nest this item as an L2 child of an
+   * existing L1 item owned by another plugin (e.g. nest "Referral" under the
+   * discount-admin "Promotions" group). Falls back to appending as a sibling
+   * if the target id is not present.
+   */
   position?: string;
 }
 
@@ -343,10 +351,17 @@ class ExtensionRegistry {
       })),
     }));
 
-    // 2. Inject sectionItems into matching sections
+    // 2. Inject sectionItems into matching sections. Sibling insertions are
+    //    applied before 'child:<id>' nestings so that a child's target L1 item
+    //    (possibly owned by another plugin) already exists regardless of plugin
+    //    registration order.
     for (const section of sections) {
       const injectedItems = this.getSectionItems(section.id);
-      for (const item of injectedItems) {
+      const ordered = [...injectedItems].sort(
+        (a, b) =>
+          (a.position?.startsWith('child:') ? 1 : 0) - (b.position?.startsWith('child:') ? 1 : 0),
+      );
+      for (const item of ordered) {
         this._insertItem(section.items, item);
       }
     }
@@ -404,8 +419,21 @@ class ExtensionRegistry {
       return;
     }
 
-    // 'before:targetId' or 'after:targetId'
+    // 'child:targetId', 'before:targetId' or 'after:targetId'
     const [direction, targetId] = position.split(':');
+
+    // 'child:targetId' — nest as an L2 child of the target L1 item.
+    if (direction === 'child') {
+      const parent = items.find((item) => item.id === targetId);
+      if (parent) {
+        parent.children = [...(parent.children || []), itemToInsert];
+        return;
+      }
+      // Target not found — fall back to a sibling at the end.
+      items.push(itemToInsert);
+      return;
+    }
+
     const targetIndex = items.findIndex((item) => item.id === targetId);
 
     if (targetIndex === -1) {

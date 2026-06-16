@@ -196,6 +196,7 @@
             {{ $t(column.label) }}
             <span class="sort-icon">{{ sortIndicator(column.key) }}</span>
           </th>
+          <th>{{ $t('common.status') }}</th>
           <th>{{ $t('llmConnections.columns.default') }}</th>
           <th v-if="canManage">
             {{ $t('common.actions') }}

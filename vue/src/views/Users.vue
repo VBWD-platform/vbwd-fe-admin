@@ -647,8 +647,9 @@ async function handleBulkDelete(): Promise<void> {
 
 
 async function loadRoles() {
+  // System B (admin roles) — flipped to /admin/access/roles.
   try {
-    const res = await api.get('/admin/access/levels') as { levels: AccessRole[] };
+    const res = await api.get('/admin/access/roles') as { levels: AccessRole[] };
     availableRoles.value = res.levels;
   } catch {
     // Access API may not be available

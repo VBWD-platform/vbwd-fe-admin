@@ -61,7 +61,8 @@
     "importExport": "Import / Export",
     "taxesAndCountries": "Taxes et pays",
     "userGroups": "Groupes d'utilisateurs",
-    "customFields": "Champs personnalisés"
+    "customFields": "Champs personnalisés",
+    "rolesAndAccessLevels": "Roles & Access Levels"
   },
   "auth": {
     "login": "Connexion",
@@ -715,7 +716,7 @@
     }
   },
   "access": {
-    "title": "Access Levels",
+    "title": "Roles & Access Levels",
     "newLevel": "New Access Level",
     "editLevel": "Edit Access Level",
     "name": "Name",
@@ -739,7 +740,11 @@
     "assignedUsers": "Assigned Users",
     "revokeRole": "Revoke",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "newAdminRole": "New Admin Role",
+    "noAdminRoles": "No admin roles defined.",
+    "adminRolesTab": "Admin Roles",
+    "accessLevelsTab": "Access Levels"
   },
   "currencies": {
     "description": "Gérez les devises disponibles, la devise de stockage des prix et les taux de change.",

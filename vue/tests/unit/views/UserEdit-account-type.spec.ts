@@ -63,7 +63,8 @@ describe('UserEdit — account type (S74)', () => {
       }
       if (url.includes('user-groups')) return Promise.resolve({ groups: [] });
       if (url.includes('groups')) return Promise.resolve({ group_slugs: [] });
-      if (url.includes('user-levels')) return Promise.resolve({ levels: [] });
+      // S94.6b: System B (admin roles) → /admin/access/roles; System C → /admin/access/levels.
+      if (url.includes('/admin/access/roles')) return Promise.resolve({ levels: [] });
       if (url.includes('levels')) return Promise.resolve({ levels: [] });
       return Promise.resolve({});
     });

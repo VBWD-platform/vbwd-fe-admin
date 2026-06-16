@@ -61,7 +61,8 @@
     "importExport": "Import / Export",
     "taxesAndCountries": "税务与国家",
     "userGroups": "用户组",
-    "customFields": "自定义字段"
+    "customFields": "自定义字段",
+    "rolesAndAccessLevels": "Roles & Access Levels"
   },
   "auth": {
     "login": "登录",
@@ -713,7 +714,7 @@
     }
   },
   "access": {
-    "title": "Access Levels",
+    "title": "Roles & Access Levels",
     "newLevel": "New Access Level",
     "editLevel": "Edit Access Level",
     "name": "Name",
@@ -737,7 +738,11 @@
     "assignedUsers": "Assigned Users",
     "revokeRole": "Revoke",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "newAdminRole": "New Admin Role",
+    "noAdminRoles": "No admin roles defined.",
+    "adminRolesTab": "Admin Roles",
+    "accessLevelsTab": "Access Levels"
   },
   "currencies": {
     "description": "管理可用货币、价格存储货币以及汇率。",

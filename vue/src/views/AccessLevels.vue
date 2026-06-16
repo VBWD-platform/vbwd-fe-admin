@@ -20,7 +20,7 @@
           :to="activeTab === 'admin' ? '/admin/settings/access/new' : '/admin/settings/access/new?type=user'"
           class="btn btn--primary"
         >
-          + {{ activeTab === 'admin' ? $t('access.newLevel') : 'New User Access Level' }}
+          + {{ activeTab === 'admin' ? $t('access.newAdminRole') : $t('access.newLevel') }}
         </router-link>
       </div>
     </div>
@@ -32,14 +32,14 @@
         :class="{ 'tabs__tab--active': activeTab === 'admin' }"
         @click="activeTab = 'admin'"
       >
-        Admin Access Levels
+        {{ $t('access.adminRolesTab') }}
       </button>
       <button
         class="tabs__tab"
         :class="{ 'tabs__tab--active': activeTab === 'user' }"
         @click="activeTab = 'user'"
       >
-        User Access Levels
+        {{ $t('access.accessLevelsTab') }}
       </button>
       <!-- Plugin-contributed tabs -->
       <button
@@ -235,7 +235,7 @@
       v-else-if="!loading"
       class="empty"
     >
-      {{ activeTab === 'admin' ? $t('access.noLevels') : 'No user access levels defined.' }}
+      {{ activeTab === 'admin' ? $t('access.noAdminRoles') : $t('access.noLevels') }}
     </p>
   </div>
 </template>
@@ -328,15 +328,16 @@ function toggleAllUser() {
 async function handleBulkDelete() {
   const count = selectedIds.size;
   if (!confirm(`Delete ${count} selected access level(s)?`)) return;
-  const endpoint = activeTab.value === 'admin' ? '/admin/access/levels' : '/admin/access/user-levels';
+  const endpoint = activeTab.value === 'admin' ? '/admin/access/roles' : '/admin/access/levels';
   await Promise.all([...selectedIds].map(id => api.delete(`${endpoint}/${id}`)));
   selectedIds.clear();
   await loadAll();
 }
 
 async function loadAdminLevels() {
+  // System B (admin roles) — gates /admin.
   try {
-    const res = await api.get('/admin/access/levels') as { levels: AccessLevel[] };
+    const res = await api.get('/admin/access/roles') as { levels: AccessLevel[] };
     adminLevels.value = res.levels;
   } catch {
     adminLevels.value = [];
@@ -344,8 +345,9 @@ async function loadAdminLevels() {
 }
 
 async function loadUserLevels() {
+  // System C (access levels) — fe-user feature tiers, gates /user.
   try {
-    const res = await api.get('/admin/access/user-levels') as { levels: AccessLevel[] };
+    const res = await api.get('/admin/access/levels') as { levels: AccessLevel[] };
     userLevels.value = res.levels;
   } catch {
     userLevels.value = [];
@@ -362,14 +364,14 @@ async function loadAll() {
 }
 
 async function handleDeleteAdmin(id: string, name: string) {
-  if (!confirm(`Delete access level "${name}"?`)) return;
-  await api.delete(`/admin/access/levels/${id}`);
+  if (!confirm(`Delete admin role "${name}"?`)) return;
+  await api.delete(`/admin/access/roles/${id}`);
   await loadAdminLevels();
 }
 
 async function handleDeleteUser(id: string, name: string) {
-  if (!confirm(`Delete user access level "${name}"?`)) return;
-  await api.delete(`/admin/access/user-levels/${id}`);
+  if (!confirm(`Delete access level "${name}"?`)) return;
+  await api.delete(`/admin/access/levels/${id}`);
   await loadUserLevels();
 }
 

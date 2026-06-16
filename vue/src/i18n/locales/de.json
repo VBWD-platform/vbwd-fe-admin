@@ -64,7 +64,8 @@
     "importExport": "Import / Export",
     "taxesAndCountries": "Steuern & Länder",
     "userGroups": "Benutzergruppen",
-    "customFields": "Benutzerdefinierte Felder"
+    "customFields": "Benutzerdefinierte Felder",
+    "rolesAndAccessLevels": "Roles & Access Levels"
   },
   "auth": {
     "login": "Anmelden",
@@ -731,7 +732,7 @@
     }
   },
   "access": {
-    "title": "Access Levels",
+    "title": "Roles & Access Levels",
     "newLevel": "New Access Level",
     "editLevel": "Edit Access Level",
     "name": "Name",
@@ -755,7 +756,11 @@
     "assignedUsers": "Assigned Users",
     "revokeRole": "Revoke",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "newAdminRole": "New Admin Role",
+    "noAdminRoles": "No admin roles defined.",
+    "adminRolesTab": "Admin Roles",
+    "accessLevelsTab": "Access Levels"
   },
   "currencies": {
     "description": "Verwalten Sie verfügbare Währungen, die Speicherwährung der Preise und die Wechselkurse.",

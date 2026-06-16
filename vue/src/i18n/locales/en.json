@@ -71,7 +71,8 @@
     "importExport": "Import / Export",
     "taxesAndCountries": "Taxes & Countries",
     "userGroups": "User Groups",
-    "customFields": "Custom Fields"
+    "customFields": "Custom Fields",
+    "rolesAndAccessLevels": "Roles & Access Levels"
   },
   "auth": {
     "login": "Login",
@@ -846,7 +847,7 @@
     }
   },
   "access": {
-    "title": "Access Levels",
+    "title": "Roles & Access Levels",
     "newLevel": "New Access Level",
     "editLevel": "Edit Access Level",
     "name": "Name",
@@ -870,7 +871,11 @@
     "assignedUsers": "Assigned Users",
     "revokeRole": "Revoke",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "newAdminRole": "New Admin Role",
+    "noAdminRoles": "No admin roles defined.",
+    "adminRolesTab": "Admin Roles",
+    "accessLevelsTab": "Access Levels"
   },
   "apiKeys": {
     "tabTitle": "API"

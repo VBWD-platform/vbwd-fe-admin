@@ -727,8 +727,9 @@ const groupOptions = computed<DualListOption[]>(() =>
 );
 
 async function loadRoles() {
+  // System B (admin roles) — flipped to /admin/access/roles.
   try {
-    const res = await api.get('/admin/access/levels') as { levels: RbacRole[] };
+    const res = await api.get('/admin/access/roles') as { levels: RbacRole[] };
     availableRoles.value = res.levels;
   } catch {
     // Access API may not be available
@@ -736,8 +737,9 @@ async function loadRoles() {
 }
 
 async function loadUserLevels() {
+  // System C (access levels) — flipped to /admin/access/levels.
   try {
-    const res = await api.get('/admin/access/user-levels') as { levels: UserLevel[] };
+    const res = await api.get('/admin/access/levels') as { levels: UserLevel[] };
     availableUserLevels.value = res.levels;
   } catch {
     // User access levels API may not be available
