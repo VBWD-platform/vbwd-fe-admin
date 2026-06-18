@@ -183,6 +183,72 @@ describe('BackendPluginDetails', () => {
     expect(wrapper.find('[data-testid="plugin-error"]').exists()).toBe(true)
   })
 
+  it('renders an action field as a button and POSTs the declared endpoint on click', async () => {
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
+    mockPost.mockResolvedValue({ affected: 3 })
+    mockGet.mockResolvedValue({
+      ...mockPluginDetail,
+      adminConfig: {
+        tabs: [{
+          id: 'guest-economy',
+          label: 'Guest economy',
+          fields: [{
+            key: 'reset_all_guest_tokens',
+            label: 'Reset all guest token balances',
+            component: 'action',
+            endpoint: '/admin/meinchat/guests/tokens',
+            method: 'POST',
+            payload: { mode: 'reset' },
+            confirm: 'Reset every guest?',
+            successMessage: 'Guest token balances reset.',
+          }],
+        }],
+      },
+    })
+
+    const wrapper = mountComponent()
+    await flushPromises()
+
+    const btn = wrapper.find('[data-testid="config-action-reset_all_guest_tokens"]')
+    expect(btn.exists()).toBe(true)
+    await btn.trigger('click')
+    await flushPromises()
+
+    expect(confirmSpy).toHaveBeenCalledWith('Reset every guest?')
+    expect(mockPost).toHaveBeenCalledWith('/admin/meinchat/guests/tokens', { mode: 'reset' })
+    expect(wrapper.find('[data-testid="config-action-result-reset_all_guest_tokens"]').text())
+      .toBe('Guest token balances reset.')
+    // An action field must NOT push a config value into the save payload.
+    await wrapper.find('[data-testid="save-config-btn"]').trigger('click')
+    await flushPromises()
+    const savedBody = mockPut.mock.calls.at(-1)?.[1] as Record<string, unknown>
+    expect('reset_all_guest_tokens' in savedBody).toBe(false)
+    confirmSpy.mockRestore()
+  })
+
+  it('does not call the endpoint when the confirm is dismissed', async () => {
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false)
+    mockGet.mockResolvedValue({
+      ...mockPluginDetail,
+      adminConfig: {
+        tabs: [{
+          id: 'guest-economy', label: 'Guest economy',
+          fields: [{
+            key: 'reset_all_guest_tokens', label: 'Reset', component: 'action',
+            endpoint: '/admin/meinchat/guests/tokens', method: 'POST',
+            payload: { mode: 'reset' }, confirm: 'Sure?',
+          }],
+        }],
+      },
+    })
+    const wrapper = mountComponent()
+    await flushPromises()
+    await wrapper.find('[data-testid="config-action-reset_all_guest_tokens"]').trigger('click')
+    await flushPromises()
+    expect(mockPost).not.toHaveBeenCalled()
+    confirmSpy.mockRestore()
+  })
+
   it('shows field descriptions from config schema', async () => {
     const wrapper = mountComponent()
     await flushPromises()

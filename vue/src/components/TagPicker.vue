@@ -35,30 +35,40 @@
     </div>
 
     <div class="tag-picker-add">
-      <select
-        v-model="pendingSlug"
+      <input
+        v-model="query"
+        type="text"
         class="tag-picker-select"
-        data-testid="tag-picker-select"
+        data-testid="tag-picker-input"
+        :placeholder="$t('tagsCustomFields.addTag')"
+        @focus="open = true"
+        @input="open = true"
+        @blur="open = false"
+        @keydown.escape="open = false"
       >
-        <option value="">
-          {{ $t('tagsCustomFields.addTag') }}
-        </option>
-        <option
-          v-for="option in availableOptions"
+      <ul
+        v-if="open && (filteredOptions.length || showCreate)"
+        class="tag-picker-menu"
+        data-testid="tag-picker-menu"
+      >
+        <li
+          v-for="option in filteredOptions"
           :key="option.slug"
-          :value="option.slug"
+          class="tag-picker-menu-item"
+          data-testid="tag-picker-option"
+          @mousedown.prevent="selectExisting(option.slug)"
         >
           {{ option.name || option.slug }}
-        </option>
-      </select>
-      <Button
-        variant="secondary"
-        data-testid="tag-picker-add-btn"
-        :disabled="!pendingSlug"
-        @click="addPending"
-      >
-        {{ $t('common.add') }}
-      </Button>
+        </li>
+        <li
+          v-if="showCreate"
+          class="tag-picker-menu-item tag-picker-menu-item--create"
+          data-testid="tag-picker-create"
+          @mousedown.prevent="createAndSelect"
+        >
+          {{ $t('tagsCustomFields.createTag') }} "{{ trimmedQuery }}"
+        </li>
+      </ul>
     </div>
 
     <div class="tag-picker-actions">
@@ -88,6 +98,7 @@
 import { onMounted, ref, computed } from 'vue';
 import { Button } from 'vbwd-view-component';
 import {
+  createTag,
   fetchApplicableTags,
   fetchEntityTags,
   saveEntityTags,
@@ -101,7 +112,8 @@ const props = defineProps<{
 
 const applicable = ref<CatalogTag[]>([]);
 const selected = ref<string[]>([]);
-const pendingSlug = ref('');
+const query = ref('');
+const open = ref(false);
 const saving = ref(false);
 const saved = ref(false);
 const error = ref<string | null>(null);
@@ -110,15 +122,56 @@ const availableOptions = computed(() =>
   applicable.value.filter((tag) => !selected.value.includes(tag.slug)),
 );
 
+const trimmedQuery = computed(() => query.value.trim());
+
+// Catalog options matching the typed text by name OR slug (case-insensitive).
+const filteredOptions = computed(() => {
+  const needle = trimmedQuery.value.toLowerCase();
+  if (!needle) return availableOptions.value;
+  return availableOptions.value.filter(
+    (tag) =>
+      (tag.name || '').toLowerCase().includes(needle) ||
+      tag.slug.toLowerCase().includes(needle),
+  );
+});
+
+// Offer inline create only when the typed name matches no applicable tag's name
+// or slug (case-insensitive) — selected or not.
+const showCreate = computed(() => {
+  if (!trimmedQuery.value) return false;
+  const needle = trimmedQuery.value.toLowerCase();
+  return !applicable.value.some(
+    (tag) => (tag.name || '').toLowerCase() === needle || tag.slug.toLowerCase() === needle,
+  );
+});
+
 function tagName(slug: string): string {
   return applicable.value.find((tag) => tag.slug === slug)?.name || slug;
 }
 
-function addPending(): void {
-  if (pendingSlug.value && !selected.value.includes(pendingSlug.value)) {
-    selected.value = [...selected.value, pendingSlug.value];
+function selectExisting(slug: string): void {
+  if (slug && !selected.value.includes(slug)) {
+    selected.value = [...selected.value, slug];
   }
-  pendingSlug.value = '';
+  query.value = '';
+  open.value = false;
+}
+
+// Create the typed tag scoped to this entity type, register it locally so its
+// chip shows the proper name, then select it. On failure the slug is still added
+// (the backend auto-creates unknown slugs as global on the next PUT — data-safe).
+async function createAndSelect(): Promise<void> {
+  const name = trimmedQuery.value;
+  error.value = null;
+  try {
+    const tag = await createTag(name, props.entityType);
+    if (!applicable.value.some((existing) => existing.slug === tag.slug)) {
+      applicable.value = [...applicable.value, tag];
+    }
+    selectExisting(tag.slug);
+  } catch (caught) {
+    error.value = caught instanceof Error ? caught.message : String(caught);
+  }
 }
 
 function removeTag(slug: string): void {
@@ -211,9 +264,44 @@ defineExpose({ save });
 }
 
 .tag-picker-add {
+  position: relative;
   display: flex;
   gap: 0.5rem;
   align-items: stretch;
+}
+
+.tag-picker-menu {
+  position: absolute;
+  z-index: 20;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+  max-height: 14rem;
+  overflow-y: auto;
+  background: var(--vbwd-color-surface, #fff);
+  border: 1px solid var(--vbwd-color-border, #e5e7eb);
+  border-radius: var(--vbwd-radius-md, 0.375rem);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.tag-picker-menu-item {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  color: var(--vbwd-color-text, #374151);
+}
+
+.tag-picker-menu-item:hover {
+  background: var(--vbwd-color-primary-light, #eff6ff);
+}
+
+.tag-picker-menu-item--create {
+  border-top: 1px solid var(--vbwd-color-border, #e5e7eb);
+  color: var(--vbwd-color-primary, #1d4ed8);
+  font-weight: 600;
 }
 
 .tag-picker-select {

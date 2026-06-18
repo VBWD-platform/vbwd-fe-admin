@@ -83,6 +83,16 @@
         >
           {{ tab.label }}
         </button>
+        <!-- Host-owned "Reset user sessions" tab — renders plugin user blocks -->
+        <button
+          v-if="visibleUserSessionUserBlocks.length > 0"
+          data-testid="tab-reset-user-sessions"
+          class="tab-btn"
+          :class="{ active: activeTab === 'resetUserSessions' }"
+          @click="activeTab = 'resetUserSessions'"
+        >
+          {{ $t('userEdit.resetSessions.tabTitle') }}
+        </button>
       </div>
 
       <!-- Account Tab Content -->
@@ -600,6 +610,21 @@
         :user-id="userId"
         :active="activeTab === tab.id"
       />
+
+      <!-- Host-owned "Reset user sessions" tab content -->
+      <div
+        v-show="activeTab === 'resetUserSessions'"
+        data-testid="tab-content-reset-user-sessions"
+        class="tab-content"
+      >
+        <component
+          :is="block.userComponent"
+          v-for="block in visibleUserSessionUserBlocks"
+          :key="block.id"
+          :user-id="userId"
+          :active="activeTab === 'resetUserSessions'"
+        />
+      </div>
     </template>
   </div>
 </template>
@@ -642,6 +667,17 @@ const pluginTabs = computed(() =>
   extensionRegistry
     .getUserEditTabs()
     .filter((tab) => !tab.requiredPermission || authStore.hasPermission(tab.requiredPermission))
+);
+
+// Host-owned "Reset user sessions" tab: plugin-contributed cleanup blocks,
+// permission-filtered (mirrors pluginTabs). The tab button is hidden when no
+// block is visible.
+const visibleUserSessionUserBlocks = computed(() =>
+  extensionRegistry
+    .getUserSessionUserBlocks()
+    .filter(
+      (block) => !block.requiredPermission || authStore.hasPermission(block.requiredPermission),
+    )
 );
 
 // User form state

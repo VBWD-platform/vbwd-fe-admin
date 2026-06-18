@@ -462,7 +462,8 @@
       "backendPlugins": "Backend Plugins",
       "userPlugins": "User Plugins",
       "tax": "Tax",
-      "importExport": "Import / Export"
+      "importExport": "Import / Export",
+      "userSessions": "User Sessions"
     },
     "coreSettings": {
       "title": "Service Provider Information",
@@ -536,6 +537,11 @@
         "save": "Save",
         "saved": "Stored price mode saved"
       }
+    },
+    "userSessions": {
+      "title": "User sessions",
+      "description": "Clean up meinchat chat & guest session data.",
+      "noBlocks": "No session tools available."
     }
   },
   "tokenBundles": {
@@ -1025,6 +1031,11 @@
       "deactivate": "Deactivate",
       "delete": "Delete",
       "deleteConfirm": "Delete {count} connection(s)? This cannot be undone."
+    }
+  },
+  "userEdit": {
+    "resetSessions": {
+      "tabTitle": "Reset user sessions"
     }
   }
 }

@@ -42,6 +42,29 @@ export async function fetchFieldDefs(entityType: string): Promise<CustomFieldDef
   );
 }
 
+/**
+ * Create a catalog tag scoped to one entity type and return it. Used by the
+ * inline "create tag" affordance in the tag picker. The slug is derived from the
+ * name; the backend also auto-creates unknown slugs on PUT, so this is a
+ * best-effort upgrade that gives the new tag a proper name + entity scope.
+ */
+export async function createTag(
+  name: string,
+  parentEntityType: string | null,
+): Promise<CatalogTag> {
+  const slug = name
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+  const response = await api.post<{ tag: CatalogTag }>('/admin/tags', {
+    slug,
+    name: name.trim(),
+    parent_entity_type: parentEntityType,
+  });
+  return response.tag;
+}
+
 export async function fetchEntityTags(
   entityType: string,
   entityId: string,

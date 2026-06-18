@@ -14,6 +14,7 @@ import {
   configureAuthStore,
   configureEventBus,
   useAuthStore,
+  setOperatingCurrency,
   PluginRegistry,
   PlatformSDK
 } from 'vbwd-view-component';
@@ -166,6 +167,20 @@ export async function createVbwdAdminApp(
   // Initialize auth state from localStorage
   const authStore = useAuthStore();
   authStore.initAuth();
+
+  // Single source for the operating (billing) currency. fe-admin shows the
+  // billing currency only (no display switcher), so we just publish the
+  // `default_currency` core setting (S84) to fe-core's process-global
+  // accessor (S99). Read once at boot from the public `/config` endpoint
+  // (no auth required); fe-core keeps its EUR fallback if the fetch fails.
+  try {
+    const config = (await api.get('/config')) as { default_currency?: string };
+    if (config.default_currency) {
+      setOperatingCurrency(config.default_currency);
+    }
+  } catch {
+    // Non-fatal: fall back to fe-core's default operating currency.
+  }
 
   // On any 401 (expired or invalid token) wipe auth state and bounce the
   // user to the login page instead of leaving "Invalid or expired token"

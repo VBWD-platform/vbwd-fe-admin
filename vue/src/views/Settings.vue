@@ -58,6 +58,14 @@
       >
         {{ $t('settings.tabs.userPlugins') }}
       </button>
+      <button
+        data-testid="settings-tab-user-sessions"
+        class="tab-btn"
+        :class="{ active: activeTab === 'userSessions' }"
+        @click="activeTab = 'userSessions'"
+      >
+        {{ $t('settings.tabs.userSessions') }}
+      </button>
     </div>
 
     <!-- Loading State -->
@@ -1021,6 +1029,32 @@
           </div>
         </div>
       </div>
+
+      <!-- User Sessions Tab — plugin-contributed session-cleanup blocks -->
+      <div
+        v-show="activeTab === 'userSessions'"
+        data-testid="user-sessions-content"
+        class="settings-form"
+      >
+        <div class="form-section">
+          <h3>{{ $t('settings.userSessions.title') }}</h3>
+          <p class="section-description">
+            {{ $t('settings.userSessions.description') }}
+          </p>
+          <p
+            v-if="visibleUserSessionGlobalBlocks.length === 0"
+            data-testid="user-sessions-empty"
+            class="muted-note"
+          >
+            {{ $t('settings.userSessions.noBlocks') }}
+          </p>
+          <component
+            :is="block.globalComponent"
+            v-for="block in visibleUserSessionGlobalBlocks"
+            :key="block.id"
+          />
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -1039,6 +1073,7 @@ import type { UserPluginEntry } from '@/stores/userPlugins';
 import LlmConnectionsTab from '@/views/llm-connections/LlmConnectionsTab.vue';
 import { createDataExchangeApi } from '@/api/dataExchangeApi';
 import { useDataExchangeManifest } from '@/composables/useDataExchangeManifest';
+import { extensionRegistry } from '@/plugins/extensionRegistry';
 
 const { t } = useI18n();
 const authStore = useAuthStore();
@@ -1055,6 +1090,17 @@ const canViewLlmConnections = computed(
   () =>
     authStore.hasPermission('llm.connections.view') ||
     authStore.hasPermission('llm.connections.manage'),
+);
+
+// User sessions tab: plugin-contributed cleanup blocks, permission-filtered in
+// the view (mirroring how UserEdit filters its plugin tabs).
+const visibleUserSessionGlobalBlocks = computed(() =>
+  extensionRegistry
+    .getUserSessionGlobalBlocks()
+    .filter(
+      (block) =>
+        !block.requiredPermission || authStore.hasPermission(block.requiredPermission),
+    ),
 );
 
 // Import/Export: the Token Bundles section embeds the shared core
@@ -1074,7 +1120,8 @@ type MainTab =
   | 'llmConnections'
   | 'adminPlugins'
   | 'backendPlugins'
-  | 'userPlugins';
+  | 'userPlugins'
+  | 'userSessions';
 
 const activeTab = ref<MainTab>('core');
 
@@ -1658,6 +1705,11 @@ onMounted(() => {
   color: #666;
   font-size: 0.9rem;
   margin-bottom: 20px;
+}
+
+.muted-note {
+  color: #888;
+  font-style: italic;
 }
 
 .form-group {

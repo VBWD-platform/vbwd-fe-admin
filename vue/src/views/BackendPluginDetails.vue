@@ -213,9 +213,35 @@
                 />
               </template>
 
+              <!-- Action button (calls a declared admin endpoint; no config value) -->
+              <template v-else-if="field.component === 'action'">
+                <button
+                  type="button"
+                  class="btn btn--secondary"
+                  :disabled="!canManage || actionRunning[field.key]"
+                  :data-testid="`config-action-${field.key}`"
+                  @click="runAction(field)"
+                >
+                  {{ actionRunning[field.key] ? t('common.working', 'Working…') : field.label }}
+                </button>
+                <p
+                  v-if="field.description"
+                  class="field-description"
+                >
+                  {{ field.description }}
+                </p>
+                <p
+                  v-if="actionResult[field.key]"
+                  class="field-action-result"
+                  :data-testid="`config-action-result-${field.key}`"
+                >
+                  {{ actionResult[field.key] }}
+                </p>
+              </template>
+
               <!-- Field description -->
               <p
-                v-if="getFieldDescription(field.key)"
+                v-if="field.component !== 'action' && getFieldDescription(field.key)"
                 class="field-description"
               >
                 {{ getFieldDescription(field.key) }}
@@ -264,6 +290,15 @@ interface AdminConfigField {
   optionsKey?: string;
   valueKey?: string;
   labelKey?: string;
+  // For component === 'action': a button that calls a declared admin endpoint
+  // (no config value bound). The renderer stays domain-agnostic — the plugin's
+  // admin-config supplies the endpoint, method, payload, confirm + success text.
+  endpoint?: string;
+  method?: string;
+  payload?: Record<string, unknown>;
+  confirm?: string;
+  successMessage?: string;
+  description?: string;
 }
 
 interface PluginDetailResponse {
@@ -293,6 +328,9 @@ const plugin = ref<PluginDetailResponse | null>(null);
 const configValues = reactive<Record<string, unknown>>({});
 // Fetched options for each `dual-list` field, keyed by field key.
 const dualListOptions = reactive<Record<string, DualListOption[]>>({});
+// Per-`action`-field UI state (running flag + last result message), keyed by field key.
+const actionRunning = reactive<Record<string, boolean>>({});
+const actionResult = reactive<Record<string, string>>({});
 
 const pluginName = route.params.pluginName as string;
 
@@ -383,6 +421,42 @@ async function loadPlugin(): Promise<void> {
   } finally {
     loading.value = false;
   }
+}
+
+/**
+ * Run an `action` field: POST/GET/PUT/DELETE the declared endpoint with the
+ * declared payload, after an optional confirm. The renderer names no domain —
+ * the plugin's admin-config supplies endpoint/method/payload/messages.
+ */
+async function runAction(field: AdminConfigField): Promise<void> {
+  if (!field.endpoint || actionRunning[field.key]) return;
+  if (field.confirm && !window.confirm(field.confirm)) return;
+  actionRunning[field.key] = true;
+  actionResult[field.key] = '';
+  try {
+    const method = (field.method || 'POST').toLowerCase();
+    const payload = field.payload ?? {};
+    const client = api as unknown as Record<string, (url: string, body?: unknown) => Promise<unknown>>;
+    const res = method === 'get' || method === 'delete'
+      ? await client[method](field.endpoint)
+      : await client[method](field.endpoint, payload);
+    actionResult[field.key] = field.successMessage
+      || summariseActionResult(res)
+      || t('backendPlugins.detail.actionDone', 'Done.');
+  } catch (e) {
+    actionResult[field.key] = (e as Error).message || 'Action failed';
+  } finally {
+    actionRunning[field.key] = false;
+  }
+}
+
+/** Best-effort human summary of a generic action response (e.g. {affected: N}). */
+function summariseActionResult(res: unknown): string {
+  const record = res as Record<string, unknown> | null;
+  if (record && typeof record.affected === 'number') {
+    return t('backendPlugins.detail.actionAffected', `${record.affected} affected.`);
+  }
+  return '';
 }
 
 async function handleSaveConfig(): Promise<void> {

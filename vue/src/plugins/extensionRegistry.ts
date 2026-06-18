@@ -135,6 +135,21 @@ export interface DataExchangeTabExtension {
   requiredPermission?: string;
 }
 
+export interface UserSessionBlock {
+  /** Unique block id */
+  id: string;
+  /** Block label (plugin owns its i18n) */
+  label: string;
+  /** Ordering hint among contributed blocks (lower = earlier; default 100) */
+  order?: number;
+  /** Permission required to see this block (filtered by the consuming view) */
+  requiredPermission?: string;
+  /** Rendered in Settings → User sessions (no props) */
+  globalComponent?: Component;
+  /** Rendered in UserEdit → Reset user sessions (props: userId, active) */
+  userComponent?: Component;
+}
+
 export interface AdminExtension {
   userDetailsSections?: Component[];
   /** Sections rendered on the core Invoice Details page (receive `:invoice`) */
@@ -161,6 +176,8 @@ export interface AdminExtension {
   userEditTabs?: UserEditTab[];
   /** Additional tabs on the Settings → Import/Export page (R7, S46.4) */
   dataExchangeTabs?: DataExchangeTabExtension[];
+  /** Session-cleanup blocks: Settings → User sessions + UserEdit → Reset user sessions */
+  userSessionBlocks?: UserSessionBlock[];
 }
 
 class ExtensionRegistry {
@@ -274,6 +291,26 @@ class ExtensionRegistry {
       }
     });
     return tabs.sort((a, b) => (a.order ?? 100) - (b.order ?? 100));
+  }
+
+  /** All session-cleanup blocks that declare a `globalComponent`, sorted by order. */
+  getUserSessionGlobalBlocks(): UserSessionBlock[] {
+    return this._userSessionBlocks().filter((block) => block.globalComponent);
+  }
+
+  /** All session-cleanup blocks that declare a `userComponent`, sorted by order. */
+  getUserSessionUserBlocks(): UserSessionBlock[] {
+    return this._userSessionBlocks().filter((block) => block.userComponent);
+  }
+
+  private _userSessionBlocks(): UserSessionBlock[] {
+    const blocks: UserSessionBlock[] = [];
+    this.extensions.forEach((ext) => {
+      if (ext.userSessionBlocks) {
+        blocks.push(...ext.userSessionBlocks);
+      }
+    });
+    return blocks.sort((a, b) => (a.order ?? 100) - (b.order ?? 100));
   }
 
   get(pluginName: string): AdminExtension | undefined {
