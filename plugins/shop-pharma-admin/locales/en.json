@@ -1,0 +1,82 @@
+{
+  "pharma": {
+    "nav": {
+      "section": "Pharmacy",
+      "catalogue": "Catalogue",
+      "compliance": "Compliance"
+    },
+    "catalogue": {
+      "title": "Pharmacy catalogue",
+      "newProduct": "New medicine / device",
+      "searchPlaceholder": "Search by name or slug…",
+      "allClasses": "All classes",
+      "name": "Name",
+      "class": "Class",
+      "codeScheme": "Code scheme",
+      "price": "Price",
+      "empty": "No products match this filter."
+    },
+    "class": {
+      "RX": "Prescription medicine (Rx)",
+      "OTC": "Over-the-counter medicine",
+      "MEDICAL_DEVICE": "Medical device",
+      "FMCG_PERSONAL": "Personal-care product",
+      "FMCG_HOSPITAL": "Clinical consumable"
+    },
+    "form": {
+      "newTitle": "New medicine / device",
+      "editTitle": "Edit medicine / device",
+      "back": "Back to catalogue",
+      "classification": "Classification",
+      "productClass": "Product class",
+      "rxBlocked": "Prescription required — this class is blocked from direct online purchase.",
+      "commerce": "Commerce",
+      "name": "Name",
+      "slug": "Slug",
+      "taxClass": "Tax class",
+      "active": "Active",
+      "regulated": "Regulated fields",
+      "regulatedHint": "Fields shown depend on the class. Required markers mirror the backend; the save is authoritative.",
+      "commaSeparated": "Comma-separated",
+      "yes": "Yes",
+      "save": "Save"
+    },
+    "field": {
+      "active_substances": "Active substances",
+      "strength": "Strength",
+      "pharmaceutical_form": "Pharmaceutical form",
+      "atc_code": "ATC code",
+      "marketing_authorisation_holder": "Marketing authorisation holder",
+      "device_marking": "Device marking (CE / UKCA + class)",
+      "leaflet_url": "Leaflet / IFU URL",
+      "smpc_url": "SmPC URL",
+      "storage_conditions": "Storage conditions",
+      "warnings": "Warnings",
+      "age_restriction_years": "Age restriction (years)",
+      "max_quantity_per_order": "Max quantity per order",
+      "professional_only": "Professional / B2B only",
+      "withdrawal_right_exempt": "Withdrawal-right exempt"
+    },
+    "variants": {
+      "title": "Pack variants",
+      "hint": "Each pack size / strength is one priced, stocked variant. Its SKU carries the national code.",
+      "saveFirst": "Save the product first to add pack variants.",
+      "packName": "Pack name (e.g. Pack of 20)",
+      "price": "Price",
+      "add": "Add pack"
+    },
+    "compliance": {
+      "title": "Pharmacy compliance",
+      "lead": "The active region drives every compliance fact below. No jurisdiction is hardcoded — these values come from GET /pharma/region.",
+      "operatorVerify": "Operator-verify: all facts are starting data and must be verified per jurisdiction before launch. Not legal advice.",
+      "codeScheme": "National code scheme",
+      "currency": "Display currency",
+      "defaultAge": "Default age restriction",
+      "defaultQty": "Default max quantity / order",
+      "years": "years",
+      "register": "National register",
+      "pharmacovigilance": "Pharmacovigilance",
+      "withdrawal": "Withdrawal-right notice"
+    }
+  }
+}

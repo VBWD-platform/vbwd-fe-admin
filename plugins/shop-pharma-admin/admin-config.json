@@ -1,0 +1,13 @@
+{
+  "tabs": [
+    {
+      "id": "general",
+      "label": "General",
+      "fields": [
+        { "key": "debug_mode", "label": "Debug Mode", "component": "checkbox" },
+        { "key": "products_per_page", "label": "Products Per Page", "component": "input", "inputType": "number", "min": 10, "max": 200 },
+        { "key": "show_class_filter", "label": "Show Class Filter", "component": "checkbox" }
+      ]
+    }
+  ]
+}
