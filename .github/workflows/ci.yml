@@ -36,7 +36,7 @@ jobs:
 
       - name: Install plugins
         run: |
-          for plugin in analytics-widget cms-admin email-admin ghrm-admin taro-admin; do
+          for plugin in analytics-widget cms-admin email-admin ghrm-admin tarot-admin; do
             git clone --depth=1 https://github.com/VBWD-platform/vbwd-fe-admin-plugin-${plugin}.git plugins/${plugin}
           done
 
@@ -70,7 +70,7 @@ jobs:
 
       - name: Install plugins
         run: |
-          for plugin in analytics-widget cms-admin email-admin ghrm-admin taro-admin; do
+          for plugin in analytics-widget cms-admin email-admin ghrm-admin tarot-admin; do
             git clone --depth=1 https://github.com/VBWD-platform/vbwd-fe-admin-plugin-${plugin}.git plugins/${plugin}
           done
 
@@ -104,7 +104,7 @@ jobs:
 
       - name: Install plugins
         run: |
-          for plugin in analytics-widget cms-admin email-admin ghrm-admin taro-admin; do
+          for plugin in analytics-widget cms-admin email-admin ghrm-admin tarot-admin; do
             git clone --depth=1 https://github.com/VBWD-platform/vbwd-fe-admin-plugin-${plugin}.git plugins/${plugin}
           done
 

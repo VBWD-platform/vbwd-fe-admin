@@ -1,8 +1,8 @@
 <template>
-  <div class="taro-prompts-view">
+  <div class="tarot-prompts-view">
     <div class="page-header">
-      <h2>Taro Oracle Prompts</h2>
-      <p>Manage LLM prompt templates for Taro readings</p>
+      <h2>Tarot Oracle Prompts</h2>
+      <p>Manage LLM prompt templates for Tarot readings</p>
     </div>
 
     <!-- Loading state -->
@@ -136,7 +136,7 @@ async function loadPrompts() {
   errorMessage.value = '';
 
   try {
-    const response = await api.get('/taro/admin/prompts') as any;
+    const response = await api.get('/tarot/admin/prompts') as any;
     prompts.value = response.prompts || {};
 
     // Initialize editingPrompt with copies of prompts
@@ -170,7 +170,7 @@ async function savePrompt(slug: string) {
       variables: editingPrompt[slug].variables
     };
 
-    await api.put(`/taro/admin/prompts/${slug}`, data);
+    await api.put(`/tarot/admin/prompts/${slug}`, data);
     await loadPrompts();
     expandedPrompt.value = null;
     alert(`Prompt "${slug}" saved successfully`);
@@ -189,7 +189,7 @@ function discardChanges(slug: string) {
 </script>
 
 <style scoped>
-.taro-prompts-view {
+.tarot-prompts-view {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
@@ -444,7 +444,7 @@ function discardChanges(slug: string) {
 
 /* Responsive */
 @media (max-width: 768px) {
-  .taro-prompts-view {
+  .tarot-prompts-view {
     padding: 1rem;
   }
 

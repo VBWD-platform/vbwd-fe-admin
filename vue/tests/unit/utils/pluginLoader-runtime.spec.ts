@@ -74,7 +74,7 @@ describe('Runtime plugin manifest loading (fe-admin)', () => {
     const manifest: PluginManifest = {
       plugins: {
         'subscription-admin': { enabled: true, version: '1.0.0', source: 'local' },
-        'taro-admin': { enabled: false, version: '1.0.0', source: 'local' },
+        'tarot-admin': { enabled: false, version: '1.0.0', source: 'local' },
         'cms-admin': { enabled: true, version: '1.0.0', source: 'local' },
       },
     };

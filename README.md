@@ -56,7 +56,7 @@ Served at `/admin/` (Vite `base: '/admin/'`).
 - List all registered plugins with status
 - Enable / disable plugins
 - Plugin detail and configuration
-- Per-user plugin details (Taro AI prompts, etc.)
+- Per-user plugin details (Tarot AI prompts, etc.)
 
 ### Payment Methods
 - Configure enabled payment providers per currency / country
@@ -260,7 +260,7 @@ vbwd-fe-core/          # git submodule — shared component library
 | cms-admin | [vbwd-fe-admin-plugin-cms](https://github.com/VBWD-platform/vbwd-fe-admin-plugin-cms) | CMS pages/categories/layouts/widgets/styles admin |
 | email-admin | [vbwd-fe-admin-plugin-email](https://github.com/VBWD-platform/vbwd-fe-admin-plugin-email) | Email template list and editor (HTML/Text/Preview) |
 | ghrm-admin | [vbwd-fe-admin-plugin-ghrm](https://github.com/VBWD-platform/vbwd-fe-admin-plugin-ghrm) | GHRM package management tab in admin |
-| taro-admin | [vbwd-fe-admin-plugin-taro](https://github.com/VBWD-platform/vbwd-fe-admin-plugin-taro) | Tarot session section in user detail |
+| tarot-admin | [vbwd-fe-admin-plugin-tarot](https://github.com/VBWD-platform/vbwd-fe-admin-plugin-tarot) | Tarot session section in user detail |
 
 ---
 

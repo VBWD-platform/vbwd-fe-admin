@@ -15,7 +15,7 @@ const EXPECTED_ENABLED = [
   'subscription-admin',
   'cms-admin',
   'email-admin',
-  'taro-admin',
+  'tarot-admin',
 ];
 
 test.describe('vbwd.cc/admin — plugin audit', () => {
