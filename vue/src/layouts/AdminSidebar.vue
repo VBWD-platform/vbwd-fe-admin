@@ -188,6 +188,8 @@ const coreSections = computed((): NavSection[] => [
       { label: t('nav.customFields'), to: '/admin/settings/custom-fields', id: 'custom-fields', requiredPermission: 'settings.manage' },
       { label: t('nav.rolesAndAccessLevels'), to: '/admin/settings/access', id: 'access-levels', requiredPermission: 'settings.system' },
       { label: t('nav.userGroups'), to: '/admin/settings/user_groups', id: 'user-groups', requiredPermission: 'settings.manage' },
+      { label: t('nav.logs'), to: '/admin/logs', id: 'logs', requiredPermission: 'logs.read' },
+      // Import/Export stays the LAST settings item by invariant (S46.5).
       { label: t('nav.importExport'), to: '/admin/import-export', id: 'import-export', requiredPermission: 'settings.view' },
     ],
   },

@@ -41,7 +41,17 @@
     "add": "追加",
     "saved": "保存しました",
     "activate": "有効化",
-    "deactivate": "無効化"
+    "deactivate": "無効化",
+    "table": {
+      "bulkSelectedCount": "{count} selected",
+      "activateSelected": "Activate selected",
+      "deactivateSelected": "Deactivate selected",
+      "selectAllMatching": "Select all {count} matching",
+      "clearSelection": "Clear selection",
+      "rowsPerPage": "Rows per page:",
+      "rowsPerPageAll": "All",
+      "showing": "Showing {from}–{to} of {total}"
+    }
   },
   "nav": {
     "dashboard": "ダッシュボード",
@@ -62,7 +72,8 @@
     "taxesAndCountries": "税金と国",
     "userGroups": "ユーザーグループ",
     "customFields": "カスタムフィールド",
-    "rolesAndAccessLevels": "Roles & Access Levels"
+    "rolesAndAccessLevels": "Roles & Access Levels",
+    "logs": "Logs"
   },
   "auth": {
     "login": "ログイン",
@@ -648,6 +659,11 @@
       "configSaved": "設定が正常に保存されました",
       "saveConfig": "設定を保存",
       "saving": "保存中..."
+    },
+    "bulk": {
+      "confirmActivate": "Activate {count} admin plugin(s)?",
+      "confirmDeactivate": "Deactivate {count} admin plugin(s)?",
+      "someFailed": "Some plugins could not be updated: {names}"
     }
   },
   "backendPlugins": {
@@ -675,6 +691,11 @@
       "saving": "保存中...",
       "configSaved": "設定が正常に保存されました",
       "confirmDeactivate": "このプラグインを無効化してもよろしいですか？"
+    },
+    "bulk": {
+      "confirmActivate": "Enable {count} backend plugin(s)?",
+      "confirmDeactivate": "Disable {count} backend plugin(s)?",
+      "someFailed": "Some plugins could not be updated: {names}"
     }
   },
   "userPlugins": {
@@ -711,6 +732,12 @@
       "saving": "保存中...",
       "configSaved": "設定が正常に保存されました",
       "noConfig": "このプラグインには設定オプションがありません。"
+    },
+    "bulk": {
+      "confirmActivate": "Enable {count} user plugin(s)?",
+      "confirmDeactivate": "Disable {count} user plugin(s)?",
+      "someFailed": "Some plugins could not be updated: {names}",
+      "someSkipped": "Skipped (not installed): {names}"
     }
   },
   "access": {
@@ -889,6 +916,36 @@
       "deactivate": "無効化",
       "delete": "削除",
       "deleteConfirm": "{count} 件の接続を削除しますか？この操作は元に戻せません。"
+    }
+  },
+  "logs": {
+    "title": "Logs",
+    "description": "Read, filter and tail the centralized application logs across all scopes.",
+    "empty": "No log records match the current filters.",
+    "truncated": "Result truncated — scanned {bytes} bytes across {segments} segments. Narrow the window or filters.",
+    "filters": {
+      "scopes": "Scopes",
+      "stream": "Stream",
+      "allStreams": "All streams",
+      "level": "Min level",
+      "anyLevel": "Any level",
+      "window": "Time window",
+      "contains": "Contains",
+      "containsPlaceholder": "Free-text search…"
+    },
+    "windows": {
+      "last15m": "Last 15 minutes",
+      "last1h": "Last hour",
+      "last24h": "Last 24 hours",
+      "all": "All history"
+    },
+    "actions": {
+      "query": "Search",
+      "loadMore": "Load more",
+      "tailStart": "Live tail",
+      "tailStop": "Stop tail",
+      "download": "Download",
+      "downloadHint": "Select exactly one scope and one stream to download."
     }
   }
 }

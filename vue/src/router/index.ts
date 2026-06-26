@@ -171,6 +171,12 @@ const routes: RouteRecordRaw[] = [
         name: 'ImportExport',
         component: () => import('@/views/ImportExport.vue'),
         meta: { requiredPermission: 'settings.view' }
+      },
+      {
+        path: 'logs',
+        name: 'logs',
+        component: () => import('@/views/Logs.vue'),
+        meta: { requiredPermission: 'logs.read' }
       }
     ]
   }

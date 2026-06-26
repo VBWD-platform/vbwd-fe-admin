@@ -7,18 +7,18 @@ describe('referral-admin plugin nav injection', () => {
     extensionRegistry.unregister('referral-admin');
   });
 
-  it('injects a "VBWD Referral" item into the Sales section gated on referral.view', () => {
+  it('injects a "Referral" item into the Sales section gated on referral.view', () => {
     referralAdminPlugin.activate?.();
 
     const salesItems = extensionRegistry.getSectionItems('sales');
     const referral = salesItems.find((item) => item.id === 'referral');
 
     expect(referral).toBeDefined();
-    expect(referral?.label).toBe('VBWD Referral');
+    expect(referral?.label).toBe('Referral');
     expect(referral?.to).toBe('/admin/promotions/referral');
     expect(referral?.requiredPermission).toBe('referral.view');
-    // Positioned adjacent to the discount-admin Promotions group.
-    expect(referral?.position).toBe('after:promotions');
+    // Nested as a child of the discount-admin Promotions group.
+    expect(referral?.position).toBe('child:promotions');
   });
 
   it('deactivate removes the injection', () => {

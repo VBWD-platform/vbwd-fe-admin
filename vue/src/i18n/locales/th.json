@@ -41,7 +41,17 @@
     "add": "เพิ่ม",
     "saved": "บันทึกแล้ว",
     "activate": "เปิดใช้งาน",
-    "deactivate": "ปิดใช้งาน"
+    "deactivate": "ปิดใช้งาน",
+    "table": {
+      "bulkSelectedCount": "{count} selected",
+      "activateSelected": "Activate selected",
+      "deactivateSelected": "Deactivate selected",
+      "selectAllMatching": "Select all {count} matching",
+      "clearSelection": "Clear selection",
+      "rowsPerPage": "Rows per page:",
+      "rowsPerPageAll": "All",
+      "showing": "Showing {from}–{to} of {total}"
+    }
   },
   "nav": {
     "dashboard": "แดชบอร์ด",
@@ -62,7 +72,8 @@
     "taxesAndCountries": "ภาษีและประเทศ",
     "userGroups": "กลุ่มผู้ใช้",
     "customFields": "ฟิลด์ที่กำหนดเอง",
-    "rolesAndAccessLevels": "Roles & Access Levels"
+    "rolesAndAccessLevels": "Roles & Access Levels",
+    "logs": "Logs"
   },
   "auth": {
     "login": "เข้าสู่ระบบ",
@@ -646,6 +657,11 @@
       "configSaved": "บันทึกการตั้งค่าสำเร็จ",
       "saveConfig": "บันทึกการตั้งค่า",
       "saving": "กำลังบันทึก..."
+    },
+    "bulk": {
+      "confirmActivate": "Activate {count} admin plugin(s)?",
+      "confirmDeactivate": "Deactivate {count} admin plugin(s)?",
+      "someFailed": "Some plugins could not be updated: {names}"
     }
   },
   "backendPlugins": {
@@ -673,6 +689,11 @@
       "saving": "กำลังบันทึก...",
       "configSaved": "บันทึกการกำหนดค่าเรียบร้อยแล้ว",
       "confirmDeactivate": "คุณแน่ใจหรือว่าต้องการปิดใช้งานปลั๊กอินนี้?"
+    },
+    "bulk": {
+      "confirmActivate": "Enable {count} backend plugin(s)?",
+      "confirmDeactivate": "Disable {count} backend plugin(s)?",
+      "someFailed": "Some plugins could not be updated: {names}"
     }
   },
   "userPlugins": {
@@ -709,6 +730,12 @@
       "saving": "กำลังบันทึก...",
       "configSaved": "บันทึกการตั้งค่าสำเร็จ",
       "noConfig": "ปลั๊กอินนี้ไม่มีตัวเลือกการตั้งค่า"
+    },
+    "bulk": {
+      "confirmActivate": "Enable {count} user plugin(s)?",
+      "confirmDeactivate": "Disable {count} user plugin(s)?",
+      "someFailed": "Some plugins could not be updated: {names}",
+      "someSkipped": "Skipped (not installed): {names}"
     }
   },
   "access": {
@@ -887,6 +914,36 @@
       "deactivate": "ปิดใช้งาน",
       "delete": "ลบ",
       "deleteConfirm": "ลบการเชื่อมต่อ {count} รายการ? ไม่สามารถยกเลิกได้"
+    }
+  },
+  "logs": {
+    "title": "Logs",
+    "description": "Read, filter and tail the centralized application logs across all scopes.",
+    "empty": "No log records match the current filters.",
+    "truncated": "Result truncated — scanned {bytes} bytes across {segments} segments. Narrow the window or filters.",
+    "filters": {
+      "scopes": "Scopes",
+      "stream": "Stream",
+      "allStreams": "All streams",
+      "level": "Min level",
+      "anyLevel": "Any level",
+      "window": "Time window",
+      "contains": "Contains",
+      "containsPlaceholder": "Free-text search…"
+    },
+    "windows": {
+      "last15m": "Last 15 minutes",
+      "last1h": "Last hour",
+      "last24h": "Last 24 hours",
+      "all": "All history"
+    },
+    "actions": {
+      "query": "Search",
+      "loadMore": "Load more",
+      "tailStart": "Live tail",
+      "tailStop": "Stop tail",
+      "download": "Download",
+      "downloadHint": "Select exactly one scope and one stream to download."
     }
   }
 }

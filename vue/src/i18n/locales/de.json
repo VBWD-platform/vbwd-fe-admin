@@ -42,7 +42,17 @@
     "add": "Hinzufügen",
     "saved": "Gespeichert",
     "activate": "Aktivieren",
-    "deactivate": "Deaktivieren"
+    "deactivate": "Deaktivieren",
+    "table": {
+      "bulkSelectedCount": "{count} selected",
+      "activateSelected": "Activate selected",
+      "deactivateSelected": "Deactivate selected",
+      "selectAllMatching": "Select all {count} matching",
+      "clearSelection": "Clear selection",
+      "rowsPerPage": "Rows per page:",
+      "rowsPerPageAll": "All",
+      "showing": "Showing {from}–{to} of {total}"
+    }
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -65,7 +75,8 @@
     "taxesAndCountries": "Steuern & Länder",
     "userGroups": "Benutzergruppen",
     "customFields": "Benutzerdefinierte Felder",
-    "rolesAndAccessLevels": "Roles & Access Levels"
+    "rolesAndAccessLevels": "Roles & Access Levels",
+    "logs": "Logs"
   },
   "auth": {
     "login": "Anmelden",
@@ -666,6 +677,11 @@
       "configSaved": "Konfiguration erfolgreich gespeichert",
       "saveConfig": "Konfiguration speichern",
       "saving": "Speichern..."
+    },
+    "bulk": {
+      "confirmActivate": "Activate {count} admin plugin(s)?",
+      "confirmDeactivate": "Deactivate {count} admin plugin(s)?",
+      "someFailed": "Some plugins could not be updated: {names}"
     }
   },
   "backendPlugins": {
@@ -693,6 +709,11 @@
       "saving": "Speichern...",
       "configSaved": "Konfiguration erfolgreich gespeichert",
       "confirmDeactivate": "Sind Sie sicher, dass Sie dieses Plugin deaktivieren möchten?"
+    },
+    "bulk": {
+      "confirmActivate": "Enable {count} backend plugin(s)?",
+      "confirmDeactivate": "Disable {count} backend plugin(s)?",
+      "someFailed": "Some plugins could not be updated: {names}"
     }
   },
   "userPlugins": {
@@ -729,6 +750,12 @@
       "saving": "Speichern...",
       "configSaved": "Konfiguration erfolgreich gespeichert",
       "noConfig": "Dieses Plugin hat keine Konfigurationsoptionen."
+    },
+    "bulk": {
+      "confirmActivate": "Enable {count} user plugin(s)?",
+      "confirmDeactivate": "Disable {count} user plugin(s)?",
+      "someFailed": "Some plugins could not be updated: {names}",
+      "someSkipped": "Skipped (not installed): {names}"
     }
   },
   "access": {
@@ -907,6 +934,36 @@
       "deactivate": "Deaktivieren",
       "delete": "Löschen",
       "deleteConfirm": "{count} Verbindung(en) löschen? Dies kann nicht rückgängig gemacht werden."
+    }
+  },
+  "logs": {
+    "title": "Logs",
+    "description": "Read, filter and tail the centralized application logs across all scopes.",
+    "empty": "No log records match the current filters.",
+    "truncated": "Result truncated — scanned {bytes} bytes across {segments} segments. Narrow the window or filters.",
+    "filters": {
+      "scopes": "Scopes",
+      "stream": "Stream",
+      "allStreams": "All streams",
+      "level": "Min level",
+      "anyLevel": "Any level",
+      "window": "Time window",
+      "contains": "Contains",
+      "containsPlaceholder": "Free-text search…"
+    },
+    "windows": {
+      "last15m": "Last 15 minutes",
+      "last1h": "Last hour",
+      "last24h": "Last 24 hours",
+      "all": "All history"
+    },
+    "actions": {
+      "query": "Search",
+      "loadMore": "Load more",
+      "tailStart": "Live tail",
+      "tailStop": "Stop tail",
+      "download": "Download",
+      "downloadHint": "Select exactly one scope and one stream to download."
     }
   }
 }

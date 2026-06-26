@@ -572,7 +572,7 @@
 
           <!-- Empty State -->
           <div
-            v-else-if="sortedPlugins.length === 0 && !pluginSearchQuery"
+            v-else-if="pluginsTotal === 0 && !pluginSearchQuery"
             class="empty-state"
             data-testid="no-admin-plugins"
           >
@@ -595,98 +595,146 @@
               >
             </div>
 
+            <PluginBulkToolbar
+              v-if="canManage"
+              :selected-count="pluginSelection.selectedCount.value"
+              :matching-total="pluginsTotal"
+              :show-select-all-matching="pluginShowSelectAllMatching"
+              testid-prefix="admin-plugins"
+              @activate="handleBulkActivateAdminPlugins"
+              @deactivate="handleBulkDeactivateAdminPlugins"
+              @select-all-matching="pluginSelection.selectAllMatching(pluginsMatching.map(p => p.name))"
+              @clear="pluginSelection.clear()"
+            />
+
             <div
-              v-if="sortedPlugins.length === 0 && pluginSearchQuery"
+              v-if="pluginsTotal === 0 && pluginSearchQuery"
               class="empty-state"
             >
               <p>{{ $t('common.noResults') }}</p>
             </div>
 
-            <table
-              v-else
-              class="bundles-table"
-              data-testid="admin-plugins-table"
-            >
-              <thead>
-                <tr>
-                  <th
-                    class="sortable-header"
-                    :class="{ 'sort-active': pluginSortKey === 'name' }"
-                    @click="handlePluginSort('name')"
-                  >
-                    {{ $t('adminPlugins.columns.name') }}
-                    <span class="sort-icon">{{ pluginSortKey === 'name' ? (pluginSortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span>
-                  </th>
-                  <th
-                    class="sortable-header"
-                    :class="{ 'sort-active': pluginSortKey === 'version' }"
-                    @click="handlePluginSort('version')"
-                  >
-                    {{ $t('adminPlugins.columns.version') }}
-                    <span class="sort-icon">{{ pluginSortKey === 'version' ? (pluginSortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span>
-                  </th>
-                  <th
-                    class="sortable-header"
-                    :class="{ 'sort-active': pluginSortKey === 'status' }"
-                    @click="handlePluginSort('status')"
-                  >
-                    {{ $t('adminPlugins.columns.status') }}
-                    <span class="sort-icon">{{ pluginSortKey === 'status' ? (pluginSortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span>
-                  </th>
-                  <th
-                    class="sortable-header"
-                    :class="{ 'sort-active': pluginSortKey === 'installedAt' }"
-                    @click="handlePluginSort('installedAt')"
-                  >
-                    {{ $t('adminPlugins.columns.installed') }}
-                    <span class="sort-icon">{{ pluginSortKey === 'installedAt' ? (pluginSortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span>
-                  </th>
-                  <th>{{ $t('adminPlugins.columns.actions') }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="plugin in sortedPlugins"
-                  :key="plugin.name"
-                  data-testid="admin-plugin-row"
-                >
-                  <td class="bundle-name">
-                    <router-link :to="`/admin/settings/plugins/${plugin.name}`">
-                      {{ plugin.name }}
-                    </router-link>
-                    <span
-                      v-if="plugin.description"
-                      class="bundle-description"
+            <template v-else>
+              <table
+                class="bundles-table"
+                data-testid="admin-plugins-table"
+              >
+                <thead>
+                  <tr>
+                    <th
+                      v-if="canManage"
+                      class="checkbox-col"
                     >
-                      {{ plugin.description }}
-                    </span>
-                  </td>
-                  <td>{{ plugin.version }}</td>
-                  <td>
-                    <span
-                      class="status-badge"
-                      :class="{
-                        active: plugin.status === 'active',
-                        inactive: plugin.status === 'inactive',
-                        'status-error': plugin.status === 'error'
-                      }"
+                      <input
+                        type="checkbox"
+                        :checked="pluginPageAllSelected"
+                        data-testid="admin-plugins-select-page"
+                        @change="pluginSelection.togglePage(pluginPageNames)"
+                      >
+                    </th>
+                    <th
+                      class="sortable-header"
+                      :class="{ 'sort-active': pluginSortKey === 'name' }"
+                      @click="handlePluginSort('name')"
                     >
-                      {{ plugin.status === 'active' ? $t('adminPlugins.active') : plugin.status === 'inactive' ? $t('adminPlugins.inactive') : $t('adminPlugins.error') }}
-                    </span>
-                  </td>
-                  <td>{{ formatDate(plugin.installedAt) }}</td>
-                  <td class="actions-cell">
-                    <router-link
-                      :to="`/admin/settings/plugins/${plugin.name}`"
-                      class="action-btn edit-btn"
-                      data-testid="view-admin-plugin-btn"
+                      {{ $t('adminPlugins.columns.name') }}
+                      <span class="sort-icon">{{ pluginSortKey === 'name' ? (pluginSortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span>
+                    </th>
+                    <th
+                      class="sortable-header"
+                      :class="{ 'sort-active': pluginSortKey === 'version' }"
+                      @click="handlePluginSort('version')"
                     >
-                      {{ $t('adminPlugins.view') }}
-                    </router-link>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                      {{ $t('adminPlugins.columns.version') }}
+                      <span class="sort-icon">{{ pluginSortKey === 'version' ? (pluginSortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span>
+                    </th>
+                    <th
+                      class="sortable-header"
+                      :class="{ 'sort-active': pluginSortKey === 'status' }"
+                      @click="handlePluginSort('status')"
+                    >
+                      {{ $t('adminPlugins.columns.status') }}
+                      <span class="sort-icon">{{ pluginSortKey === 'status' ? (pluginSortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span>
+                    </th>
+                    <th
+                      class="sortable-header"
+                      :class="{ 'sort-active': pluginSortKey === 'installedAt' }"
+                      @click="handlePluginSort('installedAt')"
+                    >
+                      {{ $t('adminPlugins.columns.installed') }}
+                      <span class="sort-icon">{{ pluginSortKey === 'installedAt' ? (pluginSortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span>
+                    </th>
+                    <th>{{ $t('adminPlugins.columns.actions') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="plugin in pagedPlugins"
+                    :key="plugin.name"
+                    data-testid="admin-plugin-row"
+                  >
+                    <td
+                      v-if="canManage"
+                      class="checkbox-col"
+                    >
+                      <input
+                        type="checkbox"
+                        :checked="pluginSelection.has(plugin.name)"
+                        :data-testid="`admin-plugins-select-${plugin.name}`"
+                        @change="pluginSelection.toggle(plugin.name)"
+                      >
+                    </td>
+                    <td class="bundle-name">
+                      <router-link :to="`/admin/settings/plugins/${plugin.name}`">
+                        {{ plugin.name }}
+                      </router-link>
+                      <span
+                        v-if="plugin.description"
+                        class="bundle-description"
+                      >
+                        {{ plugin.description }}
+                      </span>
+                    </td>
+                    <td>{{ plugin.version }}</td>
+                    <td>
+                      <span
+                        class="status-badge"
+                        :class="{
+                          active: plugin.status === 'active',
+                          inactive: plugin.status === 'inactive',
+                          'status-error': plugin.status === 'error'
+                        }"
+                      >
+                        {{ plugin.status === 'active' ? $t('adminPlugins.active') : plugin.status === 'inactive' ? $t('adminPlugins.inactive') : $t('adminPlugins.error') }}
+                      </span>
+                    </td>
+                    <td>{{ formatDate(plugin.installedAt) }}</td>
+                    <td class="actions-cell">
+                      <router-link
+                        :to="`/admin/settings/plugins/${plugin.name}`"
+                        class="action-btn edit-btn"
+                        data-testid="view-admin-plugin-btn"
+                      >
+                        {{ $t('adminPlugins.view') }}
+                      </router-link>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <PluginTablePager
+                :page="pluginsPage"
+                :rows-per-page="pluginRowsPerPage"
+                :page-count="pluginsPageCount"
+                :total="pluginsTotal"
+                :page-start="pluginsPageStart"
+                :page-end="pluginsPageEnd"
+                :options="ROWS_PER_PAGE_OPTIONS"
+                testid-prefix="admin-plugins"
+                @update:page="setPluginsPage"
+                @update:rows-per-page="pluginRowsPerPage = $event"
+              />
+            </template>
           </div>
         </div>
       </div>
@@ -734,7 +782,7 @@
 
           <!-- Empty State -->
           <div
-            v-else-if="sortedBackendPlugins.length === 0 && !backendPluginSearchQuery"
+            v-else-if="backendPluginsTotal === 0 && !backendPluginSearchQuery"
             class="empty-state"
             data-testid="no-backend-plugins"
           >
@@ -756,98 +804,146 @@
               >
             </div>
 
+            <PluginBulkToolbar
+              v-if="canManage"
+              :selected-count="backendPluginSelection.selectedCount.value"
+              :matching-total="backendPluginsTotal"
+              :show-select-all-matching="backendPluginShowSelectAllMatching"
+              testid-prefix="backend-plugins"
+              @activate="handleBulkActivateBackendPlugins"
+              @deactivate="handleBulkDeactivateBackendPlugins"
+              @select-all-matching="backendPluginSelection.selectAllMatching(backendPluginsMatching.map(p => p.name))"
+              @clear="backendPluginSelection.clear()"
+            />
+
             <div
-              v-if="sortedBackendPlugins.length === 0 && backendPluginSearchQuery"
+              v-if="backendPluginsTotal === 0 && backendPluginSearchQuery"
               class="empty-state"
             >
               <p>{{ $t('common.noResults') }}</p>
             </div>
 
-            <table
-              v-else
-              class="bundles-table"
-              data-testid="backend-plugins-table"
-            >
-              <thead>
-                <tr>
-                  <th
-                    class="sortable-header"
-                    :class="{ 'sort-active': backendPluginSortKey === 'name' }"
-                    @click="handleBackendPluginSort('name')"
+            <template v-else>
+              <table
+                class="bundles-table"
+                data-testid="backend-plugins-table"
+              >
+                <thead>
+                  <tr>
+                    <th
+                      v-if="canManage"
+                      class="checkbox-col"
+                    >
+                      <input
+                        type="checkbox"
+                        :checked="backendPluginPageAllSelected"
+                        data-testid="backend-plugins-select-page"
+                        @change="backendPluginSelection.togglePage(backendPluginPageNames)"
+                      >
+                    </th>
+                    <th
+                      class="sortable-header"
+                      :class="{ 'sort-active': backendPluginSortKey === 'name' }"
+                      @click="handleBackendPluginSort('name')"
+                    >
+                      {{ $t('backendPlugins.columns.name') }}
+                      <span class="sort-icon">{{ backendPluginSortKey === 'name' ? (backendPluginSortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span>
+                    </th>
+                    <th
+                      class="sortable-header"
+                      :class="{ 'sort-active': backendPluginSortKey === 'version' }"
+                      @click="handleBackendPluginSort('version')"
+                    >
+                      {{ $t('backendPlugins.columns.version') }}
+                      <span class="sort-icon">{{ backendPluginSortKey === 'version' ? (backendPluginSortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span>
+                    </th>
+                    <th
+                      class="sortable-header"
+                      :class="{ 'sort-active': backendPluginSortKey === 'status' }"
+                      @click="handleBackendPluginSort('status')"
+                    >
+                      {{ $t('backendPlugins.columns.status') }}
+                      <span class="sort-icon">{{ backendPluginSortKey === 'status' ? (backendPluginSortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span>
+                    </th>
+                    <th>{{ $t('backendPlugins.columns.actions') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="bp in pagedBackendPlugins"
+                    :key="bp.name"
+                    data-testid="backend-plugin-row"
                   >
-                    {{ $t('backendPlugins.columns.name') }}
-                    <span class="sort-icon">{{ backendPluginSortKey === 'name' ? (backendPluginSortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span>
-                  </th>
-                  <th
-                    class="sortable-header"
-                    :class="{ 'sort-active': backendPluginSortKey === 'version' }"
-                    @click="handleBackendPluginSort('version')"
-                  >
-                    {{ $t('backendPlugins.columns.version') }}
-                    <span class="sort-icon">{{ backendPluginSortKey === 'version' ? (backendPluginSortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span>
-                  </th>
-                  <th
-                    class="sortable-header"
-                    :class="{ 'sort-active': backendPluginSortKey === 'status' }"
-                    @click="handleBackendPluginSort('status')"
-                  >
-                    {{ $t('backendPlugins.columns.status') }}
-                    <span class="sort-icon">{{ backendPluginSortKey === 'status' ? (backendPluginSortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span>
-                  </th>
-                  <th>{{ $t('backendPlugins.columns.actions') }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="bp in sortedBackendPlugins"
-                  :key="bp.name"
-                  data-testid="backend-plugin-row"
-                >
-                  <td class="bundle-name">
-                    <router-link :to="`/admin/settings/backend-plugins/${bp.name}`">
-                      {{ bp.name }}
-                    </router-link>
-                    <span
-                      v-if="bp.description"
-                      class="bundle-description"
+                    <td
+                      v-if="canManage"
+                      class="checkbox-col"
                     >
-                      {{ bp.description }}
-                    </span>
-                  </td>
-                  <td>{{ bp.version }}</td>
-                  <td>
-                    <span
-                      class="status-badge"
-                      :class="{
-                        active: bp.status === 'active',
-                        inactive: bp.status === 'inactive',
-                        'status-error': bp.status === 'error'
-                      }"
-                    >
-                      {{ bp.status === 'active' ? $t('backendPlugins.active') : bp.status === 'inactive' ? $t('backendPlugins.inactive') : $t('backendPlugins.error') }}
-                    </span>
-                  </td>
-                  <td class="actions-cell">
-                    <button
-                      v-if="bp.status !== 'active'"
-                      class="action-btn activate-btn"
-                      data-testid="enable-backend-plugin-btn"
-                      @click="handleEnableBackendPlugin(bp.name)"
-                    >
-                      {{ $t('backendPlugins.enable') }}
-                    </button>
-                    <button
-                      v-else
-                      class="action-btn deactivate-btn"
-                      data-testid="disable-backend-plugin-btn"
-                      @click="handleDisableBackendPlugin(bp.name)"
-                    >
-                      {{ $t('backendPlugins.disable') }}
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                      <input
+                        type="checkbox"
+                        :checked="backendPluginSelection.has(bp.name)"
+                        :data-testid="`backend-plugins-select-${bp.name}`"
+                        @change="backendPluginSelection.toggle(bp.name)"
+                      >
+                    </td>
+                    <td class="bundle-name">
+                      <router-link :to="`/admin/settings/backend-plugins/${bp.name}`">
+                        {{ bp.name }}
+                      </router-link>
+                      <span
+                        v-if="bp.description"
+                        class="bundle-description"
+                      >
+                        {{ bp.description }}
+                      </span>
+                    </td>
+                    <td>{{ bp.version }}</td>
+                    <td>
+                      <span
+                        class="status-badge"
+                        :class="{
+                          active: bp.status === 'active',
+                          inactive: bp.status === 'inactive',
+                          'status-error': bp.status === 'error'
+                        }"
+                      >
+                        {{ bp.status === 'active' ? $t('backendPlugins.active') : bp.status === 'inactive' ? $t('backendPlugins.inactive') : $t('backendPlugins.error') }}
+                      </span>
+                    </td>
+                    <td class="actions-cell">
+                      <button
+                        v-if="bp.status !== 'active'"
+                        class="action-btn activate-btn"
+                        data-testid="enable-backend-plugin-btn"
+                        @click="handleEnableBackendPlugin(bp.name)"
+                      >
+                        {{ $t('backendPlugins.enable') }}
+                      </button>
+                      <button
+                        v-else
+                        class="action-btn deactivate-btn"
+                        data-testid="disable-backend-plugin-btn"
+                        @click="handleDisableBackendPlugin(bp.name)"
+                      >
+                        {{ $t('backendPlugins.disable') }}
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <PluginTablePager
+                :page="backendPluginsPage"
+                :rows-per-page="backendPluginRowsPerPage"
+                :page-count="backendPluginsPageCount"
+                :total="backendPluginsTotal"
+                :page-start="backendPluginsPageStart"
+                :page-end="backendPluginsPageEnd"
+                :options="ROWS_PER_PAGE_OPTIONS"
+                testid-prefix="backend-plugins"
+                @update:page="setBackendPluginsPage"
+                @update:rows-per-page="backendPluginRowsPerPage = $event"
+              />
+            </template>
           </div>
         </div>
       </div>
@@ -895,7 +991,7 @@
 
           <!-- Empty State -->
           <div
-            v-else-if="sortedUserPlugins.length === 0 && !userPluginSearchQuery"
+            v-else-if="userPluginsTotal === 0 && !userPluginSearchQuery"
             class="empty-state"
             data-testid="no-user-plugins"
           >
@@ -917,115 +1013,163 @@
               >
             </div>
 
+            <PluginBulkToolbar
+              v-if="canManage"
+              :selected-count="userPluginSelection.selectedCount.value"
+              :matching-total="userPluginsTotal"
+              :show-select-all-matching="userPluginShowSelectAllMatching"
+              testid-prefix="user-plugins"
+              @activate="handleBulkActivateUserPlugins"
+              @deactivate="handleBulkDeactivateUserPlugins"
+              @select-all-matching="userPluginSelection.selectAllMatching(userPluginsMatching.map(p => p.name))"
+              @clear="userPluginSelection.clear()"
+            />
+
             <div
-              v-if="sortedUserPlugins.length === 0 && userPluginSearchQuery"
+              v-if="userPluginsTotal === 0 && userPluginSearchQuery"
               class="empty-state"
             >
               <p>{{ $t('common.noResults') }}</p>
             </div>
 
-            <table
-              v-else
-              class="bundles-table"
-              data-testid="user-plugins-table"
-            >
-              <thead>
-                <tr>
-                  <th
-                    class="sortable-header"
-                    :class="{ 'sort-active': userPluginSortKey === 'name' }"
-                    @click="handleUserPluginSort('name')"
-                  >
-                    {{ $t('userPlugins.columns.name') }}
-                    <span class="sort-icon">{{ userPluginSortKey === 'name' ? (userPluginSortDir === 'asc' ? '&#9650;' : '&#9660;') : '&#8693;' }}</span>
-                  </th>
-                  <th
-                    class="sortable-header"
-                    :class="{ 'sort-active': userPluginSortKey === 'version' }"
-                    @click="handleUserPluginSort('version')"
-                  >
-                    {{ $t('userPlugins.columns.version') }}
-                    <span class="sort-icon">{{ userPluginSortKey === 'version' ? (userPluginSortDir === 'asc' ? '&#9650;' : '&#9660;') : '&#8693;' }}</span>
-                  </th>
-                  <th
-                    class="sortable-header"
-                    :class="{ 'sort-active': userPluginSortKey === 'status' }"
-                    @click="handleUserPluginSort('status')"
-                  >
-                    {{ $t('userPlugins.columns.status') }}
-                    <span class="sort-icon">{{ userPluginSortKey === 'status' ? (userPluginSortDir === 'asc' ? '&#9650;' : '&#9660;') : '&#8693;' }}</span>
-                  </th>
-                  <th>{{ $t('userPlugins.columns.actions') }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="up in sortedUserPlugins"
-                  :key="up.name"
-                  data-testid="user-plugin-row"
-                >
-                  <td class="bundle-name">
-                    <router-link :to="`/admin/settings/user-plugins/${up.name}`">
-                      {{ up.name }}
-                    </router-link>
-                    <span
-                      v-if="up.description"
-                      class="bundle-description"
+            <template v-else>
+              <table
+                class="bundles-table"
+                data-testid="user-plugins-table"
+              >
+                <thead>
+                  <tr>
+                    <th
+                      v-if="canManage"
+                      class="checkbox-col"
                     >
-                      {{ up.description }}
-                    </span>
-                  </td>
-                  <td>{{ up.version }}</td>
-                  <td>
-                    <span
-                      class="status-badge"
-                      :class="{
-                        active: up.status === 'active',
-                        inactive: up.status === 'inactive',
-                        'status-error': up.status === 'uninstalled'
-                      }"
+                      <input
+                        type="checkbox"
+                        :checked="userPluginPageAllSelected"
+                        data-testid="user-plugins-select-page"
+                        @change="userPluginSelection.togglePage(userPluginPageNames)"
+                      >
+                    </th>
+                    <th
+                      class="sortable-header"
+                      :class="{ 'sort-active': userPluginSortKey === 'name' }"
+                      @click="handleUserPluginSort('name')"
                     >
-                      {{ up.status === 'active' ? $t('userPlugins.active') : up.status === 'inactive' ? $t('userPlugins.inactive') : $t('userPlugins.uninstalled') }}
-                    </span>
-                  </td>
-                  <td class="actions-cell">
-                    <button
-                      v-if="up.status === 'uninstalled'"
-                      class="action-btn activate-btn"
-                      data-testid="install-user-plugin-btn"
-                      @click="handleUserPluginInstall(up.name)"
+                      {{ $t('userPlugins.columns.name') }}
+                      <span class="sort-icon">{{ userPluginSortKey === 'name' ? (userPluginSortDir === 'asc' ? '&#9650;' : '&#9660;') : '&#8693;' }}</span>
+                    </th>
+                    <th
+                      class="sortable-header"
+                      :class="{ 'sort-active': userPluginSortKey === 'version' }"
+                      @click="handleUserPluginSort('version')"
                     >
-                      {{ $t('userPlugins.install') }}
-                    </button>
-                    <template v-else>
+                      {{ $t('userPlugins.columns.version') }}
+                      <span class="sort-icon">{{ userPluginSortKey === 'version' ? (userPluginSortDir === 'asc' ? '&#9650;' : '&#9660;') : '&#8693;' }}</span>
+                    </th>
+                    <th
+                      class="sortable-header"
+                      :class="{ 'sort-active': userPluginSortKey === 'status' }"
+                      @click="handleUserPluginSort('status')"
+                    >
+                      {{ $t('userPlugins.columns.status') }}
+                      <span class="sort-icon">{{ userPluginSortKey === 'status' ? (userPluginSortDir === 'asc' ? '&#9650;' : '&#9660;') : '&#8693;' }}</span>
+                    </th>
+                    <th>{{ $t('userPlugins.columns.actions') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="up in pagedUserPlugins"
+                    :key="up.name"
+                    data-testid="user-plugin-row"
+                  >
+                    <td
+                      v-if="canManage"
+                      class="checkbox-col"
+                    >
+                      <input
+                        type="checkbox"
+                        :checked="userPluginSelection.has(up.name)"
+                        :data-testid="`user-plugins-select-${up.name}`"
+                        @change="userPluginSelection.toggle(up.name)"
+                      >
+                    </td>
+                    <td class="bundle-name">
+                      <router-link :to="`/admin/settings/user-plugins/${up.name}`">
+                        {{ up.name }}
+                      </router-link>
+                      <span
+                        v-if="up.description"
+                        class="bundle-description"
+                      >
+                        {{ up.description }}
+                      </span>
+                    </td>
+                    <td>{{ up.version }}</td>
+                    <td>
+                      <span
+                        class="status-badge"
+                        :class="{
+                          active: up.status === 'active',
+                          inactive: up.status === 'inactive',
+                          'status-error': up.status === 'uninstalled'
+                        }"
+                      >
+                        {{ up.status === 'active' ? $t('userPlugins.active') : up.status === 'inactive' ? $t('userPlugins.inactive') : $t('userPlugins.uninstalled') }}
+                      </span>
+                    </td>
+                    <td class="actions-cell">
                       <button
-                        v-if="up.status !== 'active'"
+                        v-if="up.status === 'uninstalled'"
                         class="action-btn activate-btn"
-                        data-testid="enable-user-plugin-btn"
-                        @click="handleUserPluginEnable(up.name)"
+                        data-testid="install-user-plugin-btn"
+                        @click="handleUserPluginInstall(up.name)"
                       >
-                        {{ $t('userPlugins.enable') }}
+                        {{ $t('userPlugins.install') }}
                       </button>
-                      <button
-                        v-else
-                        class="action-btn deactivate-btn"
-                        data-testid="disable-user-plugin-btn"
-                        @click="handleUserPluginDisable(up.name)"
+                      <template v-else>
+                        <button
+                          v-if="up.status !== 'active'"
+                          class="action-btn activate-btn"
+                          data-testid="enable-user-plugin-btn"
+                          @click="handleUserPluginEnable(up.name)"
+                        >
+                          {{ $t('userPlugins.enable') }}
+                        </button>
+                        <button
+                          v-else
+                          class="action-btn deactivate-btn"
+                          data-testid="disable-user-plugin-btn"
+                          @click="handleUserPluginDisable(up.name)"
+                        >
+                          {{ $t('userPlugins.disable') }}
+                        </button>
+                      </template>
+                      <router-link
+                        :to="`/admin/settings/user-plugins/${up.name}`"
+                        class="action-btn edit-btn"
+                        data-testid="view-user-plugin-btn"
                       >
-                        {{ $t('userPlugins.disable') }}
-                      </button>
-                    </template>
-                    <router-link
-                      :to="`/admin/settings/user-plugins/${up.name}`"
-                      class="action-btn edit-btn"
-                      data-testid="view-user-plugin-btn"
-                    >
-                      {{ $t('userPlugins.view') }}
-                    </router-link>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                        {{ $t('userPlugins.view') }}
+                      </router-link>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <PluginTablePager
+                :page="userPluginsPage"
+                :rows-per-page="userPluginRowsPerPage"
+                :page-count="userPluginsPageCount"
+                :total="userPluginsTotal"
+                :page-start="userPluginsPageStart"
+                :page-end="userPluginsPageEnd"
+                :options="ROWS_PER_PAGE_OPTIONS"
+                testid-prefix="user-plugins"
+                @update:page="setUserPluginsPage"
+                @update:rows-per-page="userPluginRowsPerPage = $event"
+              />
+            </template>
           </div>
         </div>
       </div>
@@ -1074,6 +1218,15 @@ import LlmConnectionsTab from '@/views/llm-connections/LlmConnectionsTab.vue';
 import { createDataExchangeApi } from '@/api/dataExchangeApi';
 import { useDataExchangeManifest } from '@/composables/useDataExchangeManifest';
 import { extensionRegistry } from '@/plugins/extensionRegistry';
+import { useClientTable, type RowsPerPage } from '@/composables/useClientTable';
+import { usePluginBulkSelection } from '@/composables/usePluginBulkSelection';
+import { reloadApp } from '@/utils/reload';
+import PluginBulkToolbar from '@/components/PluginBulkToolbar.vue';
+import PluginTablePager from '@/components/PluginTablePager.vue';
+
+// Rows-per-page options shared by the three plugin tables (S102). 'all' shows
+// every matching row on one page.
+const ROWS_PER_PAGE_OPTIONS: RowsPerPage[] = [10, 25, 50, 100, 'all'];
 
 const { t } = useI18n();
 const authStore = useAuthStore();
@@ -1354,26 +1507,74 @@ const pluginSearchQuery = ref('');
 const pluginSortKey = ref<string>('name');
 const pluginSortDir = ref<'asc' | 'desc'>('asc');
 
-const filteredPlugins = computed((): PluginEntry[] => {
-  if (!pluginSearchQuery.value) {
-    return pluginsStore.plugins;
-  }
-  const query = pluginSearchQuery.value.toLowerCase();
-  return pluginsStore.plugins.filter(
-    p => p.name.toLowerCase().includes(query) || (p.description && p.description.toLowerCase().includes(query))
-  );
+const pluginRowsPerPage = ref<RowsPerPage>(25);
+const {
+  paged: pagedPlugins,
+  sorted: pluginsMatching,
+  total: pluginsTotal,
+  page: pluginsPage,
+  pageCount: pluginsPageCount,
+  pageStart: pluginsPageStart,
+  pageEnd: pluginsPageEnd,
+  setPage: setPluginsPage,
+} = useClientTable<PluginEntry>({
+  source: computed(() => pluginsStore.plugins),
+  query: pluginSearchQuery,
+  sortKey: pluginSortKey,
+  sortDir: pluginSortDir,
+  rowsPerPage: pluginRowsPerPage,
+  matches: (plugin, query) =>
+    plugin.name.toLowerCase().includes(query) ||
+    (!!plugin.description && plugin.description.toLowerCase().includes(query)),
 });
 
-const sortedPlugins = computed((): PluginEntry[] => {
-  const list = [...filteredPlugins.value];
-  const key = pluginSortKey.value as keyof PluginEntry;
-  const dir = pluginSortDir.value === 'asc' ? 1 : -1;
-  return list.sort((a, b) => {
-    const aVal = String(a[key] || '');
-    const bVal = String(b[key] || '');
-    return aVal.localeCompare(bVal) * dir;
-  });
-});
+const pluginSelection = usePluginBulkSelection();
+const pluginPageNames = computed(() => pagedPlugins.value.map(plugin => plugin.name));
+const pluginPageAllSelected = computed(() => pluginSelection.pageAllSelected(pluginPageNames.value));
+const pluginShowSelectAllMatching = computed(
+  () => pluginPageAllSelected.value && pluginSelection.selectedCount.value < pluginsTotal.value,
+);
+
+// Admin-plugin enablement toggles THIS app's own manifest, so a successful
+// batch reloads the SPA once (see reloadApp). Skips rows already in the target
+// state; never aborts on a single failure.
+async function runAdminPluginBulk(activate: boolean): Promise<void> {
+  const targets = pluginsStore.plugins.filter(
+    plugin =>
+      pluginSelection.has(plugin.name) &&
+      (activate ? plugin.status !== 'active' : plugin.status === 'active'),
+  );
+  if (targets.length > 0) {
+    const confirmMessage = activate
+      ? t('adminPlugins.bulk.confirmActivate', { count: targets.length })
+      : t('adminPlugins.bulk.confirmDeactivate', { count: targets.length });
+    if (!confirm(confirmMessage)) return;
+  }
+  pluginsError.value = null;
+  const failedNames: string[] = [];
+  let succeeded = 0;
+  for (const plugin of targets) {
+    try {
+      if (activate) {
+        await pluginsStore.activatePlugin(plugin.name);
+      } else {
+        await pluginsStore.deactivatePlugin(plugin.name);
+      }
+      succeeded += 1;
+    } catch {
+      failedNames.push(plugin.name);
+    }
+  }
+  pluginSelection.clear();
+  if (failedNames.length > 0) {
+    pluginsError.value = t('adminPlugins.bulk.someFailed', { names: failedNames.join(', ') });
+  }
+  if (succeeded > 0) {
+    reloadApp();
+  }
+}
+const handleBulkActivateAdminPlugins = (): Promise<void> => runAdminPluginBulk(true);
+const handleBulkDeactivateAdminPlugins = (): Promise<void> => runAdminPluginBulk(false);
 
 async function loadPlugins(): Promise<void> {
   pluginsLoading.value = true;
@@ -1419,26 +1620,72 @@ const backendPluginSortKey = ref<string>('name');
 const backendPluginSortDir = ref<'asc' | 'desc'>('asc');
 const backendPluginsList = ref<BackendPluginEntry[]>([]);
 
-const filteredBackendPlugins = computed((): BackendPluginEntry[] => {
-  if (!backendPluginSearchQuery.value) {
-    return backendPluginsList.value;
-  }
-  const query = backendPluginSearchQuery.value.toLowerCase();
-  return backendPluginsList.value.filter(
-    p => p.name.toLowerCase().includes(query) || (p.description && p.description.toLowerCase().includes(query))
-  );
+const backendPluginRowsPerPage = ref<RowsPerPage>(25);
+const {
+  paged: pagedBackendPlugins,
+  sorted: backendPluginsMatching,
+  total: backendPluginsTotal,
+  page: backendPluginsPage,
+  pageCount: backendPluginsPageCount,
+  pageStart: backendPluginsPageStart,
+  pageEnd: backendPluginsPageEnd,
+  setPage: setBackendPluginsPage,
+} = useClientTable<BackendPluginEntry>({
+  source: backendPluginsList,
+  query: backendPluginSearchQuery,
+  sortKey: backendPluginSortKey,
+  sortDir: backendPluginSortDir,
+  rowsPerPage: backendPluginRowsPerPage,
+  matches: (plugin, query) =>
+    plugin.name.toLowerCase().includes(query) ||
+    (!!plugin.description && plugin.description.toLowerCase().includes(query)),
 });
 
-const sortedBackendPlugins = computed((): BackendPluginEntry[] => {
-  const list = [...filteredBackendPlugins.value];
-  const key = backendPluginSortKey.value as keyof BackendPluginEntry;
-  const dir = backendPluginSortDir.value === 'asc' ? 1 : -1;
-  return list.sort((a, b) => {
-    const aVal = String(a[key] || '');
-    const bVal = String(b[key] || '');
-    return aVal.localeCompare(bVal) * dir;
-  });
-});
+const backendPluginSelection = usePluginBulkSelection();
+const backendPluginPageNames = computed(() => pagedBackendPlugins.value.map(plugin => plugin.name));
+const backendPluginPageAllSelected = computed(() =>
+  backendPluginSelection.pageAllSelected(backendPluginPageNames.value),
+);
+const backendPluginShowSelectAllMatching = computed(
+  () =>
+    backendPluginPageAllSelected.value &&
+    backendPluginSelection.selectedCount.value < backendPluginsTotal.value,
+);
+
+// Backend-plugin enable/disable is server runtime state — loop the existing
+// single-plugin endpoints, then refetch the list (no SPA reload). Skips rows
+// already in the target state; never aborts on a single failure.
+async function runBackendPluginBulk(activate: boolean): Promise<void> {
+  const targets = backendPluginsList.value.filter(
+    plugin =>
+      backendPluginSelection.has(plugin.name) &&
+      (activate ? plugin.status !== 'active' : plugin.status === 'active'),
+  );
+  if (targets.length === 0) {
+    backendPluginSelection.clear();
+    return;
+  }
+  const confirmMessage = activate
+    ? t('backendPlugins.bulk.confirmActivate', { count: targets.length })
+    : t('backendPlugins.bulk.confirmDeactivate', { count: targets.length });
+  if (!confirm(confirmMessage)) return;
+  backendPluginsError.value = null;
+  const failedNames: string[] = [];
+  for (const plugin of targets) {
+    try {
+      await api.post(`/admin/plugins/${plugin.name}/${activate ? 'enable' : 'disable'}`);
+    } catch {
+      failedNames.push(plugin.name);
+    }
+  }
+  backendPluginSelection.clear();
+  await loadBackendPlugins();
+  if (failedNames.length > 0) {
+    backendPluginsError.value = t('backendPlugins.bulk.someFailed', { names: failedNames.join(', ') });
+  }
+}
+const handleBulkActivateBackendPlugins = (): Promise<void> => runBackendPluginBulk(true);
+const handleBulkDeactivateBackendPlugins = (): Promise<void> => runBackendPluginBulk(false);
 
 async function loadBackendPlugins(): Promise<void> {
   backendPluginsLoading.value = true;
@@ -1489,26 +1736,87 @@ const userPluginSearchQuery = ref('');
 const userPluginSortKey = ref<string>('name');
 const userPluginSortDir = ref<'asc' | 'desc'>('asc');
 
-const filteredUserPlugins = computed((): UserPluginEntry[] => {
-  if (!userPluginSearchQuery.value) {
-    return userPluginsStore.plugins;
-  }
-  const query = userPluginSearchQuery.value.toLowerCase();
-  return userPluginsStore.plugins.filter(
-    p => p.name.toLowerCase().includes(query) || (p.description && p.description.toLowerCase().includes(query))
-  );
+const userPluginRowsPerPage = ref<RowsPerPage>(25);
+const {
+  paged: pagedUserPlugins,
+  sorted: userPluginsMatching,
+  total: userPluginsTotal,
+  page: userPluginsPage,
+  pageCount: userPluginsPageCount,
+  pageStart: userPluginsPageStart,
+  pageEnd: userPluginsPageEnd,
+  setPage: setUserPluginsPage,
+} = useClientTable<UserPluginEntry>({
+  source: computed(() => userPluginsStore.plugins),
+  query: userPluginSearchQuery,
+  sortKey: userPluginSortKey,
+  sortDir: userPluginSortDir,
+  rowsPerPage: userPluginRowsPerPage,
+  matches: (plugin, query) =>
+    plugin.name.toLowerCase().includes(query) ||
+    (!!plugin.description && plugin.description.toLowerCase().includes(query)),
 });
 
-const sortedUserPlugins = computed((): UserPluginEntry[] => {
-  const list = [...filteredUserPlugins.value];
-  const key = userPluginSortKey.value as keyof UserPluginEntry;
-  const dir = userPluginSortDir.value === 'asc' ? 1 : -1;
-  return list.sort((a, b) => {
-    const aVal = String(a[key] || '');
-    const bVal = String(b[key] || '');
-    return aVal.localeCompare(bVal) * dir;
-  });
-});
+const userPluginSelection = usePluginBulkSelection();
+const userPluginPageNames = computed(() => pagedUserPlugins.value.map(plugin => plugin.name));
+const userPluginPageAllSelected = computed(() =>
+  userPluginSelection.pageAllSelected(userPluginPageNames.value),
+);
+const userPluginShowSelectAllMatching = computed(
+  () =>
+    userPluginPageAllSelected.value &&
+    userPluginSelection.selectedCount.value < userPluginsTotal.value,
+);
+
+// User-plugin enable/disable targets the fe-user app (no fe-admin reload).
+// `uninstalled` rows need Install first, so bulk activate/deactivate SKIPS them
+// and reports them separately. Skips rows already in the target state; never
+// aborts on a single failure.
+async function runUserPluginBulk(activate: boolean): Promise<void> {
+  const selectedPlugins = userPluginsStore.plugins.filter(plugin =>
+    userPluginSelection.has(plugin.name),
+  );
+  const skipped = selectedPlugins.filter(plugin => plugin.status === 'uninstalled');
+  const targets = selectedPlugins.filter(
+    plugin =>
+      plugin.status !== 'uninstalled' &&
+      (activate ? plugin.status !== 'active' : plugin.status === 'active'),
+  );
+  if (targets.length > 0) {
+    const confirmMessage = activate
+      ? t('userPlugins.bulk.confirmActivate', { count: targets.length })
+      : t('userPlugins.bulk.confirmDeactivate', { count: targets.length });
+    if (!confirm(confirmMessage)) return;
+  }
+  userPluginsError.value = null;
+  const failedNames: string[] = [];
+  for (const plugin of targets) {
+    try {
+      if (activate) {
+        await userPluginsStore.enablePlugin(plugin.name);
+      } else {
+        await userPluginsStore.disablePlugin(plugin.name);
+      }
+    } catch {
+      failedNames.push(plugin.name);
+    }
+  }
+  userPluginSelection.clear();
+  const messages: string[] = [];
+  if (failedNames.length > 0) {
+    messages.push(t('userPlugins.bulk.someFailed', { names: failedNames.join(', ') }));
+  }
+  if (skipped.length > 0) {
+    messages.push(
+      t('userPlugins.bulk.someSkipped', { names: skipped.map(plugin => plugin.name).join(', ') }),
+    );
+  }
+  if (messages.length > 0) {
+    userPluginsError.value = messages.join(' ');
+  }
+}
+const handleBulkActivateUserPlugins = (): Promise<void> => runUserPluginBulk(true);
+const handleBulkDeactivateUserPlugins = (): Promise<void> => runUserPluginBulk(false);
 
 async function loadUserPlugins(): Promise<void> {
   userPluginsLoading.value = true;
