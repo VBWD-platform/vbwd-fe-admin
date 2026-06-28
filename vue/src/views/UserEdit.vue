@@ -229,7 +229,9 @@
               data-testid="user-groups-block"
             >
               <div class="form-group">
-                <label>{{ $t('nav.userGroups') }}</label>
+                <h4 class="form-subheader">
+                  {{ $t('nav.userGroups') }}
+                </h4>
                 <DualListSelector
                   v-model="selectedGroupSlugs"
                   testid="user-groups"
@@ -1448,15 +1450,31 @@ onMounted(() => {
 .role-checkbox {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   padding: 6px 10px;
   border: 1px solid #e5e7eb;
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
 }
+.role-checkbox input[type='checkbox'] {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin: 0 4px 0 0;
+}
 .role-checkbox:hover {
   background: #f9fafb;
+}
+
+/* Subheader for grouped controls inside a form section (e.g. User Groups) */
+.form-subheader {
+  margin: 0 0 10px 0;
+  color: #555;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 .role-badge {
   font-size: 11px;
