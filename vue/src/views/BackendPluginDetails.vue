@@ -85,11 +85,68 @@
             v-else
             class="action-btn activate-btn"
             data-testid="activate-plugin-btn"
+            :disabled="enableBlocked"
+            :title="enableBlocked ? enableBlockedReason : ''"
             @click="handleActivate"
           >
             {{ $t('backendPlugins.detail.activate') }}
           </button>
+          <p
+            v-if="enableBlocked"
+            class="enable-blocked-reason"
+            data-testid="enable-blocked-reason"
+          >
+            {{ $t('backendPlugins.detail.enableBlocked') }} {{ enableBlockedReason }}
+          </p>
         </div>
+      </div>
+
+      <!-- Dependencies -->
+      <div
+        v-if="dependencies.length > 0"
+        class="dependencies-section"
+        data-testid="plugin-dependencies"
+      >
+        <h3 class="dependencies-title">
+          {{ $t('backendPlugins.detail.dependenciesTitle') }}
+        </h3>
+        <table class="dependencies-table">
+          <thead>
+            <tr>
+              <th>{{ $t('backendPlugins.detail.depName') }}</th>
+              <th>{{ $t('backendPlugins.detail.depRequired') }}</th>
+              <th>{{ $t('backendPlugins.detail.depInstalled') }}</th>
+              <th>{{ $t('backendPlugins.detail.depStatus') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="dep in dependencies"
+              :key="dep.name"
+              :data-testid="`plugin-dependency-${dep.name}`"
+              :class="{ 'dep-row-unsatisfied': !dep.satisfied }"
+            >
+              <td class="dep-name">
+                {{ dep.name }}
+              </td>
+              <td class="dep-specifier">
+                {{ dep.specifier || 'any' }}
+              </td>
+              <td class="dep-installed">
+                {{ dep.installedVersion || '—' }}
+              </td>
+              <td>
+                <span
+                  class="dep-status"
+                  :class="dep.satisfied ? 'dep-satisfied' : 'dep-unsatisfied'"
+                  :data-testid="`plugin-dependency-${dep.name}-status`"
+                >
+                  {{ dep.satisfied ? '✓' : '✗' }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       <!-- Messages -->
@@ -275,6 +332,11 @@ import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/auth';
 import { api } from '@/api';
 import DualListSelector, { type DualListOption } from '@/components/DualListSelector.vue';
+import {
+  normalizePluginDependencies,
+  hasUnsatisfiedDependency,
+  describeBlockedReason,
+} from '@/types/pluginDependency';
 
 interface AdminConfigField {
   key: string;
@@ -307,7 +369,9 @@ interface PluginDetailResponse {
   author: string;
   description: string;
   status: 'active' | 'inactive' | 'error';
-  dependencies: string[];
+  // Dependencies arrive as objects {name, specifier, installed_version, satisfied};
+  // older backends may still send plain-string names — normalised before render.
+  dependencies: unknown[];
   configSchema: Record<string, { type: string; default: unknown; description?: string }>;
   adminConfig: { tabs: Array<{ id: string; label: string; fields: AdminConfigField[] }> };
   savedConfig: Record<string, unknown>;
@@ -317,6 +381,12 @@ const route = useRoute();
 const { t } = useI18n();
 const authStore = useAuthStore();
 const canManage = computed(() => authStore.hasPermission('settings.system'));
+
+// Normalised dependency list (tolerates the old plain-string shape).
+const dependencies = computed(() => normalizePluginDependencies(plugin.value?.dependencies));
+// Enabling is blocked while any declared dependency is unsatisfied.
+const enableBlocked = computed(() => hasUnsatisfiedDependency(dependencies.value));
+const enableBlockedReason = computed(() => describeBlockedReason(dependencies.value));
 
 const loading = ref(true);
 const error = ref<string | null>(null);
@@ -654,6 +724,72 @@ onMounted(() => {
 
 .action-btn.deactivate-btn:hover {
   background: #ffe0b2;
+}
+
+.enable-blocked-reason {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: #721c24;
+}
+
+/* Dependencies */
+.dependencies-section {
+  padding: 20px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.dependencies-title {
+  margin: 0 0 12px;
+  font-size: 16px;
+  color: #2c3e50;
+}
+
+.dependencies-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.dependencies-table th,
+.dependencies-table td {
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.dependencies-table th {
+  color: #666;
+  font-weight: 500;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.dep-name {
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.dep-specifier,
+.dep-installed {
+  font-family: monospace;
+}
+
+.dep-row-unsatisfied {
+  background: #fdf3f4;
+}
+
+.dep-status {
+  font-weight: 700;
+}
+
+.dep-status.dep-satisfied {
+  color: #2e7d32;
+}
+
+.dep-status.dep-unsatisfied {
+  color: #c62828;
 }
 
 /* Messages */

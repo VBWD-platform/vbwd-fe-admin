@@ -910,14 +910,24 @@
                       </span>
                     </td>
                     <td class="actions-cell">
-                      <button
-                        v-if="bp.status !== 'active'"
-                        class="action-btn activate-btn"
-                        data-testid="enable-backend-plugin-btn"
-                        @click="handleEnableBackendPlugin(bp.name)"
-                      >
-                        {{ $t('backendPlugins.enable') }}
-                      </button>
+                      <template v-if="bp.status !== 'active'">
+                        <button
+                          class="action-btn activate-btn"
+                          data-testid="enable-backend-plugin-btn"
+                          :disabled="backendPluginEnableBlocked(bp)"
+                          :title="backendPluginEnableBlocked(bp) ? backendPluginBlockedReason(bp) : ''"
+                          @click="handleEnableBackendPlugin(bp.name)"
+                        >
+                          {{ $t('backendPlugins.enable') }}
+                        </button>
+                        <span
+                          v-if="backendPluginEnableBlocked(bp)"
+                          class="plugin-blocked-note"
+                          :data-testid="`backend-plugin-blocked-${bp.name}`"
+                        >
+                          {{ $t('backendPlugins.detail.enableBlocked') }} {{ backendPluginBlockedReason(bp) }}
+                        </span>
+                      </template>
                       <button
                         v-else
                         class="action-btn deactivate-btn"
@@ -1223,6 +1233,11 @@ import { usePluginBulkSelection } from '@/composables/usePluginBulkSelection';
 import { reloadApp } from '@/utils/reload';
 import PluginBulkToolbar from '@/components/PluginBulkToolbar.vue';
 import PluginTablePager from '@/components/PluginTablePager.vue';
+import {
+  normalizePluginDependencies,
+  hasUnsatisfiedDependency,
+  describeBlockedReason,
+} from '@/types/pluginDependency';
 
 // Rows-per-page options shared by the three plugin tables (S102). 'all' shows
 // every matching row on one page.
@@ -1610,6 +1625,19 @@ interface BackendPluginEntry {
   version: string;
   description?: string;
   status: 'active' | 'inactive' | 'error';
+  // Dependencies arrive as objects {name, specifier, installed_version, satisfied};
+  // older backends may still send plain-string names — normalised before use.
+  dependencies?: unknown[];
+}
+
+// Whether a backend plugin has an unsatisfied dependency (Enable must be blocked).
+function backendPluginEnableBlocked(plugin: BackendPluginEntry): boolean {
+  return hasUnsatisfiedDependency(normalizePluginDependencies(plugin.dependencies));
+}
+
+// Human reason a backend plugin cannot be enabled (empty when nothing blocks).
+function backendPluginBlockedReason(plugin: BackendPluginEntry): string {
+  return describeBlockedReason(normalizePluginDependencies(plugin.dependencies));
 }
 
 const backendPluginsLoading = ref(false);
@@ -2257,6 +2285,17 @@ onMounted(() => {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.plugin-blocked-note {
+  align-self: center;
+  font-size: 12px;
+  color: #721c24;
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .action-btn {
