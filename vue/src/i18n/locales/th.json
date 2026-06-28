@@ -51,7 +51,9 @@
       "rowsPerPage": "Rows per page:",
       "rowsPerPageAll": "All",
       "showing": "Showing {from}–{to} of {total}"
-    }
+    },
+    "working": "กำลังดำเนินการ...",
+    "free": "ฟรี"
   },
   "nav": {
     "dashboard": "แดชบอร์ด",
@@ -118,7 +120,8 @@
       "admin": "ผู้ดูแลระบบ",
       "vendor": "ผู้ขาย",
       "bot": "บอท",
-      "guest": "ผู้เยี่ยมชม"
+      "guest": "ผู้เยี่ยมชม",
+      "superAdmin": "ผู้ดูแลระบบสูงสุด"
     },
     "createdAt": "สร้างเมื่อ",
     "lastLogin": "เข้าสู่ระบบล่าสุด",
@@ -128,6 +131,7 @@
     "personalDetails": "ข้อมูลส่วนตัว",
     "account": "บัญชี",
     "newPassword": "รหัสผ่านใหม่",
+    "newPasswordPlaceholder": "ป้อนรหัสผ่านใหม่",
     "newPasswordHelp": "เว้นว่างไว้เพื่อเก็บรหัสผ่านปัจจุบัน ขั้นต่ำ 8 ตัวอักษรหากต้องการเปลี่ยน",
     "passwordMinLength": "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร",
     "userCreated": "สร้างผู้ใช้สำเร็จ",
@@ -174,7 +178,18 @@
     "accountType": "ประเภทบัญชี",
     "accountTypePrivate": "บุคคลธรรมดา",
     "accountTypeBusiness": "ธุรกิจ",
-    "companyRequiredForBusiness": "บัญชีธุรกิจต้องระบุชื่อบริษัท"
+    "companyRequiredForBusiness": "บัญชีธุรกิจต้องระบุชื่อบริษัท",
+    "createFailed": "สร้างผู้ใช้ไม่สำเร็จ",
+    "loadFailed": "โหลดผู้ใช้ไม่สำเร็จ",
+    "updateFailed": "อัปเดตผู้ใช้ไม่สำเร็จ",
+    "saving": "กำลังบันทึก...",
+    "noName": "ไม่มีชื่อ",
+    "validation": {
+      "emailRequired": "จำเป็นต้องระบุอีเมล",
+      "emailInvalid": "ที่อยู่อีเมลไม่ถูกต้อง",
+      "passwordRequired": "จำเป็นต้องระบุรหัสผ่าน",
+      "roleRequired": "จำเป็นต้องระบุบทบาท"
+    }
   },
   "plans": {
     "title": "แผน",
@@ -235,7 +250,9 @@
       "inherit": "สืบทอด (ค่าเริ่มต้นทั่วไป)",
       "netto": "เน็ตโต (ไม่รวมภาษี)",
       "brutto": "บรุตโต (รวมภาษี)"
-    }
+    },
+    "free": "ฟรี",
+    "loading": "กำลังโหลดแผน..."
   },
   "subscriptions": {
     "title": "การสมัครสมาชิก",
@@ -291,7 +308,9 @@
     "validation": {
       "selectUser": "กรุณาเลือกผู้ใช้",
       "selectPlan": "กรุณาเลือกแผน"
-    }
+    },
+    "noSubscriptionsForUser": "ไม่มีการสมัครสมาชิกสำหรับผู้ใช้นี้",
+    "searchPlaceholder": "ค้นหาการสมัครสมาชิก..."
   },
   "invoices": {
     "title": "ใบแจ้งหนี้",
@@ -336,7 +355,10 @@
     "refund": "คืนเงิน",
     "paymentMethod": "วิธีการชำระเงิน",
     "paymentData": "ข้อมูลการชำระเงิน",
-    "paymentInformation": "ข้อมูลการชำระเงิน"
+    "paymentInformation": "ข้อมูลการชำระเงิน",
+    "loading": "กำลังโหลดใบแจ้งหนี้...",
+    "noInvoicesForUser": "ไม่มีใบแจ้งหนี้สำหรับผู้ใช้นี้",
+    "searchPlaceholder": "ค้นหาใบแจ้งหนี้..."
   },
   "webhooks": {
     "title": "Webhooks",
@@ -569,7 +591,11 @@
     "restrictToPlansHint": "เว้นว่างสำหรับผู้ใช้ทั้งหมด หรือเลือกแผนเพื่อจำกัดการมองเห็น",
     "noPlansAvailable": "ไม่มีแผนที่ใช้งานอยู่",
     "allPlans": "ทุกแผน",
-    "plans": "แผน"
+    "plans": "แผน",
+    "bulkActivate": "เปิดใช้งานที่เลือก",
+    "bulkDeactivate": "ปิดใช้งานที่เลือก",
+    "bulkDelete": "ลบที่เลือก",
+    "confirmDeleteBulk": "ลบส่วนเสริมที่เลือกหรือไม่? การดำเนินการนี้ไม่สามารถยกเลิกได้"
   },
   "profile": {
     "title": "โปรไฟล์",
@@ -619,7 +645,14 @@
     "nl": "เนเธอร์แลนด์",
     "th": "ไทย",
     "cn": "จีน",
-    "es": "สเปน"
+    "es": "สเปน",
+    "germany": "เยอรมนี",
+    "austria": "ออสเตรีย",
+    "switzerland": "สวิตเซอร์แลนด์",
+    "unitedStates": "สหรัฐอเมริกา",
+    "unitedKingdom": "สหราชอาณาจักร",
+    "france": "ฝรั่งเศส",
+    "netherlands": "เนเธอร์แลนด์"
   },
   "languages": {
     "en": "English",
@@ -688,7 +721,9 @@
       "saveConfig": "บันทึกการกำหนดค่า",
       "saving": "กำลังบันทึก...",
       "configSaved": "บันทึกการกำหนดค่าเรียบร้อยแล้ว",
-      "confirmDeactivate": "คุณแน่ใจหรือว่าต้องการปิดใช้งานปลั๊กอินนี้?"
+      "confirmDeactivate": "คุณแน่ใจหรือว่าต้องการปิดใช้งานปลั๊กอินนี้?",
+      "actionDone": "เสร็จสิ้น",
+      "actionAffected": "รายการที่ได้รับผลกระทบ"
     },
     "bulk": {
       "confirmActivate": "Enable {count} backend plugin(s)?",
@@ -945,5 +980,11 @@
       "download": "Download",
       "downloadHint": "Select exactly one scope and one stream to download."
     }
+  },
+  "paymentMethods": {
+    "bulkActivate": "เปิดใช้งานที่เลือก",
+    "bulkDeactivate": "ปิดใช้งานที่เลือก",
+    "bulkDelete": "ลบที่เลือก",
+    "confirmDeleteBulk": "ลบวิธีการชำระเงินที่เลือกหรือไม่? การดำเนินการนี้ไม่สามารถยกเลิกได้"
   }
 }

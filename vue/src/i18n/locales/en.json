@@ -59,7 +59,9 @@
       "rowsPerPage": "Rows per page:",
       "rowsPerPageAll": "All",
       "showing": "Showing {from}–{to} of {total}"
-    }
+    },
+    "working": "Working...",
+    "free": "Free"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -127,7 +129,10 @@
     "roles": {
       "user": "User",
       "admin": "Admin",
-      "vendor": "Vendor"
+      "vendor": "Vendor",
+      "bot": "Bot",
+      "guest": "Guest",
+      "superAdmin": "Super Admin"
     },
     "createdAt": "Created At",
     "lastLogin": "Last Login",
@@ -137,6 +142,7 @@
     "personalDetails": "Personal Details",
     "account": "Account",
     "newPassword": "New Password",
+    "newPasswordPlaceholder": "Enter new password",
     "newPasswordHelp": "Leave empty to keep current password. Minimum 8 characters if changing.",
     "passwordMinLength": "Password must be at least 8 characters",
     "userCreated": "User created successfully",
@@ -188,7 +194,18 @@
     "paymentStatus": "Payment",
     "firstInvoice": "First Invoice",
     "lastInvoice": "Last Invoice",
-    "noAddonsForUser": "No add-on subscriptions for this user."
+    "noAddonsForUser": "No add-on subscriptions for this user.",
+    "createFailed": "Failed to create user",
+    "loadFailed": "Failed to load user",
+    "updateFailed": "Failed to update user",
+    "saving": "Saving...",
+    "noName": "No name",
+    "validation": {
+      "emailRequired": "Email is required",
+      "emailInvalid": "Invalid email address",
+      "passwordRequired": "Password is required",
+      "roleRequired": "Role is required"
+    }
   },
   "plans": {
     "title": "Plans",
@@ -254,7 +271,9 @@
       "inherit": "Inherit (global default)",
       "netto": "Netto (net, excl. tax)",
       "brutto": "Brutto (incl. tax)"
-    }
+    },
+    "free": "Free",
+    "loading": "Loading plans..."
   },
   "categories": {
     "categoriesTab": "Categories",
@@ -342,7 +361,11 @@
     "validation": {
       "selectUser": "Please select a user",
       "selectPlan": "Please select a plan"
-    }
+    },
+    "clear": "Clear",
+    "createFailed": "Failed to create subscription",
+    "noSubscriptionsForUser": "No subscriptions for this user",
+    "searchPlaceholder": "Search subscriptions..."
   },
   "invoices": {
     "title": "Invoices",
@@ -394,7 +417,10 @@
     "confirmRefund": "Refund invoice(s)? This action cannot be undone.",
     "paymentMethod": "Payment Method",
     "paymentData": "Payment data",
-    "paymentInformation": "Payment Information"
+    "paymentInformation": "Payment Information",
+    "loading": "Loading invoices...",
+    "noInvoicesForUser": "No invoices for this user",
+    "searchPlaceholder": "Search invoices..."
   },
   "webhooks": {
     "title": "Webhooks",
@@ -628,7 +654,11 @@
     "restrictToPlansHint": "Leave empty for all users, or select plans to restrict visibility",
     "noPlansAvailable": "No active plans available",
     "allPlans": "All Plans",
-    "plans": "Plans"
+    "plans": "Plans",
+    "bulkActivate": "Activate selected",
+    "bulkDeactivate": "Deactivate selected",
+    "bulkDelete": "Delete selected",
+    "confirmDeleteBulk": "Delete the selected add-ons? This cannot be undone."
   },
   "taxAndCountries": {
     "title": "Taxes & Countries",
@@ -712,7 +742,11 @@
     "locale": "Locale",
     "noTranslations": "No translations",
     "codeRequired": "Code is required",
-    "nameRequired": "Name is required"
+    "nameRequired": "Name is required",
+    "bulkActivate": "Activate selected",
+    "bulkDeactivate": "Deactivate selected",
+    "bulkDelete": "Delete selected",
+    "confirmDeleteBulk": "Delete the selected payment methods? This cannot be undone."
   },
   "profile": {
     "title": "Profile",
@@ -759,7 +793,14 @@
     "us": "United States",
     "gb": "United Kingdom",
     "fr": "France",
-    "nl": "Netherlands"
+    "nl": "Netherlands",
+    "germany": "Germany",
+    "austria": "Austria",
+    "switzerland": "Switzerland",
+    "unitedStates": "United States",
+    "unitedKingdom": "United Kingdom",
+    "france": "France",
+    "netherlands": "Netherlands"
   },
   "languages": {
     "en": "English",
@@ -829,7 +870,15 @@
       "saveConfig": "Save Configuration",
       "saving": "Saving...",
       "configSaved": "Configuration saved successfully",
-      "confirmDeactivate": "Are you sure you want to deactivate this plugin?"
+      "confirmDeactivate": "Are you sure you want to deactivate this plugin?",
+      "actionDone": "Done.",
+      "actionAffected": "Items affected.",
+      "dependenciesTitle": "Dependencies",
+      "depName": "Dependency",
+      "depRequired": "Required",
+      "depInstalled": "Installed",
+      "depStatus": "Status",
+      "enableBlocked": "Blocked — unmet dependency:"
     },
     "bulk": {
       "confirmActivate": "Enable {count} backend plugin(s)?",

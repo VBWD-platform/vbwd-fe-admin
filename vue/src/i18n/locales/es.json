@@ -47,7 +47,9 @@
       "rowsPerPage": "Rows per page:",
       "rowsPerPageAll": "All",
       "showing": "Showing {from}–{to} of {total}"
-    }
+    },
+    "working": "Procesando...",
+    "free": "Gratis"
   },
   "nav": {
     "dashboard": "Panel",
@@ -113,7 +115,8 @@
       "admin": "Administrador",
       "vendor": "Vendedor",
       "bot": "Bot",
-      "guest": "Invitado"
+      "guest": "Invitado",
+      "superAdmin": "Superadministrador"
     },
     "createdAt": "Creado El",
     "lastLogin": "Último Acceso",
@@ -123,6 +126,7 @@
     "personalDetails": "Datos Personales",
     "account": "Cuenta",
     "newPassword": "Nueva Contraseña",
+    "newPasswordPlaceholder": "Ingrese nueva contraseña",
     "newPasswordHelp": "Dejar vacío para mantener la contraseña actual. Mínimo 8 caracteres si se cambia.",
     "passwordMinLength": "La contraseña debe tener al menos 8 caracteres",
     "userCreated": "Usuario creado exitosamente",
@@ -169,7 +173,18 @@
     "accountType": "Tipo de cuenta",
     "accountTypePrivate": "Persona física",
     "accountTypeBusiness": "Empresa",
-    "companyRequiredForBusiness": "El nombre de la empresa es obligatorio para una cuenta de empresa"
+    "companyRequiredForBusiness": "El nombre de la empresa es obligatorio para una cuenta de empresa",
+    "createFailed": "No se pudo crear el usuario",
+    "loadFailed": "No se pudo cargar el usuario",
+    "updateFailed": "No se pudo actualizar el usuario",
+    "saving": "Guardando...",
+    "noName": "Sin nombre",
+    "validation": {
+      "emailRequired": "El correo electrónico es obligatorio",
+      "emailInvalid": "Dirección de correo electrónico no válida",
+      "passwordRequired": "La contraseña es obligatoria",
+      "roleRequired": "El rol es obligatorio"
+    }
   },
   "plans": {
     "title": "Planes",
@@ -230,7 +245,9 @@
       "inherit": "Heredar (predeterminado global)",
       "netto": "Neto (sin impuestos)",
       "brutto": "Bruto (con impuestos)"
-    }
+    },
+    "free": "Gratis",
+    "loading": "Cargando planes..."
   },
   "subscriptions": {
     "title": "Suscripciones",
@@ -286,7 +303,9 @@
     "validation": {
       "selectUser": "Por favor seleccione un usuario",
       "selectPlan": "Por favor seleccione un plan"
-    }
+    },
+    "noSubscriptionsForUser": "No hay suscripciones para este usuario",
+    "searchPlaceholder": "Buscar suscripciones..."
   },
   "invoices": {
     "title": "Facturas",
@@ -331,7 +350,10 @@
     "refund": "Reembolsar",
     "paymentMethod": "Método de pago",
     "paymentData": "Datos del pago",
-    "paymentInformation": "Información de pago"
+    "paymentInformation": "Información de pago",
+    "loading": "Cargando facturas...",
+    "noInvoicesForUser": "No hay facturas para este usuario",
+    "searchPlaceholder": "Buscar facturas..."
   },
   "webhooks": {
     "title": "Webhooks",
@@ -564,7 +586,11 @@
     "restrictToPlansHint": "Dejar vacío para todos los usuarios o seleccionar planes",
     "noPlansAvailable": "No hay planes activos disponibles",
     "allPlans": "Todos los planes",
-    "plans": "Planes"
+    "plans": "Planes",
+    "bulkActivate": "Activar seleccionados",
+    "bulkDeactivate": "Desactivar seleccionados",
+    "bulkDelete": "Eliminar seleccionados",
+    "confirmDeleteBulk": "¿Eliminar los complementos seleccionados? Esta acción no se puede deshacer."
   },
   "profile": {
     "title": "Perfil",
@@ -617,7 +643,14 @@
     "es": "España",
     "jp": "Japón",
     "mx": "México",
-    "ar": "Argentina"
+    "ar": "Argentina",
+    "germany": "Alemania",
+    "austria": "Austria",
+    "switzerland": "Suiza",
+    "unitedStates": "Estados Unidos",
+    "unitedKingdom": "Reino Unido",
+    "france": "Francia",
+    "netherlands": "Países Bajos"
   },
   "languages": {
     "en": "English",
@@ -687,7 +720,9 @@
       "saveConfig": "Guardar configuración",
       "saving": "Guardando...",
       "configSaved": "Configuración guardada correctamente",
-      "confirmDeactivate": "¿Está seguro de que desea desactivar este plugin?"
+      "confirmDeactivate": "¿Está seguro de que desea desactivar este plugin?",
+      "actionDone": "Hecho.",
+      "actionAffected": "Elementos afectados."
     },
     "bulk": {
       "confirmActivate": "Enable {count} backend plugin(s)?",
@@ -895,5 +930,11 @@
       "download": "Download",
       "downloadHint": "Select exactly one scope and one stream to download."
     }
+  },
+  "paymentMethods": {
+    "bulkActivate": "Activar seleccionados",
+    "bulkDeactivate": "Desactivar seleccionados",
+    "bulkDelete": "Eliminar seleccionados",
+    "confirmDeleteBulk": "¿Eliminar los métodos de pago seleccionados? Esta acción no se puede deshacer."
   }
 }

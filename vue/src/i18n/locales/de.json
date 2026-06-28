@@ -52,7 +52,9 @@
       "rowsPerPage": "Rows per page:",
       "rowsPerPageAll": "All",
       "showing": "Showing {from}–{to} of {total}"
-    }
+    },
+    "working": "Wird ausgeführt...",
+    "free": "Kostenlos"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -122,7 +124,8 @@
       "admin": "Administrator",
       "vendor": "Verkäufer",
       "bot": "Bot",
-      "guest": "Gast"
+      "guest": "Gast",
+      "superAdmin": "Super-Admin"
     },
     "createdAt": "Erstellt am",
     "lastLogin": "Letzte Anmeldung",
@@ -132,6 +135,7 @@
     "personalDetails": "Persönliche Daten",
     "account": "Konto",
     "newPassword": "Neues Passwort",
+    "newPasswordPlaceholder": "Neues Passwort eingeben",
     "newPasswordHelp": "Leer lassen um aktuelles Passwort zu behalten. Mindestens 8 Zeichen bei Änderung.",
     "passwordMinLength": "Passwort muss mindestens 8 Zeichen haben",
     "userCreated": "Benutzer erfolgreich erstellt",
@@ -180,7 +184,18 @@
     "paymentStatus": "Zahlung",
     "firstInvoice": "Erste Rechnung",
     "lastInvoice": "Letzte Rechnung",
-    "noAddonsForUser": "Keine Zusatzmodul-Abonnements für diesen Benutzer."
+    "noAddonsForUser": "Keine Zusatzmodul-Abonnements für diesen Benutzer.",
+    "createFailed": "Benutzer konnte nicht erstellt werden",
+    "loadFailed": "Benutzer konnte nicht geladen werden",
+    "updateFailed": "Benutzer konnte nicht aktualisiert werden",
+    "saving": "Wird gespeichert...",
+    "noName": "Kein Name",
+    "validation": {
+      "emailRequired": "E-Mail ist erforderlich",
+      "emailInvalid": "Ungültige E-Mail-Adresse",
+      "passwordRequired": "Passwort ist erforderlich",
+      "roleRequired": "Rolle ist erforderlich"
+    }
   },
   "plans": {
     "title": "Tarife",
@@ -241,7 +256,9 @@
       "inherit": "Übernehmen (globaler Standard)",
       "netto": "Netto (ohne Steuer)",
       "brutto": "Brutto (inkl. Steuer)"
-    }
+    },
+    "free": "Kostenlos",
+    "loading": "Tarife werden geladen..."
   },
   "subscriptions": {
     "title": "Abonnements",
@@ -299,7 +316,11 @@
     "validation": {
       "selectUser": "Bitte wählen Sie einen Benutzer",
       "selectPlan": "Bitte wählen Sie einen Plan"
-    }
+    },
+    "clear": "Zurücksetzen",
+    "createFailed": "Abonnement konnte nicht erstellt werden",
+    "noSubscriptionsForUser": "Keine Abonnements für diesen Benutzer",
+    "searchPlaceholder": "Abonnements suchen..."
   },
   "invoices": {
     "title": "Rechnungen",
@@ -344,7 +365,10 @@
     "refund": "Erstatten",
     "paymentMethod": "Zahlungsmethode",
     "paymentData": "Zahlungsdaten",
-    "paymentInformation": "Zahlungsinformationen"
+    "paymentInformation": "Zahlungsinformationen",
+    "loading": "Rechnungen werden geladen...",
+    "noInvoicesForUser": "Keine Rechnungen für diesen Benutzer",
+    "searchPlaceholder": "Rechnungen suchen..."
   },
   "webhooks": {
     "title": "Webhooks",
@@ -571,7 +595,11 @@
     "restrictToPlansHint": "Leer lassen für alle Benutzer oder Tarife auswählen",
     "noPlansAvailable": "Keine aktiven Tarife verfügbar",
     "allPlans": "Alle Tarife",
-    "plans": "Tarife"
+    "plans": "Tarife",
+    "bulkActivate": "Ausgewählte aktivieren",
+    "bulkDeactivate": "Ausgewählte deaktivieren",
+    "bulkDelete": "Ausgewählte löschen",
+    "confirmDeleteBulk": "Ausgewählte Add-ons löschen? Dies kann nicht rückgängig gemacht werden."
   },
   "taxAndCountries": {
     "title": "Steuern & Länder",
@@ -638,7 +666,14 @@
     "us": "Vereinigte Staaten",
     "gb": "Vereinigtes Königreich",
     "fr": "Frankreich",
-    "nl": "Niederlande"
+    "nl": "Niederlande",
+    "germany": "Deutschland",
+    "austria": "Österreich",
+    "switzerland": "Schweiz",
+    "unitedStates": "Vereinigte Staaten",
+    "unitedKingdom": "Vereinigtes Königreich",
+    "france": "Frankreich",
+    "netherlands": "Niederlande"
   },
   "languages": {
     "en": "English",
@@ -708,7 +743,9 @@
       "saveConfig": "Konfiguration speichern",
       "saving": "Speichern...",
       "configSaved": "Konfiguration erfolgreich gespeichert",
-      "confirmDeactivate": "Sind Sie sicher, dass Sie dieses Plugin deaktivieren möchten?"
+      "confirmDeactivate": "Sind Sie sicher, dass Sie dieses Plugin deaktivieren möchten?",
+      "actionDone": "Fertig.",
+      "actionAffected": "Betroffene Einträge."
     },
     "bulk": {
       "confirmActivate": "Enable {count} backend plugin(s)?",
@@ -965,5 +1002,11 @@
       "download": "Download",
       "downloadHint": "Select exactly one scope and one stream to download."
     }
+  },
+  "paymentMethods": {
+    "bulkActivate": "Ausgewählte aktivieren",
+    "bulkDeactivate": "Ausgewählte deaktivieren",
+    "bulkDelete": "Ausgewählte löschen",
+    "confirmDeleteBulk": "Ausgewählte Zahlungsmethoden löschen? Dies kann nicht rückgängig gemacht werden."
   }
 }

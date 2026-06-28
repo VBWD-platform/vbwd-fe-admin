@@ -51,7 +51,9 @@
       "rowsPerPage": "Rows per page:",
       "rowsPerPageAll": "All",
       "showing": "Showing {from}–{to} of {total}"
-    }
+    },
+    "working": "Выполняется...",
+    "free": "Бесплатно"
   },
   "nav": {
     "dashboard": "Главная",
@@ -118,7 +120,8 @@
       "admin": "Администратор",
       "vendor": "Продавец",
       "bot": "Бот",
-      "guest": "Гость"
+      "guest": "Гость",
+      "superAdmin": "Суперадминистратор"
     },
     "createdAt": "Дата создания",
     "lastLogin": "Последний вход",
@@ -128,6 +131,7 @@
     "personalDetails": "Личные данные",
     "account": "Аккаунт",
     "newPassword": "Новый пароль",
+    "newPasswordPlaceholder": "Введите новый пароль",
     "newPasswordHelp": "Оставьте пустым, чтобы сохранить текущий пароль. Минимум 8 символов при изменении.",
     "passwordMinLength": "Пароль должен содержать минимум 8 символов",
     "userCreated": "Пользователь успешно создан",
@@ -174,7 +178,18 @@
     "accountType": "Тип аккаунта",
     "accountTypePrivate": "Частное лицо",
     "accountTypeBusiness": "Компания",
-    "companyRequiredForBusiness": "Для бизнес-аккаунта требуется название компании"
+    "companyRequiredForBusiness": "Для бизнес-аккаунта требуется название компании",
+    "createFailed": "Не удалось создать пользователя",
+    "loadFailed": "Не удалось загрузить пользователя",
+    "updateFailed": "Не удалось обновить пользователя",
+    "saving": "Сохранение...",
+    "noName": "Без имени",
+    "validation": {
+      "emailRequired": "Электронная почта обязательна",
+      "emailInvalid": "Неверный адрес электронной почты",
+      "passwordRequired": "Пароль обязателен",
+      "roleRequired": "Роль обязательна"
+    }
   },
   "plans": {
     "title": "Тарифы",
@@ -235,7 +250,9 @@
       "inherit": "Наследовать (глобально по умолчанию)",
       "netto": "Нетто (без налога)",
       "brutto": "Брутто (с налогом)"
-    }
+    },
+    "free": "Бесплатно",
+    "loading": "Загрузка тарифов..."
   },
   "subscriptions": {
     "title": "Подписки",
@@ -291,7 +308,9 @@
     "validation": {
       "selectUser": "Выберите пользователя",
       "selectPlan": "Выберите тариф"
-    }
+    },
+    "noSubscriptionsForUser": "Нет подписок для этого пользователя",
+    "searchPlaceholder": "Поиск подписок..."
   },
   "invoices": {
     "title": "Счета",
@@ -336,7 +355,10 @@
     "refund": "Возврат",
     "paymentMethod": "Способ оплаты",
     "paymentData": "Данные платежа",
-    "paymentInformation": "Информация о платеже"
+    "paymentInformation": "Информация о платеже",
+    "loading": "Загрузка счетов...",
+    "noInvoicesForUser": "Нет счетов для этого пользователя",
+    "searchPlaceholder": "Поиск счетов..."
   },
   "webhooks": {
     "title": "Вебхуки",
@@ -569,7 +591,11 @@
     "restrictToPlansHint": "Оставьте пустым для всех пользователей или выберите тарифы",
     "noPlansAvailable": "Нет доступных активных тарифов",
     "allPlans": "Все тарифы",
-    "plans": "Тарифы"
+    "plans": "Тарифы",
+    "bulkActivate": "Активировать выбранные",
+    "bulkDeactivate": "Деактивировать выбранные",
+    "bulkDelete": "Удалить выбранные",
+    "confirmDeleteBulk": "Удалить выбранные дополнения? Это действие нельзя отменить."
   },
   "profile": {
     "title": "Профиль",
@@ -616,7 +642,14 @@
     "us": "США",
     "gb": "Великобритания",
     "fr": "Франция",
-    "nl": "Нидерланды"
+    "nl": "Нидерланды",
+    "germany": "Германия",
+    "austria": "Австрия",
+    "switzerland": "Швейцария",
+    "unitedStates": "США",
+    "unitedKingdom": "Великобритания",
+    "france": "Франция",
+    "netherlands": "Нидерланды"
   },
   "languages": {
     "en": "English",
@@ -686,7 +719,9 @@
       "saveConfig": "Сохранить конфигурацию",
       "saving": "Сохранение...",
       "configSaved": "Конфигурация успешно сохранена",
-      "confirmDeactivate": "Вы уверены, что хотите деактивировать этот плагин?"
+      "confirmDeactivate": "Вы уверены, что хотите деактивировать этот плагин?",
+      "actionDone": "Готово.",
+      "actionAffected": "Затронуты записи."
     },
     "bulk": {
       "confirmActivate": "Enable {count} backend plugin(s)?",
@@ -943,5 +978,11 @@
       "download": "Download",
       "downloadHint": "Select exactly one scope and one stream to download."
     }
+  },
+  "paymentMethods": {
+    "bulkActivate": "Активировать выбранные",
+    "bulkDeactivate": "Деактивировать выбранные",
+    "bulkDelete": "Удалить выбранные",
+    "confirmDeleteBulk": "Удалить выбранные способы оплаты? Это действие нельзя отменить."
   }
 }

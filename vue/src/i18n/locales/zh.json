@@ -51,7 +51,9 @@
       "rowsPerPage": "Rows per page:",
       "rowsPerPageAll": "All",
       "showing": "Showing {from}–{to} of {total}"
-    }
+    },
+    "working": "处理中...",
+    "free": "免费"
   },
   "nav": {
     "dashboard": "仪表板",
@@ -118,7 +120,8 @@
       "admin": "管理员",
       "vendor": "供应商",
       "bot": "机器人",
-      "guest": "访客"
+      "guest": "访客",
+      "superAdmin": "超级管理员"
     },
     "createdAt": "创建时间",
     "lastLogin": "最后登录",
@@ -128,6 +131,7 @@
     "personalDetails": "个人信息",
     "account": "账户",
     "newPassword": "新密码",
+    "newPasswordPlaceholder": "输入新密码",
     "newPasswordHelp": "留空以保持当前密码。更改时最少8个字符。",
     "passwordMinLength": "密码必须至少8个字符",
     "userCreated": "用户创建成功",
@@ -174,7 +178,18 @@
     "accountType": "账户类型",
     "accountTypePrivate": "个人",
     "accountTypeBusiness": "企业",
-    "companyRequiredForBusiness": "企业账户必须填写公司名称"
+    "companyRequiredForBusiness": "企业账户必须填写公司名称",
+    "createFailed": "创建用户失败",
+    "loadFailed": "加载用户失败",
+    "updateFailed": "更新用户失败",
+    "saving": "正在保存...",
+    "noName": "无姓名",
+    "validation": {
+      "emailRequired": "电子邮件为必填项",
+      "emailInvalid": "电子邮件地址无效",
+      "passwordRequired": "密码为必填项",
+      "roleRequired": "角色为必填项"
+    }
   },
   "plans": {
     "title": "计划",
@@ -235,7 +250,9 @@
       "inherit": "继承（全局默认）",
       "netto": "净价（不含税）",
       "brutto": "毛价（含税）"
-    }
+    },
+    "free": "免费",
+    "loading": "正在加载套餐..."
   },
   "subscriptions": {
     "title": "订阅",
@@ -291,7 +308,9 @@
     "validation": {
       "selectUser": "请选择用户",
       "selectPlan": "请选择计划"
-    }
+    },
+    "noSubscriptionsForUser": "该用户没有订阅",
+    "searchPlaceholder": "搜索订阅..."
   },
   "invoices": {
     "title": "发票",
@@ -336,7 +355,10 @@
     "refund": "退款",
     "paymentMethod": "付款方式",
     "paymentData": "付款数据",
-    "paymentInformation": "付款信息"
+    "paymentInformation": "付款信息",
+    "loading": "正在加载发票...",
+    "noInvoicesForUser": "该用户没有发票",
+    "searchPlaceholder": "搜索发票..."
   },
   "webhooks": {
     "title": "Webhooks",
@@ -569,7 +591,11 @@
     "restrictToPlansHint": "留空适用于所有用户，或选择套餐以限制可见性",
     "noPlansAvailable": "没有可用的活跃套餐",
     "allPlans": "所有套餐",
-    "plans": "套餐"
+    "plans": "套餐",
+    "bulkActivate": "激活所选",
+    "bulkDeactivate": "停用所选",
+    "bulkDelete": "删除所选",
+    "confirmDeleteBulk": "删除选中的附加组件？此操作无法撤销。"
   },
   "profile": {
     "title": "个人资料",
@@ -620,7 +646,14 @@
     "th": "泰国",
     "cn": "中国",
     "es": "西班牙",
-    "jp": "日本"
+    "jp": "日本",
+    "germany": "德国",
+    "austria": "奥地利",
+    "switzerland": "瑞士",
+    "unitedStates": "美国",
+    "unitedKingdom": "英国",
+    "france": "法国",
+    "netherlands": "荷兰"
   },
   "languages": {
     "en": "English",
@@ -690,7 +723,9 @@
       "saveConfig": "保存配置",
       "saving": "保存中...",
       "configSaved": "配置保存成功",
-      "confirmDeactivate": "确定要停用此插件吗？"
+      "confirmDeactivate": "确定要停用此插件吗？",
+      "actionDone": "完成。",
+      "actionAffected": "受影响的项目。"
     },
     "bulk": {
       "confirmActivate": "Enable {count} backend plugin(s)?",
@@ -947,5 +982,11 @@
       "download": "Download",
       "downloadHint": "Select exactly one scope and one stream to download."
     }
+  },
+  "paymentMethods": {
+    "bulkActivate": "激活所选",
+    "bulkDeactivate": "停用所选",
+    "bulkDelete": "删除所选",
+    "confirmDeleteBulk": "删除选中的支付方式？此操作无法撤销。"
   }
 }

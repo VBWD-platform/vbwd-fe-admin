@@ -51,7 +51,9 @@
       "rowsPerPage": "Rows per page:",
       "rowsPerPageAll": "All",
       "showing": "Showing {from}–{to} of {total}"
-    }
+    },
+    "working": "処理中...",
+    "free": "無料"
   },
   "nav": {
     "dashboard": "ダッシュボード",
@@ -118,7 +120,8 @@
       "admin": "管理者",
       "vendor": "ベンダー",
       "bot": "ボット",
-      "guest": "ゲスト"
+      "guest": "ゲスト",
+      "superAdmin": "スーパー管理者"
     },
     "createdAt": "作成日",
     "lastLogin": "最終ログイン",
@@ -128,6 +131,7 @@
     "personalDetails": "個人情報",
     "account": "アカウント",
     "newPassword": "新しいパスワード",
+    "newPasswordPlaceholder": "新しいパスワードを入力",
     "newPasswordHelp": "現在のパスワードを維持する場合は空欄のままにしてください。変更する場合は8文字以上。",
     "passwordMinLength": "パスワードは8文字以上である必要があります",
     "userCreated": "ユーザーが正常に作成されました",
@@ -174,7 +178,18 @@
     "accountType": "アカウントタイプ",
     "accountTypePrivate": "個人",
     "accountTypeBusiness": "法人",
-    "companyRequiredForBusiness": "法人アカウントには会社名が必要です"
+    "companyRequiredForBusiness": "法人アカウントには会社名が必要です",
+    "createFailed": "ユーザーの作成に失敗しました",
+    "loadFailed": "ユーザーの読み込みに失敗しました",
+    "updateFailed": "ユーザーの更新に失敗しました",
+    "saving": "保存中...",
+    "noName": "名前なし",
+    "validation": {
+      "emailRequired": "メールアドレスは必須です",
+      "emailInvalid": "無効なメールアドレスです",
+      "passwordRequired": "パスワードは必須です",
+      "roleRequired": "ロールは必須です"
+    }
   },
   "plans": {
     "title": "プラン",
@@ -235,7 +250,9 @@
       "inherit": "継承（グローバル既定）",
       "netto": "税抜（ネット）",
       "brutto": "税込（ブルット）"
-    }
+    },
+    "free": "無料",
+    "loading": "プランを読み込んでいます..."
   },
   "subscriptions": {
     "title": "サブスクリプション",
@@ -291,7 +308,9 @@
     "validation": {
       "selectUser": "ユーザーを選択してください",
       "selectPlan": "プランを選択してください"
-    }
+    },
+    "noSubscriptionsForUser": "このユーザーのサブスクリプションはありません",
+    "searchPlaceholder": "サブスクリプションを検索..."
   },
   "invoices": {
     "title": "請求書",
@@ -336,7 +355,10 @@
     "refund": "返金",
     "paymentMethod": "支払い方法",
     "paymentData": "支払いデータ",
-    "paymentInformation": "支払い情報"
+    "paymentInformation": "支払い情報",
+    "loading": "請求書を読み込んでいます...",
+    "noInvoicesForUser": "このユーザーの請求書はありません",
+    "searchPlaceholder": "請求書を検索..."
   },
   "webhooks": {
     "title": "Webhook",
@@ -569,7 +591,11 @@
     "restrictToPlansHint": "空のままですべてのユーザーに表示、またはプランを選択して制限",
     "noPlansAvailable": "利用可能なアクティブプランがありません",
     "allPlans": "すべてのプラン",
-    "plans": "プラン"
+    "plans": "プラン",
+    "bulkActivate": "選択項目を有効化",
+    "bulkDeactivate": "選択項目を無効化",
+    "bulkDelete": "選択項目を削除",
+    "confirmDeleteBulk": "選択したアドオンを削除しますか？この操作は取り消せません。"
   },
   "profile": {
     "title": "プロフィール",
@@ -620,7 +646,14 @@
     "th": "タイ",
     "cn": "中国",
     "es": "スペイン",
-    "jp": "日本"
+    "jp": "日本",
+    "germany": "ドイツ",
+    "austria": "オーストリア",
+    "switzerland": "スイス",
+    "unitedStates": "アメリカ合衆国",
+    "unitedKingdom": "イギリス",
+    "france": "フランス",
+    "netherlands": "オランダ"
   },
   "languages": {
     "en": "English",
@@ -690,7 +723,9 @@
       "saveConfig": "設定を保存",
       "saving": "保存中...",
       "configSaved": "設定が正常に保存されました",
-      "confirmDeactivate": "このプラグインを無効化してもよろしいですか？"
+      "confirmDeactivate": "このプラグインを無効化してもよろしいですか？",
+      "actionDone": "完了しました。",
+      "actionAffected": "対象項目あり。"
     },
     "bulk": {
       "confirmActivate": "Enable {count} backend plugin(s)?",
@@ -947,5 +982,11 @@
       "download": "Download",
       "downloadHint": "Select exactly one scope and one stream to download."
     }
+  },
+  "paymentMethods": {
+    "bulkActivate": "選択項目を有効化",
+    "bulkDeactivate": "選択項目を無効化",
+    "bulkDelete": "選択項目を削除",
+    "confirmDeleteBulk": "選択した支払い方法を削除しますか？この操作は取り消せません。"
   }
 }
