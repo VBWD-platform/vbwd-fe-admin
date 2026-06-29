@@ -34,6 +34,7 @@ export const referralAdminPlugin: IPlugin = {
             label: 'Referral',
             to: '/admin/promotions/referral',
             id: 'referral',
+            icon: 'share',
             position: 'child:promotions',
             requiredPermission: 'referral.view',
           },

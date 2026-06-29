@@ -59,10 +59,11 @@ export const discountAdminPlugin: IPlugin = {
             label: 'Promotions',
             to: '/admin/promotions/discounts',
             id: 'promotions',
+            icon: 'tag',
             requiredPermission: 'discount.discounts.view',
             children: [
-              { label: 'Discounts', to: '/admin/promotions/discounts', requiredPermission: 'discount.discounts.view' },
-              { label: 'Coupons', to: '/admin/promotions/coupons', requiredPermission: 'discount.coupons.view' },
+              { label: 'Discounts', to: '/admin/promotions/discounts', icon: 'percent', requiredPermission: 'discount.discounts.view' },
+              { label: 'Coupons', to: '/admin/promotions/coupons', icon: 'tag', requiredPermission: 'discount.coupons.view' },
             ],
           },
         ],

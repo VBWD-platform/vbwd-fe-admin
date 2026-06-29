@@ -114,6 +114,12 @@
       "installedAt": "2026-04-29T00:00:00.000Z",
       "source": "local"
     },
+    "meinchat-plus": {
+      "enabled": true,
+      "version": "26.6.1",
+      "installedAt": "2026-06-29T00:00:00.000Z",
+      "source": "local"
+    },
     "token-payment-admin": {
       "enabled": true,
       "version": "1.0.0",

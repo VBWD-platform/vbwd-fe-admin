@@ -22,11 +22,15 @@
     >
       <router-link
         to="/admin/dashboard"
-        class="nav-item"
+        class="nav-item nav-item--with-icon"
         data-testid="nav-dashboard"
         @click="closeNav"
       >
-        {{ $t('nav.dashboard') }}
+        <Icon
+          class="nav-icon"
+          name="dashboard"
+        />
+        <span class="nav-label">{{ $t('nav.dashboard') }}</span>
       </router-link>
 
       <!-- All sections: core + plugin (built via extensionRegistry.buildSidebar) -->
@@ -57,10 +61,14 @@
               v-if="!item.children || item.children.length === 0"
               :to="item.to"
               :data-testid="`nav-item-${(item.id || item.to).replace(/\//g, '-').replace(/^-/, '')}`"
-              class="nav-item nav-subitem"
+              class="nav-item nav-subitem nav-item--with-icon"
               @click="closeNav"
             >
-              {{ item.label }}
+              <Icon
+                class="nav-icon"
+                :name="item.icon || 'default'"
+              />
+              <span class="nav-label">{{ item.label }}</span>
             </router-link>
 
             <!-- Level 1: parent with Level 2 children -->
@@ -72,16 +80,24 @@
                 <router-link
                   v-if="item.to"
                   :to="item.to"
-                  class="nav-item nav-subitem nav-subgroup-label"
+                  class="nav-item nav-subitem nav-subgroup-label nav-item--with-icon"
                   @click="closeNav"
                 >
-                  {{ item.label }}
+                  <Icon
+                    class="nav-icon"
+                    :name="item.icon || 'default'"
+                  />
+                  <span class="nav-label">{{ item.label }}</span>
                 </router-link>
                 <span
                   v-else
-                  class="nav-item nav-subitem nav-subgroup-label"
+                  class="nav-item nav-subitem nav-subgroup-label nav-item--with-icon"
                 >
-                  {{ item.label }}
+                  <Icon
+                    class="nav-icon"
+                    :name="item.icon || 'default'"
+                  />
+                  <span class="nav-label">{{ item.label }}</span>
                 </span>
                 <button
                   class="nav-subgroup-toggle"
@@ -99,10 +115,14 @@
                   v-for="child in item.children"
                   :key="child.to"
                   :to="child.to"
-                  class="nav-item nav-subitem nav-level2-item"
+                  class="nav-item nav-subitem nav-level2-item nav-item--with-icon"
                   @click="closeNav"
                 >
-                  {{ child.label }}
+                  <Icon
+                    class="nav-icon"
+                    :name="child.icon || 'default'"
+                  />
+                  <span class="nav-label">{{ child.label }}</span>
                 </router-link>
               </div>
             </div>
@@ -151,6 +171,7 @@ import { computed, ref, reactive } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/auth';
+import { Icon } from 'vbwd-view-component';
 import { extensionRegistry } from '@/plugins/extensionRegistry';
 import type { NavSection } from '@/plugins/extensionRegistry';
 
@@ -174,23 +195,23 @@ const coreSections = computed((): NavSection[] => [
     id: 'sales',
     label: t('nav.sales'),
     items: [
-      { label: t('nav.users'), to: '/admin/users', id: 'users', requiredPermission: 'users.view' },
-      { label: t('nav.invoices'), to: '/admin/invoices', id: 'invoices', requiredPermission: 'invoices.view' },
+      { label: t('nav.users'), to: '/admin/users', id: 'users', icon: 'users', requiredPermission: 'users.view' },
+      { label: t('nav.invoices'), to: '/admin/invoices', id: 'invoices', icon: 'invoice', requiredPermission: 'invoices.view' },
     ],
   },
   {
     id: 'settings',
     label: t('nav.settings'),
     items: [
-      { label: t('nav.settings'), to: '/admin/settings', id: 'settings', requiredPermission: 'settings.view' },
-      { label: t('nav.paymentMethods'), to: '/admin/payment-methods', id: 'payment-methods', requiredPermission: 'settings.manage' },
-      { label: t('nav.taxesAndCountries'), to: '/admin/settings/tax-and-countries', id: 'taxes-and-countries', requiredPermission: 'settings.manage' },
-      { label: t('nav.customFields'), to: '/admin/settings/custom-fields', id: 'custom-fields', requiredPermission: 'settings.manage' },
-      { label: t('nav.rolesAndAccessLevels'), to: '/admin/settings/access', id: 'access-levels', requiredPermission: 'settings.system' },
-      { label: t('nav.userGroups'), to: '/admin/settings/user_groups', id: 'user-groups', requiredPermission: 'settings.manage' },
-      { label: t('nav.logs'), to: '/admin/logs', id: 'logs', requiredPermission: 'logs.read' },
+      { label: t('nav.settings'), to: '/admin/settings', id: 'settings', icon: 'settings', requiredPermission: 'settings.view' },
+      { label: t('nav.paymentMethods'), to: '/admin/payment-methods', id: 'payment-methods', icon: 'card', requiredPermission: 'settings.manage' },
+      { label: t('nav.taxesAndCountries'), to: '/admin/settings/tax-and-countries', id: 'taxes-and-countries', icon: 'percent', requiredPermission: 'settings.manage' },
+      { label: t('nav.customFields'), to: '/admin/settings/custom-fields', id: 'custom-fields', icon: 'list', requiredPermission: 'settings.manage' },
+      { label: t('nav.rolesAndAccessLevels'), to: '/admin/settings/access', id: 'access-levels', icon: 'shield', requiredPermission: 'settings.system' },
+      { label: t('nav.userGroups'), to: '/admin/settings/user_groups', id: 'user-groups', icon: 'group', requiredPermission: 'settings.manage' },
+      { label: t('nav.logs'), to: '/admin/logs', id: 'logs', icon: 'logs', requiredPermission: 'logs.read' },
       // Import/Export stays the LAST settings item by invariant (S46.5).
-      { label: t('nav.importExport'), to: '/admin/import-export', id: 'import-export', requiredPermission: 'settings.view' },
+      { label: t('nav.importExport'), to: '/admin/import-export', id: 'import-export', icon: 'exchange', requiredPermission: 'settings.view' },
     ],
   },
 ]);
@@ -322,6 +343,27 @@ async function handleLogout(): Promise<void> {
 .nav-item:hover {
   background: rgba(255, 255, 255, 0.05);
   color: white;
+}
+
+/* Icon + label rows: align the glyph with the text. */
+.nav-item--with-icon {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-icon {
+  opacity: 0.75;
+}
+
+.nav-item--with-icon:hover .nav-icon,
+.nav-item--with-icon.router-link-active .nav-icon {
+  opacity: 1;
+}
+
+.nav-label {
+  flex: 1;
+  min-width: 0;
 }
 
 .nav-item.router-link-active,

@@ -26,6 +26,12 @@ export interface NavItem {
   to: string;
   /** Optional ID for targeting by other plugins (e.g. 'invoices') */
   id?: string;
+  /**
+   * Optional generic icon name from the shared fe-core registry
+   * (e.g. 'users', 'invoice', 'document'). Rendered by AdminSidebar via the
+   * shared <Icon> component. Keep names domain-agnostic.
+   */
+  icon?: string;
   /** Optional Level 2 children — renders as expandable sub-group */
   children?: NavItem[];
   /** Permission required to see this nav item (checked by AdminSidebar) */
@@ -442,6 +448,7 @@ class ExtensionRegistry {
       label: newItem.label,
       to: newItem.to,
       id: newItem.id,
+      icon: newItem.icon,
       requiredPermission: newItem.requiredPermission,
       children: newItem.children,
     };

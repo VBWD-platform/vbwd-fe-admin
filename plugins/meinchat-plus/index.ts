@@ -16,6 +16,7 @@ const NAV_SECTIONS = [
       {
         label: 'Device keys',
         to: '/admin/meinchat-plus/devices',
+        icon: 'key',
         requiredPermission: 'meinchat.conversations.inspect',
       },
     ],
