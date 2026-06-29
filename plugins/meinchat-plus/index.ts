@@ -24,7 +24,7 @@ const NAV_SECTIONS = [
 
 export const meinchatPlusAdminPlugin: IPlugin = {
   name: 'meinchat-plus-admin',
-  version: '1.0.0',
+  version: '26.6.1',
   description:
     'Admin surface for E2E chat — device-key registry only (no content access).',
 

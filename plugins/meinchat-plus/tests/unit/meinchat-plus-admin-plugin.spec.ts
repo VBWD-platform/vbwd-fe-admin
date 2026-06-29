@@ -13,7 +13,7 @@ describe('Meinchat-plus Admin Plugin', () => {
 
   it('declares correct metadata', () => {
     expect(meinchatPlusAdminPlugin.name).toBe('meinchat-plus-admin');
-    expect(meinchatPlusAdminPlugin.version).toBe('1.0.0');
+    expect(meinchatPlusAdminPlugin.version).toBe('26.6.1');
   });
 
   it('registers the device-key route gated by the inspect permission', async () => {
