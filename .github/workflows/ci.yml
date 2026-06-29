@@ -36,8 +36,11 @@ jobs:
 
       - name: Install plugins
         run: |
-          for plugin in analytics-widget cms-admin email-admin ghrm-admin tarot-admin; do
-            git clone --depth=1 https://github.com/VBWD-platform/vbwd-fe-admin-plugin-${plugin}.git plugins/${plugin}
+          # dir:repo — the local plugin dir keeps the -admin suffix, but the
+          # GitHub repo dropped it (e.g. plugins/tarot-admin ← vbwd-fe-admin-plugin-tarot).
+          for entry in analytics-widget:analytics-widget cms-admin:cms email-admin:email ghrm-admin:ghrm tarot-admin:tarot; do
+            dir="${entry%%:*}"; repo="${entry##*:}"
+            git clone --depth=1 https://github.com/VBWD-platform/vbwd-fe-admin-plugin-${repo}.git plugins/${dir}
           done
 
       - name: Run style checks
@@ -70,8 +73,11 @@ jobs:
 
       - name: Install plugins
         run: |
-          for plugin in analytics-widget cms-admin email-admin ghrm-admin tarot-admin; do
-            git clone --depth=1 https://github.com/VBWD-platform/vbwd-fe-admin-plugin-${plugin}.git plugins/${plugin}
+          # dir:repo — the local plugin dir keeps the -admin suffix, but the
+          # GitHub repo dropped it (e.g. plugins/tarot-admin ← vbwd-fe-admin-plugin-tarot).
+          for entry in analytics-widget:analytics-widget cms-admin:cms email-admin:email ghrm-admin:ghrm tarot-admin:tarot; do
+            dir="${entry%%:*}"; repo="${entry##*:}"
+            git clone --depth=1 https://github.com/VBWD-platform/vbwd-fe-admin-plugin-${repo}.git plugins/${dir}
           done
 
       - name: Run unit tests
@@ -104,8 +110,11 @@ jobs:
 
       - name: Install plugins
         run: |
-          for plugin in analytics-widget cms-admin email-admin ghrm-admin tarot-admin; do
-            git clone --depth=1 https://github.com/VBWD-platform/vbwd-fe-admin-plugin-${plugin}.git plugins/${plugin}
+          # dir:repo — the local plugin dir keeps the -admin suffix, but the
+          # GitHub repo dropped it (e.g. plugins/tarot-admin ← vbwd-fe-admin-plugin-tarot).
+          for entry in analytics-widget:analytics-widget cms-admin:cms email-admin:email ghrm-admin:ghrm tarot-admin:tarot; do
+            dir="${entry%%:*}"; repo="${entry##*:}"
+            git clone --depth=1 https://github.com/VBWD-platform/vbwd-fe-admin-plugin-${repo}.git plugins/${dir}
           done
 
       - name: Run integration tests
