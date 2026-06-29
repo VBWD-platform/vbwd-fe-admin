@@ -2425,6 +2425,20 @@ onMounted(() => {
   margin-bottom: 15px;
 }
 
+.plugin-search-box .search-input {
+  width: 100%;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.plugin-search-box .search-input:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
 .sortable-header {
   cursor: pointer;
   user-select: none;
