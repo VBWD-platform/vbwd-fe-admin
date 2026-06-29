@@ -30,7 +30,7 @@ describe('analytics-widget plugin', () => {
     })
 
     it('has correct version', () => {
-      expect(analyticsWidgetPlugin.version).toBe('1.0.0')
+      expect(analyticsWidgetPlugin.version).toBe('26.6.1')
     })
 
     it('has a description', () => {
