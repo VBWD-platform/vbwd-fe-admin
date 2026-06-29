@@ -28,7 +28,7 @@ function pharmaSlice(messages: Record<string, unknown>): Record<string, unknown>
 
 export const shopPharmaAdminPlugin: IPlugin = {
   name: 'shop-pharma-admin',
-  version: '26.6',
+  version: '26.6.1',
   description: 'Pharmacy admin — 5-class medicine/device catalogue, pack variants, compliance',
 
   install(sdk: IPlatformSDK) {
