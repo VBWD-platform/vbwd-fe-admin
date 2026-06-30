@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "stamp-versions": "node bin/stamp-plugin-versions.mjs",
+    "prebuild": "node bin/stamp-plugin-versions.mjs",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",

@@ -37,6 +37,18 @@ module.exports = {
         'no-console': 'off',
         'no-empty': 'off'
       }
+    },
+    {
+      // Standalone ESM build/CLI scripts under bin/ (e.g. the plugin-version
+      // stamper). console output is their entire purpose, not browser code.
+      // Scoped to *.mjs so bin/*.ts keeps the default TypeScript parser.
+      files: ['bin/**/*.mjs'],
+      parser: 'espree',
+      parserOptions: { sourceType: 'module', ecmaVersion: 2022 },
+      env: { node: true },
+      rules: {
+        'no-console': 'off'
+      }
     }
   ],
   env: {
