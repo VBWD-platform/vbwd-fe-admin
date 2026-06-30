@@ -28,6 +28,15 @@
       <h1>{{ pageTitle }}</h1>
     </div>
     <div class="topbar-actions">
+      <!-- Plugin-contributed actions, right-aligned. Core stays agnostic: each
+           action is a self-contained component a plugin registers via the
+           extension registry (e.g. the CMS "Home" link). -->
+      <component
+        :is="action.component"
+        v-for="action in topbarActions"
+        :key="action.id"
+      />
+      <!-- Per-page actions still flow through the named slot. -->
       <slot name="actions" />
     </div>
   </header>
@@ -36,12 +45,25 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
+import { extensionRegistry } from '@/plugins/extensionRegistry';
 
 defineProps<{ collapsed?: boolean }>();
 defineEmits<{ toggle: [] }>();
 
 const route = useRoute();
 const router = useRouter();
+const authStore = useAuthStore();
+
+// Right-aligned, plugin-injectable topbar actions, filtered by permission.
+const topbarActions = computed(() =>
+  extensionRegistry
+    .getTopbarActions()
+    .filter(
+      (action) =>
+        !action.requiredPermission || authStore.hasPermission(action.requiredPermission),
+    ),
+);
 
 // Literal browser-back. Falls back to the dashboard when there is no history
 // to go back to (e.g. the admin was opened directly on this page).

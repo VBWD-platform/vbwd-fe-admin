@@ -141,6 +141,20 @@ export interface DataExchangeTabExtension {
   requiredPermission?: string;
 }
 
+export interface TopbarAction {
+  /** Unique action id */
+  id: string;
+  /**
+   * Component rendered in the right-aligned topbar actions area (no props).
+   * Keep it self-contained — a link/button the plugin owns (e.g. CMS "Home").
+   */
+  component: Component;
+  /** Ordering hint among contributed actions (lower = earlier; default 100) */
+  order?: number;
+  /** Permission required to see this action (filtered by the topbar) */
+  requiredPermission?: string;
+}
+
 export interface UserSessionBlock {
   /** Unique block id */
   id: string;
@@ -184,6 +198,8 @@ export interface AdminExtension {
   dataExchangeTabs?: DataExchangeTabExtension[];
   /** Session-cleanup blocks: Settings → User sessions + UserEdit → Reset user sessions */
   userSessionBlocks?: UserSessionBlock[];
+  /** Actions injected into the right-aligned admin topbar (e.g. CMS "Home" link) */
+  topbarActions?: TopbarAction[];
 }
 
 class ExtensionRegistry {
@@ -297,6 +313,17 @@ class ExtensionRegistry {
       }
     });
     return tabs.sort((a, b) => (a.order ?? 100) - (b.order ?? 100));
+  }
+
+  /** Topbar actions contributed by plugins, sorted by order (default 100). */
+  getTopbarActions(): TopbarAction[] {
+    const actions: TopbarAction[] = [];
+    this.extensions.forEach((ext) => {
+      if (ext.topbarActions) {
+        actions.push(...ext.topbarActions);
+      }
+    });
+    return actions.sort((a, b) => (a.order ?? 100) - (b.order ?? 100));
   }
 
   /** All session-cleanup blocks that declare a `globalComponent`, sorted by order. */
