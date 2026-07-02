@@ -21,6 +21,7 @@ import {
 import type { IPlugin } from 'vbwd-view-component';
 import i18n, { initLocale, setLocale, type LocaleCode, availableLocales } from '@/i18n';
 import { extensionRegistry } from '@/plugins/extensionRegistry';
+import { purgeExpiredSession } from '@/utils/session';
 import type { Router } from 'vue-router';
 // fe-core ships its scoped component styles as a separate stylesheet
 // (default for vite library builds) — import once at the entry so e.g.
@@ -46,6 +47,9 @@ export interface VbwdAdminAppInstance {
   mount: (selector?: string) => void;
 }
 
+/** localStorage key for the admin JWT (companions: `_refresh`, `_user`). */
+const ADMIN_TOKEN_STORAGE_KEY = 'admin_token';
+
 export async function createVbwdAdminApp(
   options: VbwdAdminAppOptions = {}
 ): Promise<VbwdAdminAppInstance> {
@@ -53,7 +57,7 @@ export async function createVbwdAdminApp(
 
   // Configure auth store with admin-specific settings
   configureAuthStore({
-    storageKey: 'admin_token',
+    storageKey: ADMIN_TOKEN_STORAGE_KEY,
     apiClient: api,
     loginEndpoint: '/auth/login',
     logoutEndpoint: '/auth/logout',
@@ -167,6 +171,14 @@ export async function createVbwdAdminApp(
   // Initialize auth state from localStorage
   const authStore = useAuthStore();
   authStore.initAuth();
+
+  // No-flash-of-dashboard (fe-admin counterpart of fe-user 2026-05-23/01):
+  // initAuth() restores a token without checking its `exp`, so a stale admin
+  // session would let the router guard permit a protected route, PAINT it,
+  // and only redirect once the 401 backstop below resolves — a visible flash.
+  // Read the JWT `exp` locally and purge the dead session HERE, before the
+  // app mounts and the first navigation runs, so nothing protected paints.
+  purgeExpiredSession(authStore, ADMIN_TOKEN_STORAGE_KEY, () => api.clearToken());
 
   // Single source for the operating (billing) currency. fe-admin shows the
   // billing currency only (no display switcher), so we just publish the
