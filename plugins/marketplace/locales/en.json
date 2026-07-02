@@ -1,0 +1,73 @@
+{
+  "marketplace": {
+    "vendors": {
+      "title": "Vendors",
+      "subtitle": "Manage marketplace vendors",
+      "table": {
+        "name": "Vendor",
+        "status": "Status",
+        "created": "Created",
+        "actions": "Actions"
+      },
+      "filter": {
+        "all": "All statuses",
+        "label": "Status"
+      },
+      "statuses": {
+        "pending": "Pending",
+        "active": "Active",
+        "suspended": "Suspended"
+      },
+      "actions": {
+        "approve": "Approve",
+        "suspend": "Suspend"
+      },
+      "empty": "No vendors found",
+      "loading": "Loading vendors…",
+      "unknown": "Unnamed vendor"
+    },
+    "withdraw": {
+      "title": "Withdraw requests",
+      "entries": "requests",
+      "refresh": "Refresh",
+      "searchPlaceholder": "Search by user, provider, id…",
+      "allStatuses": "All statuses",
+      "selected": "{count} selected",
+      "loading": "Loading withdraw requests…",
+      "empty": "No withdraw requests found",
+      "prev": "Previous",
+      "next": "Next",
+      "actions": {
+        "approve": "Approve",
+        "reject": "Reject",
+        "pending": "Reopen (pending)",
+        "delete": "Delete"
+      },
+      "table": {
+        "user": "User",
+        "provider": "Provider",
+        "amount": "Amount",
+        "payout": "Payout",
+        "status": "Status",
+        "created": "Created",
+        "actions": "Actions"
+      },
+      "detail": {
+        "title": "Withdraw request",
+        "back": "Back to withdraw requests",
+        "notFound": "Withdraw request not found.",
+        "amountToSend": "Amount to send to the user",
+        "amountHint": "Prefilled with the requested payout. Edit before sending to pay a different amount to the user's account.",
+        "send": "Send {amount} {currency} to user",
+        "id": "Request ID",
+        "balanceSource": "Balance source",
+        "amountTokens": "Amount (tokens)",
+        "requestedPayout": "Requested payout",
+        "destination": "Destination",
+        "payoutId": "Provider payout ID",
+        "error": "Error",
+        "updated": "Updated"
+      }
+    }
+  }
+}
