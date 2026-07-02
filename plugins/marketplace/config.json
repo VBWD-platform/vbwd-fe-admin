@@ -1,7 +1,0 @@
-{
-  "debug_mode": {
-    "type": "boolean",
-    "default": false,
-    "description": "Enable verbose debug logging in the marketplace admin UI (live mode when off)"
-  }
-}
