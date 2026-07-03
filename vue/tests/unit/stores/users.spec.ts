@@ -44,28 +44,44 @@ describe('UsersStore', () => {
     vi.mocked(api.get).mockResolvedValue({
       users: mockUsers,
       total: 100,
-      page: 1,
-      per_page: 20
+      limit: 20,
+      offset: 0
     });
 
     await store.fetchUsers({ page: 1, per_page: 20 });
 
+    // Backend paginates on limit/offset, not page/per_page.
     expect(api.get).toHaveBeenCalledWith('/admin/users', {
-      params: { page: 1, per_page: 20, search: '', status: '' }
+      params: { limit: 20, offset: 0, search: '', status: '' }
     });
     expect(store.users).toEqual(mockUsers);
     expect(store.total).toBe(100);
   });
 
+  it('translates page number into the correct offset', async () => {
+    const store = useUsersStore();
+
+    vi.mocked(api.get).mockResolvedValue({ users: [], total: 100, limit: 20, offset: 40 });
+
+    // Page 3 with a page size of 20 must request rows starting at offset 40 —
+    // the regression that made "next page" re-fetch the first window.
+    await store.fetchUsers({ page: 3, per_page: 20 });
+
+    expect(api.get).toHaveBeenCalledWith('/admin/users', {
+      params: { limit: 20, offset: 40, search: '', status: '' }
+    });
+    expect(store.page).toBe(3);
+  });
+
   it('fetches users with search filter', async () => {
     const store = useUsersStore();
 
-    vi.mocked(api.get).mockResolvedValue({ users: [], total: 0, page: 1, per_page: 20 });
+    vi.mocked(api.get).mockResolvedValue({ users: [], total: 0, limit: 20, offset: 0 });
 
     await store.fetchUsers({ page: 1, per_page: 20, search: 'test@', status: 'active' });
 
     expect(api.get).toHaveBeenCalledWith('/admin/users', {
-      params: { page: 1, per_page: 20, search: 'test@', status: 'active' }
+      params: { limit: 20, offset: 0, search: 'test@', status: 'active' }
     });
   });
 

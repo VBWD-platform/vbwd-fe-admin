@@ -94,20 +94,31 @@ export const useUsersStore = defineStore('users', {
       this.error = null;
 
       try {
+        // The backend paginates on limit/offset (shared parse_pagination_params
+        // across all admin list routes), not page/per_page. Translate here so
+        // "next page" actually advances the window instead of re-fetching the
+        // first `per_page` rows every time.
+        const perPage = params.per_page;
+        const offset = Math.max(params.page - 1, 0) * perPage;
         const response = await api.get('/admin/users', {
           params: {
-            page: params.page,
-            per_page: params.per_page,
+            limit: perPage,
+            offset,
             search: params.search || '',
             status: params.status || ''
           }
-        }) as FetchUsersResponse;
+        }) as { users: User[]; total: number; limit: number; offset: number };
 
         this.users = response.users;
         this.total = response.total;
-        this.page = response.page;
-        this.perPage = response.per_page;
-        return response;
+        this.page = params.page;
+        this.perPage = perPage;
+        return {
+          users: response.users,
+          total: response.total,
+          page: params.page,
+          per_page: perPage
+        };
       } catch (error) {
         this.error = (error as Error).message || 'Failed to fetch users';
         throw error;

@@ -186,8 +186,8 @@ describe('Users.vue', () => {
     vi.mocked(api.get).mockResolvedValue({
       users: mockUsers,
       total: 100,
-      page: 1,
-      per_page: 20
+      limit: 20,
+      offset: 0
     });
 
     const wrapper = mount(Users, {
@@ -201,13 +201,15 @@ describe('Users.vue', () => {
     // Check pagination exists
     expect(wrapper.find('[data-testid="pagination"]').exists()).toBe(true);
 
-    // Click next page
+    // Click next page — page 2 must request offset 20 (limit/offset is the
+    // backend contract; the old page/per_page params were ignored server-side,
+    // so "next" silently re-fetched the first window).
     const nextBtn = wrapper.find('[data-testid="pagination-next"]');
     await nextBtn.trigger('click');
     await flushPromises();
 
     expect(api.get).toHaveBeenCalledWith('/admin/users', expect.objectContaining({
-      params: expect.objectContaining({ page: 2 })
+      params: expect.objectContaining({ limit: 20, offset: 20 })
     }));
   });
 
