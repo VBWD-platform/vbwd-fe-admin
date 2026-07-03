@@ -252,7 +252,12 @@
       "brutto": "毛价（含税）"
     },
     "free": "免费",
-    "loading": "正在加载套餐..."
+    "loading": "正在加载套餐...",
+    "allCategories": "所有分类",
+    "allBillingPeriods": "所有计费周期",
+    "uncategorized": "未分类",
+    "bulkAssignCategory": "分配分类",
+    "selectCategoryToAssign": "选择分类…"
   },
   "subscriptions": {
     "title": "订阅",

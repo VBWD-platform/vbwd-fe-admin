@@ -252,7 +252,12 @@
       "brutto": "税込（ブルット）"
     },
     "free": "無料",
-    "loading": "プランを読み込んでいます..."
+    "loading": "プランを読み込んでいます...",
+    "allCategories": "すべてのカテゴリ",
+    "allBillingPeriods": "すべての請求期間",
+    "uncategorized": "カテゴリなし",
+    "bulkAssignCategory": "カテゴリを割り当て",
+    "selectCategoryToAssign": "カテゴリを選択…"
   },
   "subscriptions": {
     "title": "サブスクリプション",

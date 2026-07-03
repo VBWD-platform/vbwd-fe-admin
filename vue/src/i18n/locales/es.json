@@ -247,7 +247,12 @@
       "brutto": "Bruto (con impuestos)"
     },
     "free": "Gratis",
-    "loading": "Cargando planes..."
+    "loading": "Cargando planes...",
+    "allCategories": "Todas las categorías",
+    "allBillingPeriods": "Todos los períodos de facturación",
+    "uncategorized": "Sin categoría",
+    "bulkAssignCategory": "Asignar categoría",
+    "selectCategoryToAssign": "Seleccionar categoría…"
   },
   "subscriptions": {
     "title": "Suscripciones",

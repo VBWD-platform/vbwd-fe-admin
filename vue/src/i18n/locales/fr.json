@@ -252,7 +252,12 @@
       "brutto": "Brut (TTC)"
     },
     "free": "Gratuit",
-    "loading": "Chargement des forfaits..."
+    "loading": "Chargement des forfaits...",
+    "allCategories": "Toutes les catégories",
+    "allBillingPeriods": "Toutes les périodes de facturation",
+    "uncategorized": "Sans catégorie",
+    "bulkAssignCategory": "Attribuer une catégorie",
+    "selectCategoryToAssign": "Sélectionner une catégorie…"
   },
   "subscriptions": {
     "title": "Abonnements",

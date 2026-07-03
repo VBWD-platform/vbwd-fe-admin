@@ -258,7 +258,12 @@
       "brutto": "Brutto (inkl. Steuer)"
     },
     "free": "Kostenlos",
-    "loading": "Tarife werden geladen..."
+    "loading": "Tarife werden geladen...",
+    "allCategories": "Alle Kategorien",
+    "allBillingPeriods": "Alle Abrechnungszeiträume",
+    "uncategorized": "Ohne Kategorie",
+    "bulkAssignCategory": "Kategorie zuweisen",
+    "selectCategoryToAssign": "Kategorie auswählen…"
   },
   "subscriptions": {
     "title": "Abonnements",

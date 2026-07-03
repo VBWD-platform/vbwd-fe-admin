@@ -273,7 +273,12 @@
       "brutto": "Brutto (incl. tax)"
     },
     "free": "Free",
-    "loading": "Loading plans..."
+    "loading": "Loading plans...",
+    "allCategories": "All categories",
+    "allBillingPeriods": "All billing periods",
+    "uncategorized": "Uncategorized",
+    "bulkAssignCategory": "Assign Category",
+    "selectCategoryToAssign": "Select category…"
   },
   "categories": {
     "categoriesTab": "Categories",
@@ -301,7 +306,10 @@
     "available": "Available Categories",
     "assigned": "Assigned Categories",
     "allAssigned": "All categories assigned",
-    "noneAssigned": "No categories assigned"
+    "noneAssigned": "No categories assigned",
+    "bulkAssignParent": "Assign Parent",
+    "bulkUnassignParent": "Unassign Parent",
+    "selectParent": "Select parent…"
   },
   "subscriptions": {
     "title": "Subscriptions",
