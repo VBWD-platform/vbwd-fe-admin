@@ -4,3 +4,6 @@
 [submodule "plugins/booking"]
 	path = plugins/booking
 	url = https://github.com/VBWD-platform/vbwd-fe-admin-plugin-booking.git
+[submodule "plugins/dataset"]
+	path = plugins/dataset
+	url = https://github.com/VBWD-platform/vbwd-fe-admin-plugin-dataset.git
