@@ -48,7 +48,7 @@ test('spreadsheet features: format, stats, sort, filter, edit', async ({ page })
   await expect(page.locator('[data-testid="spreadsheet-cell-input"]').first()).toBeVisible();
 
   // 1. Editable grid + stats footer (default decimals=3). Pick a statistic.
-  await page.locator('[data-testid="stat-select"]').selectOption({ label: /mean/i }).catch(() => {});
+  await page.locator('[data-testid="stat-select"]').selectOption({ label: 'Mean' }).catch(() => {});
   await shot(page, 'editable-grid-stats');
 
   // 2. Decimals control → 1 (formatting).
