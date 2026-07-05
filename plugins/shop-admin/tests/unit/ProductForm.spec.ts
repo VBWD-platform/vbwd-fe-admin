@@ -41,9 +41,25 @@ const mockProduct = {
   tax_ids: ['tax-1'],
 };
 
+const pharmaProductType = {
+  id: 'pt-1',
+  slug: 'pharma',
+  name: 'Pharma',
+  description: 'Pharmaceutical products',
+  product_type_fields: [
+    { slug: 'atc_code', type: 'string', label: 'ATC code', required: false, options: [], help: null, sort_order: 1 },
+    { slug: 'product_class', type: 'select', label: 'Product class', required: true, options: ['RX', 'OTC'], help: null, sort_order: 2 },
+  ],
+  source: 'plugin',
+  is_active: true,
+  created_at: '2026-01-01T00:00:00',
+  updated_at: '2026-01-01T00:00:00',
+};
+
 function mockApiByUrl(product: Record<string, unknown> | null): void {
   vi.mocked(api.get).mockImplementation((url: string) => {
     if (url === '/admin/tax/rates') return Promise.resolve({ rates: taxRates });
+    if (url === '/shop/product-types') return Promise.resolve({ product_types: [pharmaProductType] });
     if (url.startsWith('/admin/shop/products/')) return Promise.resolve({ product });
     if (url === '/admin/shop/categories') return Promise.resolve({ categories: [] });
     if (url === '/admin/shop/warehouses') return Promise.resolve({ warehouses: [] });
@@ -212,6 +228,146 @@ describe('ProductForm.vue — Price display override (S72.4)', () => {
     expect(api.put).toHaveBeenCalledWith(
       '/admin/shop/products/prod-1',
       expect.objectContaining({ price_display_mode: 'brutto' }),
+    );
+  });
+});
+
+describe('ProductForm.vue — Product type + dynamic fields (S116.2)', () => {
+  let router: ReturnType<typeof createRouter>;
+
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    configureAuthStore({
+      storageKey: 'test_token',
+      apiClient: api as Parameters<typeof configureAuthStore>[0]['apiClient'],
+    });
+    const authStore = useAuthStore();
+    authStore.$patch({
+      user: { id: '1', email: 'admin@test.com', role: 'SUPER_ADMIN', permissions: ['*'] },
+      token: 'test-token',
+    });
+    vi.clearAllMocks();
+    __resetTaxOptionsCache();
+
+    router = createRouter({
+      history: createMemoryHistory(),
+      routes: [
+        { path: '/admin/shop/products', name: 'products', component: { template: '<div>Products</div>' } },
+        { path: '/admin/shop/products/new', name: 'product-new', component: ProductForm },
+        { path: '/admin/shop/products/:id/edit', name: 'product-edit', component: ProductForm },
+      ],
+    });
+  });
+
+  it('does NOT render the global CustomFieldsEditor on the base product form', async () => {
+    mockApiByUrl(mockProduct);
+    await router.push('/admin/shop/products/prod-1/edit');
+
+    const wrapper = mount(ProductForm, { global: { plugins: [router] } });
+    await flushPromises();
+
+    expect(wrapper.findComponent({ name: 'CustomFieldsEditor' }).exists()).toBe(false);
+  });
+
+  it('offers a type selector with a "none" default option', async () => {
+    mockApiByUrl(null);
+    await router.push('/admin/shop/products/new');
+
+    const wrapper = mount(ProductForm, { global: { plugins: [router] } });
+    await flushPromises();
+
+    const select = wrapper.find('[data-testid="product-type-select"]');
+    expect(select.exists()).toBe(true);
+    // "none" default + one active type (pharma)
+    expect(select.findAll('option')).toHaveLength(2);
+  });
+
+  it('renders no dynamic fields until a type is chosen', async () => {
+    mockApiByUrl(null);
+    await router.push('/admin/shop/products/new');
+
+    const wrapper = mount(ProductForm, { global: { plugins: [router] } });
+    await flushPromises();
+
+    expect(wrapper.find('[data-testid="product-type-fields"]').exists()).toBe(false);
+  });
+
+  it('renders the selected type\'s dynamic fields', async () => {
+    mockApiByUrl(null);
+    await router.push('/admin/shop/products/new');
+
+    const wrapper = mount(ProductForm, { global: { plugins: [router] } });
+    await flushPromises();
+
+    await wrapper.find('[data-testid="product-type-select"]').setValue('pharma');
+    await flushPromises();
+
+    expect(wrapper.find('[data-testid="product-type-fields"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="type-field-atc_code"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="type-field-product_class"]').exists()).toBe(true);
+  });
+
+  it('hydrates the selector and values from the product on edit', async () => {
+    mockApiByUrl({
+      ...mockProduct,
+      product_type_slug: 'pharma',
+      type_field_values: { atc_code: 'N02BE01', product_class: 'OTC' },
+    });
+    await router.push('/admin/shop/products/prod-1/edit');
+
+    const wrapper = mount(ProductForm, { global: { plugins: [router] } });
+    await flushPromises();
+
+    const select = wrapper.find('[data-testid="product-type-select"]');
+    expect((select.element as HTMLSelectElement).value).toBe('pharma');
+    expect(
+      (wrapper.find('[data-testid="type-field-atc_code"]').element as HTMLInputElement).value,
+    ).toBe('N02BE01');
+  });
+
+  it('sends product_type_slug and type_field_values in the update payload', async () => {
+    mockApiByUrl({
+      ...mockProduct,
+      product_type_slug: 'pharma',
+      type_field_values: { atc_code: 'N02BE01' },
+    });
+    vi.mocked(api.put).mockResolvedValue({ product: mockProduct });
+    await router.push('/admin/shop/products/prod-1/edit');
+
+    const wrapper = mount(ProductForm, { global: { plugins: [router] } });
+    await flushPromises();
+
+    await wrapper.find('[data-testid="tab-general-content"]').trigger('submit');
+    await flushPromises();
+
+    expect(api.put).toHaveBeenCalledWith(
+      '/admin/shop/products/prod-1',
+      expect.objectContaining({
+        product_type_slug: 'pharma',
+        type_field_values: { atc_code: 'N02BE01' },
+      }),
+    );
+  });
+
+  it('sends null slug and empty values when "none" is selected', async () => {
+    mockApiByUrl({
+      ...mockProduct,
+      product_type_slug: 'pharma',
+      type_field_values: { atc_code: 'N02BE01' },
+    });
+    vi.mocked(api.put).mockResolvedValue({ product: mockProduct });
+    await router.push('/admin/shop/products/prod-1/edit');
+
+    const wrapper = mount(ProductForm, { global: { plugins: [router] } });
+    await flushPromises();
+
+    await wrapper.find('[data-testid="product-type-select"]').setValue('');
+    await wrapper.find('[data-testid="tab-general-content"]').trigger('submit');
+    await flushPromises();
+
+    expect(api.put).toHaveBeenCalledWith(
+      '/admin/shop/products/prod-1',
+      expect.objectContaining({ product_type_slug: null, type_field_values: {} }),
     );
   });
 });

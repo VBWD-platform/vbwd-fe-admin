@@ -32,6 +32,12 @@ export const shopAdminPlugin: IPlugin = {
       meta: { requiredPermission: 'shop.categories.manage' },
     });
     sdk.addRoute({
+      path: 'shop/product-types',
+      name: 'shop-product-types',
+      component: () => import('./src/views/ProductTypes.vue'),
+      meta: { requiredPermission: 'shop.products.view' },
+    });
+    sdk.addRoute({
       path: 'shop/orders',
       name: 'shop-orders',
       component: () => import('./src/views/Orders.vue'),
@@ -81,6 +87,7 @@ export const shopAdminPlugin: IPlugin = {
             requiredPermission: 'shop.products.view',
             children: [
               { label: 'Products', to: '/admin/shop/products', icon: 'bag', requiredPermission: 'shop.products.view' },
+              { label: 'Product Types', to: '/admin/shop/product-types', icon: 'layers', requiredPermission: 'shop.products.view' },
               { label: 'Categories', to: '/admin/shop/categories', icon: 'tag', requiredPermission: 'shop.categories.manage' },
               { label: 'Orders', to: '/admin/shop/orders', icon: 'cart', requiredPermission: 'shop.orders.view' },
               { label: 'Stock', to: '/admin/shop/stock', icon: 'layers', requiredPermission: 'shop.stock.manage' },

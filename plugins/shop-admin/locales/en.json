@@ -38,6 +38,24 @@
     "categories": {
       "title": "Product Categories"
     },
+    "productTypes": {
+      "title": "Product Types",
+      "create": "New Type",
+      "edit": "Edit Type",
+      "slug": "Slug",
+      "name": "Name",
+      "description": "Description",
+      "active": "Active",
+      "fields": "Fields",
+      "addField": "Add Field",
+      "source": "Source",
+      "managedByPlugin": "managed by plugin",
+      "readOnly": "read-only",
+      "none": "— none (default product) —",
+      "selectorLabel": "Product Type",
+      "empty": "No product types yet.",
+      "deleteConfirm": "Delete this product type?"
+    },
     "orders": {
       "title": "Orders",
       "orderNumber": "Order #",

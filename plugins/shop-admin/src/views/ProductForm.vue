@@ -158,12 +158,43 @@
               </option>
             </select>
           </div>
+          <!-- Product type (S116.2) -->
+          <div class="form-group">
+            <label>Product Type</label>
+            <select
+              v-model="productTypeSlug"
+              data-testid="product-type-select"
+              @change="onProductTypeChange"
+            >
+              <option value="">
+                — none (default product) —
+              </option>
+              <option
+                v-for="productType in activeProductTypes"
+                :key="productType.slug"
+                :value="productType.slug"
+              >
+                {{ productType.name }}
+              </option>
+            </select>
+          </div>
           <div class="form-group full-width">
             <label>Description</label>
             <textarea
               v-model="form.description"
               rows="4"
               data-testid="product-description-input"
+            />
+          </div>
+          <!-- Dynamic fields for the selected product type (S116.2) -->
+          <div
+            v-if="selectedProductTypeFields.length > 0"
+            class="form-group full-width"
+            data-testid="product-type-fields"
+          >
+            <ProductTypeFieldValues
+              v-model="typeFieldValues"
+              :fields="selectedProductTypeFields"
             />
           </div>
           <div class="form-group">
@@ -394,17 +425,15 @@
         </div>
       </div>
 
-      <!-- Tags + Custom fields (S77, generic editors) -->
+      <!-- Tags (S77 generic editor). Custom fields for shop products are now the
+           product-type field cluster (S116.2), rendered in the General tab; the
+           global CustomFieldsEditor is intentionally NOT used here. -->
       <div
         v-if="isEditMode && productId"
         class="form-section"
         data-testid="product-tags-custom-fields"
       >
         <TagPicker
-          entity-type="shop_product"
-          :entity-id="productId"
-        />
-        <CustomFieldsEditor
           entity-type="shop_product"
           :entity-id="productId"
         />
@@ -431,18 +460,20 @@
 import { ref, computed, onMounted, reactive } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useProductAdminStore } from '../stores/productAdmin';
+import { useProductTypeAdminStore } from '../stores/productTypeAdmin';
 import { useAuthStore } from '@/stores/auth';
 import { api } from '@/api';
 import { extensionRegistry } from '../../../../vue/src/plugins/extensionRegistry';
 import ProductImageGallery from '../components/ProductImageGallery.vue';
+import ProductTypeFieldValues from '../components/ProductTypeFieldValues.vue';
 import DualListSelector from '@/components/DualListSelector.vue';
 import TagPicker from '@/components/TagPicker.vue';
-import CustomFieldsEditor from '@/components/CustomFieldsEditor.vue';
 import { useTaxOptions } from '@/composables/useTaxOptions';
 
 const route = useRoute();
 const router = useRouter();
 const store = useProductAdminStore();
+const productTypeStore = useProductTypeAdminStore();
 const authStore = useAuthStore();
 const canManage = computed(() => authStore.hasPermission('shop.products.manage'));
 
@@ -467,6 +498,23 @@ const form = reactive({
 
 const { taxOptions, loadTaxOptions } = useTaxOptions();
 const taxIds = ref<string[]>([]);
+
+// Product type (S116.2): '' = the simple default product (base fields only).
+const productTypeSlug = ref<string>('');
+const typeFieldValues = ref<Record<string, unknown>>({});
+const activeProductTypes = computed(() => productTypeStore.activeProductTypes);
+const selectedProductTypeFields = computed(() => {
+  const selected = activeProductTypes.value.find(
+    productType => productType.slug === productTypeSlug.value,
+  );
+  return selected ? selected.product_type_fields : [];
+});
+
+// User-initiated type switch swaps the visible field set and clears prior values;
+// selecting "none" clears back to the base-only product.
+function onProductTypeChange() {
+  typeFieldValues.value = {};
+}
 
 // Stock data
 const stockItems = ref<Array<Record<string, unknown>>>([]);
@@ -575,6 +623,14 @@ async function fetchProduct() {
     form.tax_class = product.tax_class || 'standard';
     form.price_display_mode = (product as { price_display_mode?: string | null }).price_display_mode || '';
 
+    // Product type + field values (S116.2)
+    const typedProduct = product as {
+      product_type_slug?: string | null;
+      type_field_values?: Record<string, unknown> | null;
+    };
+    productTypeSlug.value = typedProduct.product_type_slug || '';
+    typeFieldValues.value = { ...(typedProduct.type_field_values || {}) };
+
     // Load assigned categories
     if (product.categories) {
       assignedCategoryIds.value = product.categories.map((c: CategoryOption) => c.id);
@@ -617,6 +673,7 @@ function unassignCategory(categoryId: string) {
 }
 
 async function handleSubmit() {
+  const hasProductType = !!productTypeSlug.value;
   const data: Record<string, unknown> = {
     ...form,
     price: parseFloat(form.price) || 0,
@@ -624,6 +681,9 @@ async function handleSubmit() {
     tax_ids: [...taxIds.value],
     // Inherit (empty) maps to null so the backend falls back to the global mode.
     price_display_mode: form.price_display_mode || null,
+    // Product type (S116.2): '' (none) → null slug + empty base-only values.
+    product_type_slug: hasProductType ? productTypeSlug.value : null,
+    type_field_values: hasProductType ? { ...typeFieldValues.value } : {},
   };
 
   try {
@@ -642,6 +702,7 @@ async function handleSubmit() {
 
 onMounted(() => {
   loadTaxOptions();
+  productTypeStore.fetchActiveProductTypes();
   fetchCategories();
   fetchProduct();
   loadWarehouses();
