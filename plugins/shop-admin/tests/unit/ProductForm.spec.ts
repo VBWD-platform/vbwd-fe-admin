@@ -34,11 +34,22 @@ const mockProduct = {
   currency: 'EUR',
   description: 'A widget',
   is_active: true,
-  is_digital: false,
   weight: null,
   tax_class: 'standard',
   categories: [],
   tax_ids: ['tax-1'],
+};
+
+const simpleProductType = {
+  id: 'pt-0',
+  slug: 'simple_product',
+  name: 'Simple product',
+  description: '',
+  product_type_fields: [],
+  source: 'plugin',
+  is_active: true,
+  created_at: '2026-01-01T00:00:00',
+  updated_at: '2026-01-01T00:00:00',
 };
 
 const pharmaProductType = {
@@ -56,10 +67,16 @@ const pharmaProductType = {
   updated_at: '2026-01-01T00:00:00',
 };
 
-function mockApiByUrl(product: Record<string, unknown> | null): void {
+// `productTypes` lets a test override the loaded type list (e.g. omit
+// simple_product to exercise the graceful fallback). Defaults to the real
+// coexistence set: the named default simple_product plus pharma.
+function mockApiByUrl(
+  product: Record<string, unknown> | null,
+  productTypes: Array<Record<string, unknown>> = [simpleProductType, pharmaProductType],
+): void {
   vi.mocked(api.get).mockImplementation((url: string) => {
     if (url === '/admin/tax/rates') return Promise.resolve({ rates: taxRates });
-    if (url === '/shop/product-types') return Promise.resolve({ product_types: [pharmaProductType] });
+    if (url === '/shop/product-types') return Promise.resolve({ product_types: productTypes });
     if (url.startsWith('/admin/shop/products/')) return Promise.resolve({ product });
     if (url === '/admin/shop/categories') return Promise.resolve({ categories: [] });
     if (url === '/admin/shop/warehouses') return Promise.resolve({ warehouses: [] });
@@ -269,7 +286,7 @@ describe('ProductForm.vue — Product type + dynamic fields (S116.2)', () => {
     expect(wrapper.findComponent({ name: 'CustomFieldsEditor' }).exists()).toBe(false);
   });
 
-  it('offers a type selector with a "none" default option', async () => {
+  it('offers a type selector listing the loaded types with no synthetic "none" option', async () => {
     mockApiByUrl(null);
     await router.push('/admin/shop/products/new');
 
@@ -278,11 +295,12 @@ describe('ProductForm.vue — Product type + dynamic fields (S116.2)', () => {
 
     const select = wrapper.find('[data-testid="product-type-select"]');
     expect(select.exists()).toBe(true);
-    // "none" default + one active type (pharma)
-    expect(select.findAll('option')).toHaveLength(2);
+    // Two real types (simple_product + pharma), no synthetic "— none —" option.
+    const optionLabels = select.findAll('option').map(option => option.text().trim());
+    expect(optionLabels).toEqual(['Simple product', 'Pharma']);
   });
 
-  it('renders no dynamic fields until a type is chosen', async () => {
+  it('renders no dynamic fields for the default simple_product type (empty cluster)', async () => {
     mockApiByUrl(null);
     await router.push('/admin/shop/products/new');
 
@@ -349,7 +367,7 @@ describe('ProductForm.vue — Product type + dynamic fields (S116.2)', () => {
     );
   });
 
-  it('sends null slug and empty values when "none" is selected', async () => {
+  it('sends the simple_product slug and empty values when the default type is selected', async () => {
     mockApiByUrl({
       ...mockProduct,
       product_type_slug: 'pharma',
@@ -361,10 +379,100 @@ describe('ProductForm.vue — Product type + dynamic fields (S116.2)', () => {
     const wrapper = mount(ProductForm, { global: { plugins: [router] } });
     await flushPromises();
 
-    await wrapper.find('[data-testid="product-type-select"]').setValue('');
+    await wrapper.find('[data-testid="product-type-select"]').setValue('simple_product');
     await wrapper.find('[data-testid="tab-general-content"]').trigger('submit');
     await flushPromises();
 
+    expect(api.put).toHaveBeenCalledWith(
+      '/admin/shop/products/prod-1',
+      expect.objectContaining({ product_type_slug: 'simple_product', type_field_values: {} }),
+    );
+  });
+});
+
+describe('ProductForm.vue — simple_product default (S116.4)', () => {
+  let router: ReturnType<typeof createRouter>;
+
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    configureAuthStore({
+      storageKey: 'test_token',
+      apiClient: api as Parameters<typeof configureAuthStore>[0]['apiClient'],
+    });
+    const authStore = useAuthStore();
+    authStore.$patch({
+      user: { id: '1', email: 'admin@test.com', role: 'SUPER_ADMIN', permissions: ['*'] },
+      token: 'test-token',
+    });
+    vi.clearAllMocks();
+    __resetTaxOptionsCache();
+
+    router = createRouter({
+      history: createMemoryHistory(),
+      routes: [
+        { path: '/admin/shop/products', name: 'products', component: { template: '<div>Products</div>' } },
+        { path: '/admin/shop/products/new', name: 'product-new', component: ProductForm },
+        { path: '/admin/shop/products/:id/edit', name: 'product-edit', component: ProductForm },
+      ],
+    });
+  });
+
+  it('defaults a NEW product to the simple_product type', async () => {
+    mockApiByUrl(null);
+    await router.push('/admin/shop/products/new');
+
+    const wrapper = mount(ProductForm, { global: { plugins: [router] } });
+    await flushPromises();
+
+    const select = wrapper.find('[data-testid="product-type-select"]');
+    expect((select.element as HTMLSelectElement).value).toBe('simple_product');
+  });
+
+  it('displays a legacy product with a null slug as simple_product', async () => {
+    mockApiByUrl({ ...mockProduct, product_type_slug: null, type_field_values: null });
+    await router.push('/admin/shop/products/prod-1/edit');
+
+    const wrapper = mount(ProductForm, { global: { plugins: [router] } });
+    await flushPromises();
+
+    const select = wrapper.find('[data-testid="product-type-select"]');
+    expect((select.element as HTMLSelectElement).value).toBe('simple_product');
+  });
+
+  it('still hydrates a real non-default type with its fields on edit', async () => {
+    mockApiByUrl({
+      ...mockProduct,
+      product_type_slug: 'pharma',
+      type_field_values: { atc_code: 'N02BE01' },
+    });
+    await router.push('/admin/shop/products/prod-1/edit');
+
+    const wrapper = mount(ProductForm, { global: { plugins: [router] } });
+    await flushPromises();
+
+    const select = wrapper.find('[data-testid="product-type-select"]');
+    expect((select.element as HTMLSelectElement).value).toBe('pharma');
+    expect(wrapper.find('[data-testid="product-type-fields"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="type-field-atc_code"]').exists()).toBe(true);
+  });
+
+  it('falls back gracefully to a null-slug base product when simple_product is absent', async () => {
+    // Type endpoint has not registered simple_product yet — only pharma present.
+    mockApiByUrl({ ...mockProduct, product_type_slug: null, type_field_values: null }, [pharmaProductType]);
+    vi.mocked(api.put).mockResolvedValue({ product: mockProduct });
+    await router.push('/admin/shop/products/prod-1/edit');
+
+    const wrapper = mount(ProductForm, { global: { plugins: [router] } });
+    await flushPromises();
+
+    // No crash: the base "none" fallback option is offered and no fields render.
+    const noneOption = wrapper.find('[data-testid="product-type-select"] option[value=""]');
+    expect(noneOption.exists()).toBe(true);
+    expect(wrapper.find('[data-testid="product-type-fields"]').exists()).toBe(false);
+
+    // The saved product keeps its null slug (no synthetic default is forced on it).
+    await wrapper.find('[data-testid="tab-general-content"]').trigger('submit');
+    await flushPromises();
     expect(api.put).toHaveBeenCalledWith(
       '/admin/shop/products/prod-1',
       expect.objectContaining({ product_type_slug: null, type_field_values: {} }),

@@ -7,6 +7,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  packages: read
+
 jobs:
   unit:
     name: Unit — ${{ matrix.plugin }}
@@ -21,9 +25,9 @@ jobs:
         with: { submodules: recursive }
       - uses: actions/setup-node@v4
         with: { node-version: '20', cache: 'npm' }
-      - name: Build fe-core
-        run: cd vbwd-fe-core && npm install && npm run build
       - run: npm install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Install ALL plugins
         run: |
           for entry in "analytics-widget:vbwd-fe-admin-plugin-analytics-widget" "cms-admin:vbwd-fe-admin-plugin-cms" "email-admin:vbwd-fe-admin-plugin-email" "ghrm-admin:vbwd-fe-admin-plugin-ghrm" "tarot-admin:vbwd-fe-admin-plugin-tarot" "booking:vbwd-fe-admin-plugin-booking"; do
@@ -47,9 +51,9 @@ jobs:
         with: { submodules: recursive }
       - uses: actions/setup-node@v4
         with: { node-version: '20', cache: 'npm' }
-      - name: Build fe-core
-        run: cd vbwd-fe-core && npm install && npm run build
       - run: npm install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Install ALL plugins
         run: |
           for entry in "analytics-widget:vbwd-fe-admin-plugin-analytics-widget" "cms-admin:vbwd-fe-admin-plugin-cms" "email-admin:vbwd-fe-admin-plugin-email" "ghrm-admin:vbwd-fe-admin-plugin-ghrm" "tarot-admin:vbwd-fe-admin-plugin-tarot" "booking:vbwd-fe-admin-plugin-booking"; do

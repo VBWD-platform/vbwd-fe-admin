@@ -26,7 +26,6 @@ const mockProducts = [
     currency: 'EUR',
     price_float: 79.99,
     is_active: true,
-    is_digital: false,
     has_variants: false,
     primary_image_url: null,
     images: [],

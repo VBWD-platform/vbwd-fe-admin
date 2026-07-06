@@ -13,7 +13,6 @@
       "status": "Status",
       "active": "Active",
       "draft": "Draft",
-      "digital": "Digital Product",
       "weight": "Weight (kg)",
       "taxClass": "Tax Class",
       "noProducts": "No products yet.",

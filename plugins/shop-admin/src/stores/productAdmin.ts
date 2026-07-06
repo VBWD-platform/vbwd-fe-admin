@@ -11,7 +11,6 @@ export interface ProductAdmin {
   currency: string;
   price_float: number;
   is_active: boolean;
-  is_digital: boolean;
   has_variants: boolean;
   weight: string | null;
   tax_class: string;
