@@ -25,14 +25,36 @@ server {
 
     # Admin SPA — Vite is built with base: '/admin/'
     # Assets are referenced as /admin/assets/*, served via alias to dist/
+
+    # Content-hashed build assets: the filename changes on every rebuild, so the
+    # bytes behind a given URL are immutable — cache them hard. A MISSING asset
+    # must 404 (=404), NOT fall through to index.html: a stale tab that requests
+    # an old chunk hash after a redeploy then gets a clean 404 instead of the SPA
+    # shell served as text/html (which trips strict-MIME module loading).
+    location /admin/assets/ {
+        alias /usr/share/nginx/html/assets/;
+        try_files $uri =404;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
     location /admin/ {
         alias /usr/share/nginx/html/;
         index index.html;
         try_files $uri $uri/ @admin_spa;
     }
 
+    # The SPA entry document must always be revalidated so a redeploy's new asset
+    # hashes are picked up immediately. Without this, browsers heuristically cache
+    # index.html and keep requesting the previous build's (now-404) chunk hashes.
+    location = /admin/index.html {
+        alias /usr/share/nginx/html/index.html;
+        add_header Cache-Control "no-cache";
+    }
+
     location @admin_spa {
         root /usr/share/nginx/html;
+        add_header Cache-Control "no-cache";
         rewrite ^ /index.html break;
     }
 
