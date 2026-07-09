@@ -149,6 +149,12 @@
       "version": "26.6.1",
       "installedAt": "2026-07-01T00:00:00.000Z",
       "source": "local"
+    },
+    "vbwd-datavibes": {
+      "enabled": true,
+      "version": "26.7.0",
+      "installedAt": "2026-07-09T00:00:00.000Z",
+      "source": "local"
     }
   }
 }
