@@ -117,6 +117,25 @@ export const useProductAdminStore = defineStore('shopProductAdmin', {
       await api.delete(`/admin/shop/products/${productId}/images/${imageId}`);
     },
 
+    async bulkCopyProducts(productIds: string[]) {
+      this.loading = true;
+      this.error = null;
+      try {
+        // Shop bulk routes all key on `product_ids` (matching bulk-delete /
+        // bulk-activate / bulk-deactivate), never `ids`. Copies land inactive
+        // with fresh slug + sku and duplicated variants/images server-side.
+        const response = await api.post('/admin/shop/products/bulk-copy', {
+          product_ids: productIds,
+        }) as { products: ProductAdmin[]; count: number };
+        return response;
+      } catch (error) {
+        this.error = (error as Error).message;
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+
     async deleteProduct(productId: string) {
       this.loading = true;
       this.error = null;

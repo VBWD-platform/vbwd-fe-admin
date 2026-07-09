@@ -1,5 +1,6 @@
 {
   "shop": {
+    "makeACopy": "Make a copy",
     "products": {
       "title": "Products",
       "create": "New Product",

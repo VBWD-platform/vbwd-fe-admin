@@ -85,6 +85,19 @@ describe('useProductAdminStore', () => {
     expect(store.products).toHaveLength(0)
   })
 
+  it('bulk-copies products with a product_ids payload', async () => {
+    vi.mocked(api.post).mockResolvedValue({ products: [], count: 2 })
+
+    const store = useProductAdminStore()
+    await store.bulkCopyProducts(['1', '2'])
+
+    // The shop bulk routes all key on `product_ids` (not `ids`) — asserting the
+    // exact key guards the easiest-to-get-wrong part of the contract.
+    expect(api.post).toHaveBeenCalledWith('/admin/shop/products/bulk-copy', {
+      product_ids: ['1', '2'],
+    })
+  })
+
   it('sets error on fetch failure', async () => {
     vi.mocked(api.get).mockRejectedValue(new Error('Network error'))
 

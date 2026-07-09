@@ -61,6 +61,14 @@
       >
         Deactivate
       </button>
+      <button
+        v-if="canManage"
+        class="btn btn--sm btn--primary"
+        data-testid="bulk-copy"
+        @click="handleBulkCopy"
+      >
+        {{ $t('shop.makeACopy', 'Make a copy') }}
+      </button>
     </div>
 
     <div
@@ -248,6 +256,17 @@ async function handleBulkDeactivate() {
     await store.fetchProducts();
   } catch (error) {
     console.error('Bulk deactivate failed:', error);
+  }
+}
+
+async function handleBulkCopy() {
+  const productIds = Array.from(selectedIds);
+  try {
+    await store.bulkCopyProducts(productIds);
+    selectedIds.clear();
+    await store.fetchProducts();
+  } catch (error) {
+    console.error('Bulk copy failed:', error);
   }
 }
 
