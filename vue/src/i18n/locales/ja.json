@@ -445,6 +445,9 @@
     },
     "coreSettings": {
       "title": "サービスプロバイダー情報",
+      "siteName": "サイト / ブランド名",
+      "siteNamePlaceholder": "VBWD",
+      "siteNameHelp": "アプリのヘッダー/ロゴに表示されます（ホワイトラベル）。",
       "providerName": "プロバイダー名",
       "providerNamePlaceholder": "会社名を入力",
       "address": "住所",

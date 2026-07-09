@@ -512,6 +512,9 @@
     },
     "coreSettings": {
       "title": "Service Provider Information",
+      "siteName": "Site / Brand Name",
+      "siteNamePlaceholder": "VBWD",
+      "siteNameHelp": "Displayed in the app header/logo (white-label).",
       "providerName": "Provider Name",
       "providerNamePlaceholder": "Your Company Name",
       "address": "Address",

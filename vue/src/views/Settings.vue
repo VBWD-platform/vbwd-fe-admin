@@ -126,6 +126,19 @@
           <h3>{{ $t('settings.coreSettings.title') }}</h3>
 
           <div class="form-group">
+            <label for="site-name">{{ $t('settings.coreSettings.siteName') }}</label>
+            <input
+              id="site-name"
+              v-model="coreSettingsData.site_name"
+              data-testid="site-name-input"
+              type="text"
+              class="form-input"
+              :placeholder="$t('settings.coreSettings.siteNamePlaceholder')"
+            >
+            <small class="form-help">{{ $t('settings.coreSettings.siteNameHelp') }}</small>
+          </div>
+
+          <div class="form-group">
             <label for="provider-name">{{ $t('settings.coreSettings.providerName') }}</label>
             <input
               id="provider-name"
@@ -1306,6 +1319,7 @@ const successMessage = ref<string | null>(null);
 
 // Core Settings form data
 interface CoreSettings {
+  site_name: string;
   provider_name: string;
   contact_email: string;
   website_url: string;
@@ -1320,6 +1334,7 @@ interface CoreSettings {
 }
 
 const coreSettingsData = reactive<CoreSettings>({
+  site_name: '',
   provider_name: '',
   contact_email: '',
   website_url: '',
@@ -1342,6 +1357,7 @@ async function fetchSettings(): Promise<void> {
     const settings = response.settings || {};
 
     // Map settings to core settings form
+    coreSettingsData.site_name = (settings.site_name as string) || '';
     coreSettingsData.provider_name = (settings.provider_name as string) || (settings.company_name as string) || '';
     coreSettingsData.contact_email = (settings.contact_email as string) || (settings.company_email as string) || '';
     coreSettingsData.website_url = (settings.website_url as string) || '';
@@ -1367,6 +1383,7 @@ async function handleSaveCoreSettings(): Promise<void> {
 
   try {
     await api.put('/admin/settings', {
+      site_name: coreSettingsData.site_name,
       provider_name: coreSettingsData.provider_name,
       company_name: coreSettingsData.provider_name, // For backward compatibility
       contact_email: coreSettingsData.contact_email,
@@ -2395,6 +2412,13 @@ onMounted(() => {
   margin-top: 10px;
   font-size: 0.9rem;
   color: #999;
+}
+
+.form-help {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.85rem;
+  color: #888;
 }
 
 /* Plugins Tab */

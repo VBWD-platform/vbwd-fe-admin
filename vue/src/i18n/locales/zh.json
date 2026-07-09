@@ -445,6 +445,9 @@
     },
     "coreSettings": {
       "title": "服务提供商信息",
+      "siteName": "站点 / 品牌名称",
+      "siteNamePlaceholder": "VBWD",
+      "siteNameHelp": "显示在应用页眉/徽标中（白标）。",
       "providerName": "提供商名称",
       "providerNamePlaceholder": "您的公司名称",
       "address": "地址",

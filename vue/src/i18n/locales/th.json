@@ -445,6 +445,9 @@
     },
     "coreSettings": {
       "title": "ข้อมูลผู้ให้บริการ",
+      "siteName": "ชื่อไซต์ / แบรนด์",
+      "siteNamePlaceholder": "VBWD",
+      "siteNameHelp": "แสดงในส่วนหัว/โลโก้ของแอป (ไวท์เลเบล)",
       "providerName": "ชื่อผู้ให้บริการ",
       "providerNamePlaceholder": "ชื่อบริษัทของคุณ",
       "address": "ที่อยู่",

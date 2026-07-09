@@ -440,6 +440,9 @@
     },
     "coreSettings": {
       "title": "Información del Proveedor de Servicios",
+      "siteName": "Nombre del sitio / marca",
+      "siteNamePlaceholder": "VBWD",
+      "siteNameHelp": "Se muestra en el encabezado/logotipo de la aplicación (marca blanca).",
       "providerName": "Nombre del Proveedor",
       "providerNamePlaceholder": "Nombre de su Empresa",
       "address": "Dirección",

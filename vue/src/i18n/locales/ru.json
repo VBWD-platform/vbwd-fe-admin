@@ -445,6 +445,9 @@
     },
     "coreSettings": {
       "title": "Информация о поставщике услуг",
+      "siteName": "Название сайта / бренда",
+      "siteNamePlaceholder": "VBWD",
+      "siteNameHelp": "Отображается в шапке/логотипе приложения (white-label).",
       "providerName": "Название поставщика",
       "providerNamePlaceholder": "Название вашей компании",
       "address": "Адрес",

@@ -24,6 +24,7 @@ describe('Settings.vue', () => {
 
   const mockSettings = {
     provider_name: 'Test Company',
+    site_name: 'Test Brand',
     contact_email: 'admin@test.com',
     website_url: 'https://test.com',
     address_street: '123 Main St',
@@ -98,6 +99,39 @@ describe('Settings.vue', () => {
 
     const providerNameInput = wrapper.find('[data-testid="provider-name-input"]');
     expect((providerNameInput.element as HTMLInputElement).value).toBe('Test Company');
+  });
+
+  it('renders the site/brand name input with the fetched value', async () => {
+    const wrapper = mount(Settings, {
+      global: { plugins: [router] }
+    });
+
+    await flushPromises();
+
+    const siteNameInput = wrapper.find('[data-testid="site-name-input"]');
+    expect(siteNameInput.exists()).toBe(true);
+    expect((siteNameInput.element as HTMLInputElement).value).toBe('Test Brand');
+  });
+
+  it('includes the site name in the saved payload', async () => {
+    vi.mocked(api.put).mockResolvedValue({ settings: mockSettings });
+
+    const wrapper = mount(Settings, {
+      global: { plugins: [router] }
+    });
+
+    await flushPromises();
+
+    const siteNameInput = wrapper.find('[data-testid="site-name-input"]');
+    await siteNameInput.setValue('New Brand');
+
+    const saveBtn = wrapper.find('[data-testid="save-core-settings-button"]');
+    await saveBtn.trigger('click');
+    await flushPromises();
+
+    expect(api.put).toHaveBeenCalledWith('/admin/settings', expect.objectContaining({
+      site_name: 'New Brand'
+    }));
   });
 
   it('shows loading state while fetching settings', async () => {
