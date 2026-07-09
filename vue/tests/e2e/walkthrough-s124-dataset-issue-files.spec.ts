@@ -14,7 +14,7 @@
  *   E2E_BASE_URL=http://localhost:8081 \
  *   npx playwright test walkthrough-s124-dataset-issue-files
  *
- * The 8 S124 steps (each screenshotted; a broken flow fails and NO report is
+ * The 9 S124 steps (each screenshotted; a broken flow fails and NO report is
  * emitted):
  *   1. The dataset backend plugin enabled/configured (fe-admin plugin detail).
  *   2. Open the seeded Air-Quality dataset editor (Details tab).
@@ -24,23 +24,106 @@
  *      document role badge and a delete control.
  *   5. Attach a chart PNG (role=chart) — now the issue lists 3 files (data +
  *      document + chart); the primary keeps its no-delete note.
- *   6. Ensure the buyer is entitled: the storefront dataset detail, then the
+ *   6. Admin per-file download: the panel exposes a Download control on EVERY
+ *      row (incl. the primary, which has NO delete) served by the admin route
+ *      `.../files/<fid>/download` with no entitlement check.
+ *   7. Ensure the buyer is entitled: the storefront dataset detail, then the
  *      real order + `/webhooks/payment` capture (invoice.paid) seam S110 uses
  *      (local token_payment rejects EUR, so entitlement rides the capture chain).
- *   7. The entitled user opens the dataset access page and expands the issue —
- *      it lists the same 3 files with role badges.
- *   8. The user downloads ONE member file (the download response resolves 200)
- *      and clicks "Download all (.zip)" (the archive response resolves 200).
+ *   8. The entitled user opens the access page — the "Latest issue files" block
+ *      lists the 3 files INLINE (no toggle), and the `last` archive row expands
+ *      to the same list (both selectors SCOPED to their container).
+ *   9. Byte-integrity guard: capture the real browser downloads of one member
+ *      and the zip, and assert sha256(browser) == sha256(backend API) + the PDF
+ *      carries real %PDF-/xref/startxref + the zip opens with byte-exact entries.
  *
  * Learnings baked in: admin auth via UI login then direct admin URLs; the
- * entitlement path is the same order + capture seam S110 exercises; download
- * assertions watch the authed API responses (blob received over the wire),
- * because the browser blob-download uses object URLs revoked immediately.
+ * entitlement path is the same order + capture seam S110 exercises; the PDF
+ * fixture is a genuinely openable PDF (the old 45-byte stub was the "corruption")
+ * and downloads are verified by checksum against the backend, not just status.
+ * IssueFileList renders in two legitimate places (latest block + archive row),
+ * so every issue-file selector is scoped to its container.
  */
 import { test, expect } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as crypto from 'crypto';
+import * as zlib from 'zlib';
 import { fileURLToPath } from 'url';
+
+const PDF_MEDIA_BOX = 200;
+const PDF_FONT_OBJECT = 5;
+const ZIP_LOCAL_FILE_HEADER = 0x04034b50;
+const ZIP_METHOD_DEFLATED = 8;
+
+/** Build a genuinely valid, openable single-page PDF with a byte-accurate xref
+ * table, `startxref` and `%%EOF`. Offsets are computed from the assembled bytes
+ * so the file is structurally correct (verified openable by CoreGraphics). This
+ * replaces the old 45-byte `%PDF-…%%EOF` stub, which had no xref/page tree and
+ * so every real PDF viewer rejected it as corrupt — the actual cause of the
+ * "downloads look corrupted" report (a fixture defect, not a pipeline bug). */
+function buildValidPdf(text: string): Buffer {
+  const header = '%PDF-1.4\n%\xE2\xE3\xCF\xD3\n';
+  const streamBody = `BT /F1 24 Tf 20 100 Td (${text}) Tj ET\n`;
+  const streamLength = Buffer.byteLength(streamBody, 'latin1');
+  const dictionaries = [
+    '<< /Type /Catalog /Pages 2 0 R >>',
+    '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+    `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PDF_MEDIA_BOX} ${PDF_MEDIA_BOX}] ` +
+      `/Resources << /Font << /F1 ${PDF_FONT_OBJECT} 0 R >> >> /Contents 4 0 R >>`,
+    `<< /Length ${streamLength} >>\nstream\n${streamBody}endstream`,
+    '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
+  ];
+
+  let body = Buffer.from(header, 'latin1');
+  const offsets: number[] = [];
+  dictionaries.forEach((dictionary, index) => {
+    offsets[index] = body.length;
+    body = Buffer.concat([
+      body,
+      Buffer.from(`${index + 1} 0 obj\n${dictionary}\nendobj\n`, 'latin1'),
+    ]);
+  });
+
+  const xrefOffset = body.length;
+  const objectCount = dictionaries.length + 1; // + the free object 0
+  let xref = `xref\n0 ${objectCount}\n0000000000 65535 f \n`;
+  offsets.forEach((offset) => {
+    xref += `${String(offset).padStart(10, '0')} 00000 n \n`;
+  });
+  const trailer =
+    `trailer\n<< /Size ${objectCount} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF\n`;
+  return Buffer.concat([body, Buffer.from(xref + trailer, 'latin1')]);
+}
+
+/** Hex sha256 of a buffer — the byte-integrity fingerprint the download guard
+ * compares (browser-downloaded bytes vs the backend API bytes). */
+function sha256(bytes: Buffer): string {
+  return crypto.createHash('sha256').update(bytes).digest('hex');
+}
+
+/** Parse a freshly-built (contiguous local-file-header) zip into its entries,
+ * inflating DEFLATE members, so the walkthrough can prove the archive opens AND
+ * that every entry's bytes are byte-exact against the per-file API download. */
+function parseZipEntries(buffer: Buffer): { name: string; data: Buffer }[] {
+  const entries: { name: string; data: Buffer }[] = [];
+  let cursor = 0;
+  while (cursor + 4 <= buffer.length &&
+    buffer.readUInt32LE(cursor) === ZIP_LOCAL_FILE_HEADER) {
+    const method = buffer.readUInt16LE(cursor + 8);
+    const compressedSize = buffer.readUInt32LE(cursor + 18);
+    const nameLength = buffer.readUInt16LE(cursor + 26);
+    const extraLength = buffer.readUInt16LE(cursor + 28);
+    const name = buffer.subarray(cursor + 30, cursor + 30 + nameLength).toString('utf8');
+    const dataStart = cursor + 30 + nameLength + extraLength;
+    const compressed = buffer.subarray(dataStart, dataStart + compressedSize);
+    const data =
+      method === ZIP_METHOD_DEFLATED ? zlib.inflateRawSync(compressed) : Buffer.from(compressed);
+    entries.push({ name, data });
+    cursor = dataStart + compressedSize;
+  }
+  return entries;
+}
 
 const ADMIN = process.env.ADMIN_URL || 'http://localhost:8081';
 const STORE = process.env.STORE_URL || 'http://localhost:8080';
@@ -57,12 +140,9 @@ const BUYER_PASSWORD = process.env.WALKTHROUGH_BUYER_PASSWORD || ADMIN_PASSWORD;
 const DATASET_SLUG = 'air-quality';
 const CATEGORY_SLUG = 'environment';
 
-// A minimal but structurally valid PDF and 1x1 PNG so the attached member files
-// carry the real content-type the panel renders.
-const PDF_BYTES = Buffer.from(
-  '%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF\n',
-  'utf-8',
-);
+// A genuinely valid, openable single-page PDF and a genuine 1x1 PNG so the
+// attached member files are real, openable documents the panel renders.
+const PDF_BYTES = buildValidPdf('S124 issue report');
 const PNG_BYTES = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
   'base64',
@@ -131,14 +211,16 @@ test.describe('S124 Dataset multi-file issue bundle walkthrough', () => {
     };
 
     const loginStoreUi = async (email: string, password: string): Promise<void> => {
-      await page.goto(`${STORE}/login`, { waitUntil: 'networkidle' });
+      // The fe-user storefront keeps background network activity, so `networkidle`
+      // can fail to settle under load — wait for `load` + the URL leaving /login.
+      await page.goto(`${STORE}/login`, { waitUntil: 'domcontentloaded' });
       await page.locator('#email, input[type="email"]').first().fill(email);
       await page.locator('input[type="password"]').fill(password);
       await Promise.all([
         page.waitForURL((url) => !String(url).includes('/login'), { timeout: 20000 }),
         page.locator('button:has-text("Login")').click(),
       ]);
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
     };
 
     // ── Setup: obtain an admin API token and resolve the seeded dataset + its
@@ -262,10 +344,72 @@ test.describe('S124 Dataset multi-file issue bundle walkthrough', () => {
       'A chart PNG is attached with role <code>chart</code>. The issue is now a <b>bundle of 3 files</b>: the primary CSV (role <code>data</code>, no-delete), the PDF (role <code>document</code>), and the chart (role <code>chart</code>). The panel renders one uniform list and never special-cases the primary except for its no-delete note.',
     );
 
-    // ── STEP 6: ensure the buyer is entitled (storefront + capture seam) ──────
+    // ── STEP 6: admin per-file download (no entitlement gate) ─────────────────
+    // The admin panel exposes a Download control on EVERY row — including the
+    // primary — served by the admin route
+    //   GET /api/v1/admin/datasets/<did>/snapshots/<sid>/files/<fid>/download
+    // which has NO entitlement check (an admin need not have purchased the
+    // dataset). The primary keeps its no-delete note; only members are removable.
+    await expect(
+      page.locator('[data-testid="issue-file-download-primary"]'),
+      'the primary row must expose an admin Download control',
+    ).toBeVisible();
+    await expect(
+      page.locator('[data-testid="issue-file-delete-primary"]'),
+      'the primary row must NOT expose a Delete control',
+    ).toHaveCount(0);
+
+    // Download the primary through the admin panel and capture the real browser
+    // download (blob → object-URL → attachment).
+    const adminPrimaryDownload = page.waitForEvent('download');
+    await page.locator('[data-testid="issue-file-download-primary"]').click();
+    expect(
+      (await adminPrimaryDownload).suggestedFilename(),
+      'admin primary download resolves as a file',
+    ).toBeTruthy();
+
+    // Download a member (the PDF) through the admin panel.
+    const adminPdfRow = page.locator('[data-testid="issue-file-row"]', {
+      hasText: 's124-report.pdf',
+    });
+    const adminMemberDownload = page.waitForEvent('download');
+    await adminPdfRow.locator('[data-testid^="issue-file-download-"]').click();
+    expect(
+      (await adminMemberDownload).suggestedFilename(),
+      'admin member download resolves as a file',
+    ).toBeTruthy();
+
+    // Prove the admin route itself is authed + un-gated by fetching the PDF
+    // member straight from the API and checking its magic bytes.
+    const adminFilesList = await (
+      await page.request.get(
+        `${API}/api/v1/admin/datasets/${datasetId}/snapshots/${snapshotId}/files`,
+        { headers: authHeader },
+      )
+    ).json();
+    const adminPdfId: string = adminFilesList.files.find(
+      (file: { filename: string }) => file.filename === 's124-report.pdf',
+    ).id;
+    const adminMemberResponse = await page.request.get(
+      `${API}/api/v1/admin/datasets/${datasetId}/snapshots/${snapshotId}/files/${adminPdfId}/download`,
+      { headers: authHeader },
+    );
+    expect(adminMemberResponse.status(), 'admin per-file download is authed 200').toBe(200);
+    const adminMemberBytes = Buffer.from(await adminMemberResponse.body());
+    expect(adminMemberBytes.subarray(0, 5).toString('latin1')).toBe('%PDF-');
+    await shot(
+      'Admin downloads issue files (no entitlement gate)',
+      'The fe-admin <b>Issue files</b> panel exposes a <b>Download</b> control on every row — including the primary data file — served by the admin route <code>GET /api/v1/admin/datasets/&lt;did&gt;/snapshots/&lt;sid&gt;/files/&lt;fid&gt;/download</code> with <b>no</b> entitlement check (an admin need not have purchased the dataset). The primary keeps its "primary" note and exposes <b>no</b> Delete; only members are removable.',
+    );
+
+    // ── STEP 7: ensure the buyer is entitled (storefront + capture seam) ──────
     await loginStoreUi(BUYER_EMAIL, BUYER_PASSWORD);
+    // `domcontentloaded` (not `networkidle`): the storefront keeps background
+    // network activity (cart/session polling) that can keep `networkidle` from
+    // ever settling within the run's timeout — the explicit assertions below are
+    // the real readiness gate.
     await page.goto(`${STORE}/data-store/${CATEGORY_SLUG}/${DATASET_SLUG}`, {
-      waitUntil: 'networkidle',
+      waitUntil: 'domcontentloaded',
     });
     await page.waitForTimeout(2000);
     await expect(page.locator('body')).toContainText(/air quality/i);
@@ -306,49 +450,104 @@ test.describe('S124 Dataset multi-file issue bundle walkthrough', () => {
       'after capture the buyer is entitled to the issue files (200)',
     ).toBe(200);
 
-    // ── STEP 7: the entitled user opens the access page + expands the issue ───
+    // ── STEP 8: the entitled user opens the access page ───────────────────────
+    // IssueFileList renders in TWO legitimate places on this page: the inline
+    // "Latest issue files" block (no toggle) AND the archive-row expansion, so
+    // every issue-file selector below is SCOPED to its container.
     await page.goto(`${STORE}/dashboard/datasets/${DATASET_SLUG}`, {
-      waitUntil: 'networkidle',
+      waitUntil: 'domcontentloaded',
     });
     await page.waitForTimeout(2000);
     await expect(page.locator('[data-testid="dataset-access-detail"]')).toBeVisible();
     await expect(page.locator('[data-testid="dataset-archive"]')).toBeVisible();
-    // The `last` issue is the one the files were attached to; find its row by the
-    // "last" badge and expand its files.
+
+    // (a) The latest issue's files are surfaced inline — WITHOUT any toggle click.
+    const latestBlock = page.locator('[data-testid="dataset-latest-issue"]');
+    await expect(latestBlock.locator('[data-testid="dataset-latest-files"]')).toBeVisible();
+    await expect(latestBlock.locator('[data-testid="dataset-issue-file-row"]')).toHaveCount(3);
+    await expect(latestBlock.locator('.dataset-issue-file-role--data')).toBeVisible();
+    await expect(latestBlock.locator('.dataset-issue-file-role--document')).toBeVisible();
+    await expect(latestBlock.locator('.dataset-issue-file-role--chart')).toBeVisible();
+
+    // (b) The same files are also reachable by expanding the `last` archive row.
     const lastRow = page.locator('[data-testid="dataset-archive-row"]', {
       has: page.locator('[data-testid="dataset-archive-last-badge"]'),
     });
     await expect(lastRow).toHaveCount(1);
     await lastRow.locator('[data-testid="dataset-issue-files-toggle"]').click();
-    await expect(page.locator('[data-testid="dataset-issue-file-row"]')).toHaveCount(3);
-    await expect(page.locator('.dataset-issue-file-role--data')).toBeVisible();
-    await expect(page.locator('.dataset-issue-file-role--document')).toBeVisible();
-    await expect(page.locator('.dataset-issue-file-role--chart')).toBeVisible();
+    const archivePanel = page.locator('[data-testid="dataset-issue-files"]');
+    await expect(archivePanel.locator('[data-testid="dataset-issue-file-row"]')).toHaveCount(3);
     await shot(
       'Entitled user sees the 3-file issue',
-      'On the entitlement-gated access page the user expands the issue (<code>GET /api/v1/dataset/&lt;slug&gt;/snapshots/&lt;id&gt;/files</code>) and sees the uniform 3-file list — <b>data</b>, <b>document</b>, <b>chart</b> — each with its role badge, primary-first.',
+      'On the entitlement-gated access page the latest issue\'s files are surfaced <b>inline</b> in the "Latest issue files" block (<code>data-testid="dataset-latest-issue"</code>) with <b>no toggle click</b> — the uniform 3-file list (<b>data</b>, <b>document</b>, <b>chart</b>), primary-first. The same files are also reachable by expanding the <code>last</code> archive row (<code>GET /api/v1/dataset/&lt;slug&gt;/snapshots/&lt;id&gt;/files</code>).',
     );
 
-    // ── STEP 8: download one member file + the whole issue as a zip ───────────
-    const memberDownload = page.waitForResponse(
-      (response) =>
-        /\/snapshots\/[^/]+\/files\/[^/]+\/download/.test(response.url()) &&
-        response.status() === 200,
-      { timeout: 20000 },
-    );
-    await page.locator('[data-testid="dataset-issue-file-download"]').first().click();
-    await memberDownload;
+    // ── STEP 9: byte-integrity — the real "corrupted downloads" guard ─────────
+    // Capture the ACTUAL browser downloads from the inline latest block, read
+    // their bytes, and assert sha256 == the bytes fetched straight from the
+    // backend API. This is the check that would catch real corruption.
+    const entitledFilesUrl =
+      `${API}/api/v1/dataset/${DATASET_SLUG}/snapshots/${snapshotId}/files`;
+    const entitledFiles = (
+      await (await page.request.get(entitledFilesUrl, { headers: authHeader })).json()
+    ).files as { id: string; filename: string }[];
+    const pdfEntry = entitledFiles.find((file) => file.filename === 's124-report.pdf');
+    expect(pdfEntry, 'the PDF member must be listed for the entitled user').toBeTruthy();
 
-    const archiveDownload = page.waitForResponse(
-      (response) =>
-        /\/snapshots\/[^/]+\/archive/.test(response.url()) && response.status() === 200,
-      { timeout: 20000 },
+    // (a) One member (the PDF): browser download vs API bytes, byte-for-byte.
+    const memberDownloadEvent = page.waitForEvent('download');
+    await latestBlock
+      .locator('[data-testid="dataset-issue-file-row"]', { hasText: 's124-report.pdf' })
+      .locator('[data-testid="dataset-issue-file-download"]')
+      .click();
+    const memberDownload = await memberDownloadEvent;
+    const browserPdfBytes = fs.readFileSync(await memberDownload.path());
+    const apiPdfResponse = await page.request.get(
+      `${entitledFilesUrl}/${pdfEntry!.id}/download`,
+      { headers: authHeader },
     );
-    await page.locator('[data-testid="dataset-issue-archive"]').click();
-    await archiveDownload;
+    const apiPdfBytes = Buffer.from(await apiPdfResponse.body());
+    expect(sha256(browserPdfBytes), 'downloaded PDF == API PDF (no corruption)').toBe(
+      sha256(apiPdfBytes),
+    );
+    // A stub PDF can never regress back in: real magic + xref + startxref.
+    expect(browserPdfBytes.subarray(0, 5).toString('latin1')).toBe('%PDF-');
+    expect(browserPdfBytes.includes(Buffer.from('xref')), 'PDF has an xref table').toBe(true);
+    expect(
+      browserPdfBytes.includes(Buffer.from('startxref')),
+      'PDF has a startxref pointer',
+    ).toBe(true);
+
+    // (b) The whole issue as a zip: it OPENS, contains the expected entries, and
+    // every entry's bytes are byte-exact against the per-file API download. (The
+    // zip is rebuilt per request with per-entry timestamps, so the archive bytes
+    // themselves are not reproducible — the entry CONTENTS are what must match.)
+    const archiveDownloadEvent = page.waitForEvent('download');
+    await latestBlock.locator('[data-testid="dataset-issue-archive"]').click();
+    const archiveDownload = await archiveDownloadEvent;
+    const zipBytes = fs.readFileSync(await archiveDownload.path());
+    expect(zipBytes.subarray(0, 2).toString('latin1'), 'zip opens (PK magic)').toBe('PK');
+    const zipEntries = parseZipEntries(zipBytes);
+    const zipNames = zipEntries.map((entry) => entry.name);
+    expect(zipNames, 'zip contains the PDF member').toContain('s124-report.pdf');
+    expect(zipNames, 'zip contains the chart member').toContain('s124-chart.png');
+    for (const file of entitledFiles) {
+      const apiFileBytes = Buffer.from(
+        await (
+          await page.request.get(`${entitledFilesUrl}/${file.id}/download`, {
+            headers: authHeader,
+          })
+        ).body(),
+      );
+      const zipEntry = zipEntries.find((entry) => entry.name === file.filename);
+      expect(zipEntry, `zip entry present for ${file.filename}`).toBeTruthy();
+      expect(sha256(zipEntry!.data), `zip ${file.filename} == API bytes`).toBe(
+        sha256(apiFileBytes),
+      );
+    }
     await shot(
-      'Download one file + the whole issue (.zip)',
-      'The user downloads a single member file (<code>GET .../files/&lt;id&gt;/download</code> resolves 200 with the authed blob) and clicks <b>Download all (.zip)</b> (<code>GET .../snapshots/&lt;id&gt;/archive</code> resolves 200 — the issue assembled on demand as a zip of the primary + every member).',
+      'Download one file + the whole issue (.zip) — byte-exact',
+      'The user downloads a single member (the PDF) and clicks <b>Download all (.zip)</b>. The walkthrough captures the real browser downloads and asserts <code>sha256(browser) == sha256(API)</code> for the member, that the PDF carries real <code>%PDF-</code>/<code>xref</code>/<code>startxref</code> markers, and that the zip opens and every entry is byte-exact against its per-file API download — the regression guard for "corrupted downloads". The pipeline is byte-exact; the earlier stub-PDF fixture was the only "corruption".',
     );
 
     // ── Green-only report: reached only when every step above passed. ─────────

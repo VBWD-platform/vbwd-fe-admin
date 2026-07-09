@@ -121,14 +121,16 @@ test.describe('S110 Datasets walkthrough — create → upload → buy → acces
     };
 
     const loginStoreUi = async (email: string, password: string): Promise<void> => {
-      await page.goto(`${STORE}/login`, { waitUntil: 'networkidle' });
+      // The fe-user storefront keeps background network activity, so `networkidle`
+      // can fail to settle under load — wait for `load` + the URL leaving /login.
+      await page.goto(`${STORE}/login`, { waitUntil: 'domcontentloaded' });
       await page.locator('#email, input[type="email"]').first().fill(email);
       await page.locator('input[type="password"]').fill(password);
       await Promise.all([
         page.waitForURL((url) => !String(url).includes('/login'), { timeout: 20000 }),
         page.locator('button:has-text("Login")').click(),
       ]);
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
     };
 
     // ── Setup: obtain an admin API token and make the walkthrough self-contained
@@ -258,12 +260,12 @@ test.describe('S110 Datasets walkthrough — create → upload → buy → acces
     // ── STEP 8: buy the dataset as an @example.com user (storefront) ──────────
     await loginStoreUi(BUYER_EMAIL, BUYER_PASSWORD);
     await page.goto(`${STORE}/data-store/${CATEGORY_SLUG}/${DATASET_SLUG}`, {
-      waitUntil: 'networkidle',
+      waitUntil: 'domcontentloaded',
     });
     await page.waitForTimeout(2500);
     await expect(page.locator('[data-testid="dataset-get-btn"]')).toBeVisible();
     await page.locator('[data-testid="dataset-get-btn"]').click();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
     await page.waitForTimeout(2000);
     await expect(page).toHaveURL(/\/checkout/);
     // A broken plan link would render "No plan selected"; a real checkout shows
@@ -303,7 +305,7 @@ test.describe('S110 Datasets walkthrough — create → upload → buy → acces
     // ── STEP 9: user dashboard → the invoice ─────────────────────────────────
     // Open the just-paid invoice from the buyer's dashboard (the detail view
     // that renders the line items, incl. the clickable dataset line).
-    await page.goto(`${STORE}/dashboard/invoice/${invoiceId}`, { waitUntil: 'networkidle' });
+    await page.goto(`${STORE}/dashboard/invoice/${invoiceId}`, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(2000);
     await expect(page.locator('body')).toContainText(/invoice/i);
     await shot(
@@ -315,7 +317,7 @@ test.describe('S110 Datasets walkthrough — create → upload → buy → acces
     const datasetLineLink = page.locator('a[href*="/dashboard/datasets/"], [class*="item-card-clickable"]').first();
     await expect(datasetLineLink).toBeVisible();
     await datasetLineLink.click();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
     await page.waitForTimeout(1500);
     await expect(page).toHaveURL(new RegExp(`/dashboard/datasets/${DATASET_SLUG}`));
     await shot(
@@ -323,15 +325,21 @@ test.describe('S110 Datasets walkthrough — create → upload → buy → acces
       'The purchased-dataset invoice line routes (via the generic <code>invoiceLineLinkRegistry</code> seam + the dataset resolver) to the dataset access page — core stays agnostic.',
     );
 
-    // ── STEP 11: access page — API URL + download + metadata + preview ───────
+    // ── STEP 11: access page — API examples + download + metadata + preview ──
+    // (Commit 71ec549 replaced the single scoped-URL line `dataset-access-api-url`
+    // with the API-examples panel, so we assert the curl example that carries the
+    // `/data` endpoint instead.)
     await expect(page.locator('[data-testid="dataset-access-detail"]')).toBeVisible();
-    await expect(page.locator('[data-testid="dataset-access-api-url"]')).toContainText('/data');
+    await expect(page.locator('[data-testid="dataset-api-examples"]')).toBeVisible();
+    await expect(
+      page.locator('[data-testid="dataset-example-snippet"]').first(),
+    ).toContainText('/data');
     await expect(page.locator('[data-testid="dataset-access-download"]')).toBeVisible();
     await expect(page.locator('[data-testid="dataset-access-meta"]')).toBeVisible();
     await expect(page.locator('[data-testid="dataset-preview-row"]').first()).toBeVisible();
     await shot(
-      'Access page — API, download, metadata, preview',
-      'The entitlement-gated access page: the scoped API URL to fetch the data, a browser Download button, the dataset issue metadata (source/taken-at/size/checksum/attribution), and the first-100-rows spreadsheet preview (DatasetPreviewGrid).',
+      'Access page — API examples, download, metadata, preview',
+      'The entitlement-gated access page: the API usage examples panel (curl/PHP/JS/Python snippets against the scoped <code>/data</code> endpoint), a browser Download button, the dataset issue metadata (source/taken-at/size/checksum/attribution), and the first-100-rows spreadsheet preview (DatasetPreviewGrid).',
     );
 
     // ── Green-only report: reached only when every step above passed. ─────────
