@@ -23,6 +23,14 @@ export interface ProductAdmin {
   created_at: string;
 }
 
+/** Result envelope returned by every shop products bulk endpoint. */
+export interface BulkResult {
+  updated: number;
+  skipped: number;
+}
+
+export type BulkAssignMode = 'add' | 'replace';
+
 export const useProductAdminStore = defineStore('shopProductAdmin', {
   state: () => ({
     products: [] as ProductAdmin[],
@@ -134,6 +142,41 @@ export const useProductAdminStore = defineStore('shopProductAdmin', {
       } finally {
         this.loading = false;
       }
+    },
+
+    // Bulk category / tag assignment. All shop bulk routes key on `product_ids`
+    // and answer with `{ updated, skipped }`; `category_id` accepts a uuid OR a
+    // slug server-side. The view refreshes + clears selection on the returned
+    // envelope, so these methods only own the request/response shape.
+    async bulkAssignCategory(
+      productIds: string[],
+      categoryId: string,
+      mode: BulkAssignMode = 'add',
+    ): Promise<BulkResult> {
+      return await api.post('/admin/shop/products/bulk/assign-category', {
+        product_ids: productIds,
+        category_id: categoryId,
+        mode,
+      }) as BulkResult;
+    },
+
+    async bulkUnassignCategory(productIds: string[], categoryId: string): Promise<BulkResult> {
+      return await api.post('/admin/shop/products/bulk/unassign-category', {
+        product_ids: productIds,
+        category_id: categoryId,
+      }) as BulkResult;
+    },
+
+    async bulkAssignTags(
+      productIds: string[],
+      tagSlugs: string[],
+      mode: BulkAssignMode = 'add',
+    ): Promise<BulkResult> {
+      return await api.post('/admin/shop/products/bulk/assign-tags', {
+        product_ids: productIds,
+        tag_slugs: tagSlugs,
+        mode,
+      }) as BulkResult;
     },
 
     async deleteProduct(productId: string) {

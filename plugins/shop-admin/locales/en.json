@@ -1,6 +1,17 @@
 {
   "shop": {
     "makeACopy": "Make a copy",
+    "bulk": {
+      "assignCategory": "Assign category",
+      "assignTags": "Assign tags",
+      "chooseCategory": "Choose a category…",
+      "modeAdd": "Add",
+      "modeReplace": "Replace",
+      "apply": "Apply",
+      "remove": "Remove",
+      "updatedLabel": "Updated",
+      "skippedLabel": "skipped"
+    },
     "products": {
       "title": "Products",
       "create": "New Product",

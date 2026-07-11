@@ -98,6 +98,73 @@ describe('useProductAdminStore', () => {
     })
   })
 
+  it('bulk-assigns a category with product_ids + category_id + mode, returning the result', async () => {
+    vi.mocked(api.post).mockResolvedValue({ updated: 2, skipped: 0 })
+
+    const store = useProductAdminStore()
+    const result = await store.bulkAssignCategory(['1', '2'], 'cat-electronics', 'replace')
+
+    expect(api.post).toHaveBeenCalledWith('/admin/shop/products/bulk/assign-category', {
+      product_ids: ['1', '2'],
+      category_id: 'cat-electronics',
+      mode: 'replace',
+    })
+    expect(result).toEqual({ updated: 2, skipped: 0 })
+  })
+
+  it('defaults the category assign mode to "add"', async () => {
+    vi.mocked(api.post).mockResolvedValue({ updated: 1, skipped: 0 })
+
+    const store = useProductAdminStore()
+    await store.bulkAssignCategory(['1'], 'cat-electronics')
+
+    expect(api.post).toHaveBeenCalledWith('/admin/shop/products/bulk/assign-category', {
+      product_ids: ['1'],
+      category_id: 'cat-electronics',
+      mode: 'add',
+    })
+  })
+
+  it('bulk-unassigns a category with product_ids + category_id', async () => {
+    vi.mocked(api.post).mockResolvedValue({ updated: 2, skipped: 1 })
+
+    const store = useProductAdminStore()
+    const result = await store.bulkUnassignCategory(['1', '2'], 'cat-electronics')
+
+    expect(api.post).toHaveBeenCalledWith('/admin/shop/products/bulk/unassign-category', {
+      product_ids: ['1', '2'],
+      category_id: 'cat-electronics',
+    })
+    expect(result).toEqual({ updated: 2, skipped: 1 })
+  })
+
+  it('bulk-assigns tags with product_ids + tag_slugs + mode', async () => {
+    vi.mocked(api.post).mockResolvedValue({ updated: 2, skipped: 0 })
+
+    const store = useProductAdminStore()
+    const result = await store.bulkAssignTags(['1', '2'], ['sale', 'new'], 'add')
+
+    expect(api.post).toHaveBeenCalledWith('/admin/shop/products/bulk/assign-tags', {
+      product_ids: ['1', '2'],
+      tag_slugs: ['sale', 'new'],
+      mode: 'add',
+    })
+    expect(result).toEqual({ updated: 2, skipped: 0 })
+  })
+
+  it('defaults the tag assign mode to "add"', async () => {
+    vi.mocked(api.post).mockResolvedValue({ updated: 1, skipped: 0 })
+
+    const store = useProductAdminStore()
+    await store.bulkAssignTags(['1'], ['sale'])
+
+    expect(api.post).toHaveBeenCalledWith('/admin/shop/products/bulk/assign-tags', {
+      product_ids: ['1'],
+      tag_slugs: ['sale'],
+      mode: 'add',
+    })
+  })
+
   it('sets error on fetch failure', async () => {
     vi.mocked(api.get).mockRejectedValue(new Error('Network error'))
 
