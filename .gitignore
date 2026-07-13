@@ -23,6 +23,7 @@ plugins/conekta-admin/
 plugins/ecommerce-admin/
 plugins/email-admin/
 plugins/ghrm-admin/
+plugins/license-authority-admin/
 plugins/meinchat-admin/
 plugins/mercado-pago-admin/
 plugins/promptpay-admin/

@@ -155,6 +155,12 @@
       "version": "26.7.0",
       "installedAt": "2026-07-09T00:00:00.000Z",
       "source": "local"
+    },
+    "license-authority-admin": {
+      "enabled": true,
+      "version": "26.7.1",
+      "installedAt": "2026-07-13T00:00:00.000Z",
+      "source": "local"
     }
   }
 }
