@@ -66,6 +66,15 @@
       >
         {{ $t('settings.tabs.userSessions') }}
       </button>
+      <button
+        v-if="canViewLicense"
+        data-testid="tab-license"
+        class="tab-btn"
+        :class="{ active: activeTab === 'license' }"
+        @click="activeTab = 'license'"
+      >
+        {{ $t('license.title') }}
+      </button>
     </div>
 
     <!-- Loading State -->
@@ -1222,6 +1231,18 @@
           />
         </div>
       </div>
+
+      <!-- License Tab — core, agnostic; renders whatever the backend reports -->
+      <div
+        v-if="canViewLicense"
+        v-show="activeTab === 'license'"
+        data-testid="license-tab-content"
+        class="settings-form"
+      >
+        <div class="form-section">
+          <LicenseTab v-if="licenseLoaded" />
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -1238,6 +1259,7 @@ import type { PluginEntry } from '@/stores/plugins';
 import { useUserPluginsStore } from '@/stores/userPlugins';
 import type { UserPluginEntry } from '@/stores/userPlugins';
 import LlmConnectionsTab from '@/views/llm-connections/LlmConnectionsTab.vue';
+import LicenseTab from '@/views/settings/LicenseTab.vue';
 import { createDataExchangeApi } from '@/api/dataExchangeApi';
 import { useDataExchangeManifest } from '@/composables/useDataExchangeManifest';
 import { extensionRegistry } from '@/plugins/extensionRegistry';
@@ -1273,6 +1295,13 @@ const canViewLlmConnections = computed(
     authStore.hasPermission('llm.connections.manage'),
 );
 
+// The License tab is gated on the read permission; its own add/remove controls
+// are further gated on `license.manage` inside the tab.
+const canViewLicense = computed(
+  () =>
+    authStore.hasPermission('license.view') || authStore.hasPermission('license.manage'),
+);
+
 // User sessions tab: plugin-contributed cleanup blocks, permission-filtered in
 // the view (mirroring how UserEdit filters its plugin tabs).
 const visibleUserSessionGlobalBlocks = computed(() =>
@@ -1302,13 +1331,17 @@ type MainTab =
   | 'adminPlugins'
   | 'backendPlugins'
   | 'userPlugins'
-  | 'userSessions';
+  | 'userSessions'
+  | 'license';
 
 const activeTab = ref<MainTab>('core');
 
 // The LLM Connections tab self-loads its data on mount, so we only render it
 // once its tab is first opened (lazy mount, mirroring the other tabs).
 const llmConnectionsLoaded = ref(false);
+
+// The License tab likewise self-loads on mount; lazy-render it on first open.
+const licenseLoaded = ref(false);
 
 // Loading/error states
 const loading = ref(true);
@@ -1926,6 +1959,9 @@ watch(activeTab, (newTab) => {
   }
   if (newTab === 'userPlugins' && !userPluginsLoaded.value) {
     loadUserPlugins();
+  }
+  if (newTab === 'license') {
+    licenseLoaded.value = true;
   }
 });
 
