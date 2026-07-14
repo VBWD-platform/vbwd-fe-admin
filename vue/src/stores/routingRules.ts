@@ -58,6 +58,12 @@ export const useRoutingRulesStore = defineStore('routingRules', {
       this.rules = this.rules.filter((r) => r.id !== id);
     },
 
+    async bulkDelete(ids: string[]): Promise<void> {
+      // Backend syncs nginx server-side, so no extra reload call is needed here.
+      await api.post('/admin/cms/routing-rules/bulk', { ids });
+      this.rules = this.rules.filter((r) => !ids.includes(r.id));
+    },
+
     async reloadNginx(): Promise<{ reloaded: boolean; message: string }> {
       const result = await api.post('/admin/cms/routing-rules/reload', {}) as { reloaded: boolean; message: string };
       this.lastReloadAt = new Date().toISOString();

@@ -7,6 +7,18 @@
         class="plans-subheader"
         style="margin-bottom: 0;"
       >
+        <ImportExportControls
+          v-if="showImportExport"
+          :api="dataExchangeApi"
+          entity-key="cms_routing_rules"
+          :selected-ids="selectedRuleIds"
+          :can-export="rulesCapabilities.can_export"
+          :can-import="rulesCapabilities.can_import"
+          :can-export-pii="rulesCapabilities.can_export_pii"
+          :is-superadmin="isSuperAdmin"
+          :supported-formats="rulesCapabilities.supported_formats"
+          @refresh="handleImportRefresh"
+        />
         <button
           class="action-btn archive"
           :disabled="reloading"
@@ -54,6 +66,22 @@
       </select>
     </div>
 
+    <!-- Bulk actions — independent of the table chain below, so selecting a
+         checkbox shows this bar ABOVE the table and never hides the table. -->
+    <div
+      v-if="canManage && !store.loading && selectedIds.size > 0"
+      class="bulk-actions"
+    >
+      <span>{{ selectedIds.size }} selected</span>
+      <button
+        class="action-btn delete"
+        data-testid="bulk-delete-btn"
+        @click="handleBulkDelete"
+      >
+        Delete Selected
+      </button>
+    </div>
+
     <div
       v-if="store.loading"
       class="loading-state"
@@ -75,6 +103,18 @@
       <table class="plans-table">
         <thead>
           <tr>
+            <th
+              v-if="canManage"
+              class="col-check"
+            >
+              <input
+                type="checkbox"
+                data-testid="rule-check-all"
+                :checked="allSelected"
+                :indeterminate="someSelected && !allSelected"
+                @change="toggleAll"
+              >
+            </th>
             <th>Priority</th>
             <th>Name</th>
             <th>Match</th>
@@ -95,6 +135,18 @@
             class="plan-row"
             :data-testid="`rule-row-${rule.id}`"
           >
+            <td
+              v-if="canManage"
+              class="col-check"
+              @click.stop
+            >
+              <input
+                type="checkbox"
+                :data-testid="`rule-check-${rule.id}`"
+                :checked="selectedIds.has(rule.id)"
+                @change="toggleSelected(rule.id)"
+              >
+            </td>
             <td>{{ rule.priority }}</td>
             <td>{{ rule.name }}</td>
             <td><span class="category-slug">{{ rule.match_type }}</span></td>
@@ -141,7 +193,7 @@
           </tr>
           <tr v-if="filteredRules.length === 0">
             <td
-              colspan="9"
+              :colspan="canManage ? 10 : 8"
               class="empty-state"
             >
               No routing rules yet.
@@ -161,14 +213,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, watch } from 'vue';
+import { ImportExportControls } from 'vbwd-view-component';
 import { useAuthStore } from '@/stores/auth';
 import { useRoutingRulesStore, type RoutingRule } from '@/stores/routingRules';
+import { createDataExchangeApi } from '@/api/dataExchangeApi';
+import { useDataExchangeManifest } from '@/composables/useDataExchangeManifest';
 import RoutingRuleForm from './RoutingRuleForm.vue';
 
 const authStore = useAuthStore();
 const store = useRoutingRulesStore();
 const canManage = computed(() => authStore.hasPermission('cms.configure'));
+const isSuperAdmin = computed(() => authStore.isSuperAdmin);
 const formVisible = ref(false);
 const editingRule = ref<RoutingRule | undefined>(undefined);
 const layerFilter = ref('');
@@ -179,6 +235,56 @@ const reloadError = ref(false);
 const filteredRules = computed(() =>
   layerFilter.value ? store.rules.filter((r) => r.layer === layerFilter.value) : store.rules,
 );
+
+// Bulk selection (over the currently filtered rules).
+const selectedIds = reactive(new Set<string>());
+const allSelected = computed(
+  () => filteredRules.value.length > 0 && filteredRules.value.every((r) => selectedIds.has(r.id)),
+);
+const someSelected = computed(() => filteredRules.value.some((r) => selectedIds.has(r.id)));
+
+// Clearing on filter change keeps selection consistent with what is visible.
+watch(layerFilter, () => selectedIds.clear());
+
+function toggleSelected(id: string) {
+  if (selectedIds.has(id)) {
+    selectedIds.delete(id);
+  } else {
+    selectedIds.add(id);
+  }
+}
+
+function toggleAll() {
+  if (allSelected.value) {
+    filteredRules.value.forEach((r) => selectedIds.delete(r.id));
+  } else {
+    filteredRules.value.forEach((r) => selectedIds.add(r.id));
+  }
+}
+
+async function handleBulkDelete() {
+  const count = selectedIds.size;
+  if (!confirm(`Delete ${count} selected routing rule(s)?`)) return;
+  await store.bulkDelete([...selectedIds]);
+  selectedIds.clear();
+}
+
+// Import/Export controls — generic data-exchange seam, entity ``cms_routing_rules``.
+const dataExchangeApi = createDataExchangeApi();
+const { load: loadManifest, capabilitiesFor } = useDataExchangeManifest();
+const rulesCapabilities = computed(() => capabilitiesFor('cms_routing_rules'));
+const showImportExport = computed(
+  () => rulesCapabilities.value.can_export || rulesCapabilities.value.can_import,
+);
+const selectedRuleIds = computed(() => [...selectedIds]);
+
+async function handleImportRefresh() {
+  await store.fetchRules();
+  // Import does not auto-sync nginx — remind the operator to reload.
+  reloadError.value = false;
+  reloadMsg.value = 'Imported. Click "Apply & Reload Nginx" to publish nginx-layer rules.';
+  setTimeout(() => { reloadMsg.value = ''; }, 6000);
+}
 
 function showForm(rule?: RoutingRule) {
   editingRule.value = rule;
@@ -223,7 +329,10 @@ async function handleReload() {
   }
 }
 
-onMounted(() => store.fetchRules());
+onMounted(() => {
+  store.fetchRules();
+  loadManifest();
+});
 </script>
 
 <style scoped>
@@ -270,6 +379,9 @@ onMounted(() => store.fetchRules());
 .action-btn.delete { background: #f8d7da; color: #721c24; }
 .action-btn.delete:hover { background: #f5c6cb; }
 .action-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.col-check { width: 40px; text-align: center; }
+.bulk-actions { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: #fef3c7; border-radius: 4px; margin-bottom: 12px; font-size: 14px; color: #92400e; }
 
 .toast { padding: 10px 16px; border-radius: 6px; font-size: 13px; margin-bottom: 12px; }
 .toast--ok { background: #d1fae5; color: #065f46; }

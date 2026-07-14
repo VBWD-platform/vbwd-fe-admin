@@ -111,6 +111,35 @@ describe('routingRules store — updateRule', () => {
   })
 })
 
+describe('routingRules store — bulkDelete', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.clearAllMocks()
+  })
+
+  it('posts the ids to the bulk endpoint and removes them from rules', async () => {
+    const ruleTwo = { ...SAMPLE_RULE, id: 'rule-2', name: 'Second' }
+    mockGet.mockResolvedValue([SAMPLE_RULE, ruleTwo])
+    mockPost.mockResolvedValue({ deleted: 1 })
+    const store = useRoutingRulesStore()
+    await store.fetchRules()
+    await store.bulkDelete(['rule-1'])
+    expect(mockPost).toHaveBeenCalledWith('/admin/cms/routing-rules/bulk', { ids: ['rule-1'] })
+    expect(store.rules).toHaveLength(1)
+    expect(store.rules[0].id).toBe('rule-2')
+  })
+
+  it('removes all supplied ids from rules', async () => {
+    const ruleTwo = { ...SAMPLE_RULE, id: 'rule-2', name: 'Second' }
+    mockGet.mockResolvedValue([SAMPLE_RULE, ruleTwo])
+    mockPost.mockResolvedValue({ deleted: 2 })
+    const store = useRoutingRulesStore()
+    await store.fetchRules()
+    await store.bulkDelete(['rule-1', 'rule-2'])
+    expect(store.rules).toHaveLength(0)
+  })
+})
+
 describe('routingRules store — reloadNginx', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
