@@ -141,6 +141,32 @@ describe('LicenseTab.vue (S135-CLIENT §2.5)', () => {
       );
     });
 
+    it('softens the overall badge to grace when a held key is in grace (lowercase API enum)', async () => {
+      // Regression: the API emits the lowercase enum value ("grace"); the overall
+      // badge must still soften to grace even though the per-key row is lowercase.
+      installGet(
+        licensedPayload({
+          active: true,
+          degraded: false,
+          keys: [
+            {
+              key_id: 'key-grace',
+              scope: ['marketplace'],
+              status: 'grace',
+              customer: 'Acme GmbH',
+              edition: null,
+              expires_at: '2026-07-11T00:00:00+00:00',
+              seat_limit: 3,
+            },
+          ],
+        }),
+      );
+      const wrapper = await mountReady();
+      expect(
+        wrapper.find('[data-testid="license-overall-badge"]').text().toLowerCase(),
+      ).toContain('grace');
+    });
+
     it('renders the global seat usage, showing an em dash for a null used count', async () => {
       const wrapper = await mountReady();
       const seats = wrapper.find('[data-testid="license-seats"]');

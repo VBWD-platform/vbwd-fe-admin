@@ -1119,6 +1119,9 @@
     "removeError": "Could not remove the license key.",
     "confirmRemove": "Remove this license key? Its entitlements will no longer apply.",
     "degradedBanner": "Licensing is required on this instance but no valid key covers it. Licensed features are unavailable until a covering key is added.",
+    "expiredBannerTitle": "License expired",
+    "expiredBanner": "CMS is unavailable until the license is renewed.",
+    "expiredBannerAction": "Manage license",
     "status": {
       "active": "Active",
       "grace": "Grace",

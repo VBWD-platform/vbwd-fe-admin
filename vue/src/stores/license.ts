@@ -23,6 +23,11 @@ export const useLicenseStore = defineStore('license', {
     status: null as LicenseStatusPayload | null,
     loading: false,
     error: null as string | null,
+    // Global "a licensed feature is unavailable" flag, driven by a runtime API
+    // 402 (see `@/api` AdminApiClient). Holds the blocked feature name (e.g.
+    // 'cms') or null when nothing is blocked. The admin layout renders this as
+    // a prominent "License expired" banner.
+    blockedFeature: null as string | null,
   }),
 
   getters: {
@@ -34,6 +39,9 @@ export const useLicenseStore = defineStore('license', {
     },
     isDegraded(state): boolean {
       return state.status?.degraded ?? false;
+    },
+    isLicenseBlocked(state): boolean {
+      return state.blockedFeature !== null;
     },
   },
 
@@ -70,10 +78,24 @@ export const useLicenseStore = defineStore('license', {
       await this.fetchStatus();
     },
 
+    /**
+     * Record that a licensed feature was blocked at runtime (API 402). Called
+     * from the app's `onLicenseBlocked` wiring; drives the "License expired"
+     * banner in the admin layout.
+     */
+    markLicenseBlocked(feature: string): void {
+      this.blockedFeature = feature;
+    },
+
+    clearLicenseBlock(): void {
+      this.blockedFeature = null;
+    },
+
     reset(): void {
       this.status = null;
       this.error = null;
       this.loading = false;
+      this.blockedFeature = null;
     },
   },
 });

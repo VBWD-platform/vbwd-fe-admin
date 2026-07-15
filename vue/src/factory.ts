@@ -21,6 +21,7 @@ import {
 import type { IPlugin } from 'vbwd-view-component';
 import i18n, { initLocale, setLocale, type LocaleCode, availableLocales } from '@/i18n';
 import { extensionRegistry } from '@/plugins/extensionRegistry';
+import { useLicenseStore } from '@/stores/license';
 import { purgeExpiredSession } from '@/utils/session';
 import type { Router } from 'vue-router';
 // fe-core ships its scoped component styles as a separate stylesheet
@@ -208,6 +209,15 @@ export async function createVbwdAdminApp(
       name: 'login',
       query: { redirect: router.currentRoute.value.fullPath },
     });
+  });
+
+  // On a CMS admin API 402 (LICENSE_REQUIRED=true and the license doesn't
+  // cover CMS) surface a prominent "License expired" state instead of a
+  // generic error: flip the global license-blocked flag that AdminLayout
+  // renders as a banner over the content area. Non-CMS 402s and other errors
+  // keep their current behaviour (see `@/api` AdminApiClient).
+  api.onLicenseBlocked((feature) => {
+    useLicenseStore().markLicenseBlocked(feature);
   });
 
   // Initialize locale from stored preference

@@ -279,7 +279,7 @@ const overallStatus = computed<'active' | 'grace' | 'expired' | 'open'>(() => {
   if (!current) return 'open';
   if (current.degraded) return 'expired';
   if (!current.active) return current.configured ? 'expired' : 'open';
-  if (keys.value.some((key) => key.status === 'GRACE')) return 'grace';
+  if (keys.value.some((key) => key.status?.toLowerCase() === 'grace')) return 'grace';
   return 'active';
 });
 
