@@ -38,6 +38,30 @@
         {{ submitError }}
       </div>
 
+      <!--
+        Seat/token provisioning refusal: the backend guard refused the create
+        with a machine-readable code and a follow-up action. Render the message
+        plus a real hyperlink into the fe-user app (a different origin) so the
+        operator can buy tokens / upgrade the plan.
+      -->
+      <div
+        v-if="provisioningError"
+        data-testid="provisioning-error"
+        class="provisioning-error"
+      >
+        <p class="provisioning-message">
+          {{ provisioningError.message }}
+        </p>
+        <a
+          v-if="provisioningError.action"
+          data-testid="provisioning-action-link"
+          class="provisioning-action-link"
+          :href="resolveFeUserUrl(provisioningError.action.url)"
+        >
+          {{ provisioningError.action.label }}
+        </a>
+      </div>
+
       <!-- Account Section -->
       <section class="form-section">
         <h3>{{ $t('users.account') }}</h3>
@@ -281,6 +305,16 @@ import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useUsersStore, type CreateUserData } from '@/stores/users';
 import { useAuthStore } from '@/stores/auth';
+import { resolveFeUserUrl } from '@/config/feUser';
+import type { AdminApiActionHint, StructuredAdminApiError } from '@/api';
+
+/** Provisioning refusal codes that offer a buy-tokens / upgrade-plan action. */
+const PROVISIONING_CODES = ['TOKENS_REQUIRED', 'SEAT_LIMIT_REACHED', 'MAX_USERS_REACHED'];
+
+interface ProvisioningError {
+  message: string;
+  action?: AdminApiActionHint;
+}
 
 const router = useRouter();
 const usersStore = useUsersStore();
@@ -290,6 +324,7 @@ const canManage = computed(() => authStore.hasPermission('users.manage'));
 
 const validationError = ref<string | null>(null);
 const submitError = ref<string | null>(null);
+const provisioningError = ref<ProvisioningError | null>(null);
 const submitting = ref(false);
 
 interface FormDetails {
@@ -358,6 +393,7 @@ async function handleSubmit(): Promise<void> {
   if (!validateForm()) return;
 
   submitError.value = null;
+  provisioningError.value = null;
   submitting.value = true;
 
   try {
@@ -390,7 +426,15 @@ async function handleSubmit(): Promise<void> {
     const user = await usersStore.createUser(data);
     router.push(`/admin/users/${user.id}`);
   } catch (error) {
-    submitError.value = (error as Error).message || t('users.createFailed');
+    const body = (error as StructuredAdminApiError).data;
+    if (body?.code && PROVISIONING_CODES.includes(body.code)) {
+      provisioningError.value = {
+        message: body.error || (error as Error).message || t('users.createFailed'),
+        action: body.action,
+      };
+    } else {
+      submitError.value = (error as Error).message || t('users.createFailed');
+    }
   } finally {
     submitting.value = false;
   }
@@ -451,6 +495,37 @@ function goBack(): void {
   border-radius: 4px;
   margin-bottom: 20px;
   font-size: 14px;
+}
+
+.provisioning-error {
+  border: 1px solid var(--admin-danger, #e74c3c);
+  border-left-width: 4px;
+  background: var(--admin-danger-surface, rgba(231, 76, 60, 0.08));
+  color: var(--admin-text, #2c3e50);
+  padding: 14px 16px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.provisioning-message {
+  margin: 0 0 10px 0;
+}
+
+.provisioning-action-link {
+  display: inline-block;
+  padding: 8px 16px;
+  background: var(--admin-danger, #e74c3c);
+  color: #fff;
+  border-radius: 4px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.provisioning-action-link:hover {
+  background: var(--admin-danger-hover, #c0392b);
+  text-decoration: none;
 }
 
 .form-group {

@@ -1,8 +1,5 @@
 import { signRequest } from '@/utils/hmac';
-
-// Use ?? (not ||) so CI can pass an explicit empty string for same-origin
-// prod builds. Dev default assumes fe-user is reachable at :8080 via docker-compose.
-const USER_APP_URL = import.meta.env.VITE_USER_APP_URL ?? 'http://localhost:8080';
+import { FE_USER_BASE_URL } from '@/config/feUser';
 
 interface RequestOptions {
   method: 'GET' | 'PUT' | 'POST';
@@ -14,7 +11,7 @@ async function request<T>(options: RequestOptions): Promise<T> {
   const bodyStr = options.body ? JSON.stringify(options.body) : '';
   const { timestamp, signature } = await signRequest(options.method, options.path, bodyStr);
 
-  const url = `${USER_APP_URL}${options.path}`;
+  const url = `${FE_USER_BASE_URL}${options.path}`;
   const headers: Record<string, string> = {
     'X-Plugin-Timestamp': timestamp,
     'X-Plugin-Signature': signature
