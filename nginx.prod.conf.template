@@ -1,5 +1,25 @@
+# TLS terminates at the OUTER (host) proxy; this container listens on plain :80,
+# so `$scheme` here is always "http". Relay the scheme the edge actually saw so
+# the backend can build `https://` redirect Locations (Flask reads it via
+# ProxyFix). Without this, any Werkzeug redirect — e.g. the `merge_slashes` 308
+# on a doubled-slash path like `/api/v1//ghrm/config` — emits an absolute
+# `http://` Location, which the browser blocks as mixed content on an HTTPS page.
+# Falls back to `$scheme` when the header is absent (direct container access).
+map $http_x_forwarded_proto $forwarded_proto {
+    default $http_x_forwarded_proto;
+    ""      $scheme;
+}
+
 server {
     listen 80;
+
+    # This server listens on plain :80 behind a TLS-terminating proxy, so nginx
+    # would otherwise glue `http://$host` onto every redirect it generates itself
+    # (e.g. the `location = /` → /admin/ 301, try_files directory redirects).
+    # Keep those Locations relative — the browser resolves them against the
+    # current HTTPS origin.
+    absolute_redirect off;
+    port_in_redirect off;
 
     # AI generation routes (cms-ai) call out to slow LLM / image providers and
     # can take minutes; raise the read/send timeout so long generations don't
@@ -10,6 +30,7 @@ server {
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $forwarded_proto;
         proxy_read_timeout 300s;
         proxy_send_timeout 300s;
     }
@@ -20,6 +41,7 @@ server {
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $forwarded_proto;
         proxy_read_timeout 60s;
     }
 
@@ -41,6 +63,14 @@ server {
     location /admin/ {
         alias /usr/share/nginx/html/;
         index index.html;
+        # `/admin/` itself is served here by the `index` directive (the `$uri/`
+        # arm), NOT by the `= /admin/index.html` exact match below — that one only
+        # fires when a client asks for the full filename. Without this header the
+        # entry document shipped with no Cache-Control at all, so browsers
+        # heuristically cached it and kept loading the previous build's year-
+        # immutable chunks. Hashed assets keep their 1y immutable caching via the
+        # more specific `location /admin/assets/` block above.
+        add_header Cache-Control "no-cache" always;
         try_files $uri $uri/ @admin_spa;
     }
 
@@ -49,12 +79,12 @@ server {
     # index.html and keep requesting the previous build's (now-404) chunk hashes.
     location = /admin/index.html {
         alias /usr/share/nginx/html/index.html;
-        add_header Cache-Control "no-cache";
+        add_header Cache-Control "no-cache" always;
     }
 
     location @admin_spa {
         root /usr/share/nginx/html;
-        add_header Cache-Control "no-cache";
+        add_header Cache-Control "no-cache" always;
         rewrite ^ /index.html break;
     }
 
