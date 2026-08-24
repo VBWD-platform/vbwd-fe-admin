@@ -75,6 +75,17 @@ export const useLlmConnectionsStore = defineStore('llmConnections', {
       return response.connection;
     },
 
+    async testConnection(
+      payload: LlmConnectionPayload,
+    ): Promise<{ ok: boolean; message?: string; sample?: string; error?: string }> {
+      return (await api.post('/admin/llm-connections/test', payload)) as {
+        ok: boolean;
+        message?: string;
+        sample?: string;
+        error?: string;
+      };
+    },
+
     async updateConnection(
       connectionId: string,
       payload: LlmConnectionPayload,

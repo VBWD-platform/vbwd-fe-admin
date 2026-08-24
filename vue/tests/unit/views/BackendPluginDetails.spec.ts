@@ -257,4 +257,51 @@ describe('BackendPluginDetails', () => {
     expect(descriptions.length).toBeGreaterThan(0)
     expect(descriptions[0].text()).toBe('Greeting message')
   })
+
+  it('populates a select from its optionsEndpoint (remote options)', async () => {
+    const detailWithSelect = {
+      ...mockPluginDetail,
+      adminConfig: {
+        tabs: [
+          {
+            id: 'general',
+            label: 'General',
+            fields: [
+              {
+                key: 'conn',
+                label: 'LLM connection',
+                component: 'select',
+                optionsEndpoint: '/admin/llm-connections',
+                optionsKey: 'connections',
+                valueKey: 'slug',
+                labelKey: 'connection_name'
+              }
+            ]
+          }
+        ]
+      },
+      savedConfig: {}
+    }
+    mockGet.mockImplementation((url: string) => {
+      if (url === '/admin/llm-connections') {
+        return Promise.resolve({
+          connections: [
+            { slug: 'deepseek', connection_name: 'DeepSeek' },
+            { slug: 'ollama-local', connection_name: 'Local Ollama' }
+          ]
+        })
+      }
+      return Promise.resolve(detailWithSelect)
+    })
+
+    const wrapper = mountComponent()
+    await flushPromises()
+
+    const options = wrapper.findAll('[data-testid="config-input-conn"] option')
+    expect(options.map(o => o.text())).toEqual(['DeepSeek', 'Local Ollama'])
+    expect(options.map(o => (o.element as HTMLOptionElement).value)).toEqual([
+      'deepseek',
+      'ollama-local'
+    ])
+  })
 })

@@ -108,6 +108,15 @@
       </div>
       <div class="form-actions">
         <button
+          type="button"
+          class="test-btn"
+          data-testid="llm-connection-test"
+          :disabled="testing"
+          @click="handleTest"
+        >
+          {{ testing ? 'Testing…' : 'Test Connection' }}
+        </button>
+        <button
           type="submit"
           class="save-btn"
           data-testid="llm-connection-new-submit"
@@ -124,6 +133,14 @@
           {{ $t('common.cancel') }}
         </button>
       </div>
+      <p
+        v-if="testResult"
+        class="test-result"
+        :class="testResult.ok ? 'test-result--ok' : 'test-result--fail'"
+        data-testid="llm-connection-test-result"
+      >
+        {{ testResult.text }}
+      </p>
     </form>
 
     <div class="search-box">
@@ -342,6 +359,9 @@ function emptyForm(): LlmConnectionPayload {
 const showForm = ref(false);
 const editingId = ref<string | null>(null);
 const formData = reactive<LlmConnectionPayload>(emptyForm());
+// "Test Connection" state: a live check of the current form's endpoint/model/key.
+const testing = ref(false);
+const testResult = ref<{ ok: boolean; text: string } | null>(null);
 
 const selectedIds = reactive(new Set<string>());
 const selectedIdList = computed(() => Array.from(selectedIds));
@@ -429,6 +449,7 @@ function openCreateForm(): void {
   editingId.value = null;
   Object.assign(formData, emptyForm());
   errorMessage.value = null;
+  testResult.value = null;
   showForm.value = true;
 }
 
@@ -444,6 +465,7 @@ function openEditForm(connection: LlmConnection): void {
     is_active: connection.is_active,
   });
   errorMessage.value = null;
+  testResult.value = null;
   showForm.value = true;
 }
 
@@ -477,6 +499,29 @@ async function handleSubmit(): Promise<void> {
     showForm.value = false;
   } catch (error) {
     errorMessage.value = (error as Error).message || t('llmConnections.saveError');
+  }
+}
+
+async function handleTest(): Promise<void> {
+  testing.value = true;
+  testResult.value = null;
+  try {
+    const result = await connectionsStore.testConnection(buildPayload());
+    testResult.value = result.ok
+      ? {
+          ok: true,
+          text: result.sample
+            ? `Connection succeeded — "${result.sample}"`
+            : 'Connection succeeded',
+        }
+      : { ok: false, text: `Failed: ${result.error || 'unknown error'}` };
+  } catch (error) {
+    testResult.value = {
+      ok: false,
+      text: `Failed: ${(error as Error).message || 'request error'}`,
+    };
+  } finally {
+    testing.value = false;
   }
 }
 
@@ -805,5 +850,38 @@ onMounted(() => {
 
 .cancel-btn:hover {
   background: #dde1e5;
+}
+
+.test-btn {
+  padding: 12px 24px;
+  background: #ffffff;
+  color: #0b6b62;
+  border: 1px solid #0b6b62;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-right: auto;
+}
+
+.test-btn:hover:not(:disabled) {
+  background: #e8f4f2;
+}
+
+.test-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.test-result {
+  margin: 10px 0 0;
+  font-size: 13px;
+}
+
+.test-result--ok {
+  color: #1c7c43;
+}
+
+.test-result--fail {
+  color: #c0392b;
 }
 </style>

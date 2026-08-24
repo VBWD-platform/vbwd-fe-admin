@@ -238,7 +238,7 @@
                   @change="configValues[field.key] = ($event.target as HTMLSelectElement).value"
                 >
                   <option
-                    v-for="opt in field.options"
+                    v-for="opt in (field.options || selectOptions[field.key] || [])"
                     :key="opt.value"
                     :value="opt.value"
                   >
@@ -398,6 +398,10 @@ const plugin = ref<PluginDetailResponse | null>(null);
 const configValues = reactive<Record<string, unknown>>({});
 // Fetched options for each `dual-list` field, keyed by field key.
 const dualListOptions = reactive<Record<string, DualListOption[]>>({});
+// Fetched options for each `select` field that declares an optionsEndpoint,
+// keyed by field key (e.g. an LLM-connection picker sourced from /admin/...).
+// The core renderer stays agnostic: the field config names the endpoint + keys.
+const selectOptions = reactive<Record<string, Array<{ value: string; label: string }>>>({});
 // Per-`action`-field UI state (running flag + last result message), keyed by field key.
 const actionRunning = reactive<Record<string, boolean>>({});
 const actionResult = reactive<Record<string, string>>({});
@@ -457,6 +461,36 @@ async function loadDualListOptions(): Promise<void> {
   }
 }
 
+/**
+ * For every `select` field with an `optionsEndpoint`, fetch its choices from
+ * that endpoint (same contract as dual-list: optionsKey/valueKey/labelKey). Lets
+ * a plugin offer a picker sourced from core data — e.g. the LLM connections —
+ * without the renderer knowing the domain. Static `field.options` still win.
+ */
+async function loadSelectOptions(): Promise<void> {
+  const fields: AdminConfigField[] = [];
+  eachField(f => { if (f.component === 'select' && f.optionsEndpoint) fields.push(f); });
+
+  for (const field of fields) {
+    selectOptions[field.key] = selectOptions[field.key] ?? [];
+    try {
+      const valueKey = field.valueKey ?? 'value';
+      const labelKey = field.labelKey ?? 'label';
+      const res = await api.get(field.optionsEndpoint as string) as unknown;
+      const rawList = field.optionsKey
+        ? ((res as Record<string, unknown>)?.[field.optionsKey] as unknown[])
+        : (res as unknown[]);
+      selectOptions[field.key] = (Array.isArray(rawList) ? rawList : [])
+        .map(item => {
+          const rec = item as Record<string, unknown>;
+          return { value: String(rec[valueKey]), label: String(rec[labelKey] ?? rec[valueKey]) };
+        });
+    } catch {
+      // Leave options empty on failure; the saved value still shows.
+    }
+  }
+}
+
 function initConfigValues(): void {
   if (!plugin.value) return;
 
@@ -486,6 +520,7 @@ async function loadPlugin(): Promise<void> {
     plugin.value = data;
     initConfigValues();
     await loadDualListOptions();
+    await loadSelectOptions();
   } catch (e) {
     error.value = (e as Error).message || 'Failed to load plugin';
   } finally {

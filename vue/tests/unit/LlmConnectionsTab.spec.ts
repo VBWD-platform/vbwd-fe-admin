@@ -273,6 +273,50 @@ describe('LlmConnectionsTab.vue (S97.3)', () => {
       });
       expect(api.get).toHaveBeenCalledWith('/admin/llm-connections');
     });
+
+    it('Test Connection posts the form values and shows success', async () => {
+      const wrapper = await mountReady();
+      await wrapper.find('[data-testid="llm-connection-create-btn"]').trigger('click');
+      await wrapper.find('[data-testid="llm-connection-new-model"]').setValue('llama3.2:3b');
+      await wrapper
+        .find('[data-testid="llm-connection-new-endpoint"]')
+        .setValue('http://ollama:11434/v1');
+      await wrapper.find('[data-testid="llm-connection-new-key"]').setValue('ollama');
+      vi.mocked(api.post).mockResolvedValueOnce({ ok: true, sample: 'pong' } as never);
+
+      await wrapper.find('[data-testid="llm-connection-test"]').trigger('click');
+      await flushPromises();
+
+      expect(api.post).toHaveBeenCalledWith(
+        '/admin/llm-connections/test',
+        expect.objectContaining({
+          model: 'llama3.2:3b',
+          api_endpoint: 'http://ollama:11434/v1',
+          api_key: 'ollama',
+        }),
+      );
+      const result = wrapper.find('[data-testid="llm-connection-test-result"]');
+      expect(result.exists()).toBe(true);
+      expect(result.text()).toContain('succeeded');
+    });
+
+    it('Test Connection surfaces the failure reason', async () => {
+      const wrapper = await mountReady();
+      await wrapper.find('[data-testid="llm-connection-create-btn"]').trigger('click');
+      await wrapper.find('[data-testid="llm-connection-new-model"]').setValue('m');
+      await wrapper.find('[data-testid="llm-connection-new-key"]').setValue('k');
+      vi.mocked(api.post).mockResolvedValueOnce({
+        ok: false,
+        error: 'OpenAI request failed',
+      } as never);
+
+      await wrapper.find('[data-testid="llm-connection-test"]').trigger('click');
+      await flushPromises();
+
+      const result = wrapper.find('[data-testid="llm-connection-test-result"]');
+      expect(result.text()).toContain('Failed');
+      expect(result.text()).toContain('OpenAI request failed');
+    });
   });
 
   describe('edit connection', () => {
