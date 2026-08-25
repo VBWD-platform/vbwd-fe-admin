@@ -194,6 +194,17 @@
         </div>
 
         <div class="form-group">
+          <label for="state">{{ $t('profile.state') }}</label>
+          <input
+            id="state"
+            v-model="formData.state"
+            data-testid="state-input"
+            type="text"
+            class="form-input"
+          >
+        </div>
+
+        <div class="form-group">
           <label for="country">{{ $t('profile.country') }}</label>
           <input
             id="country"
@@ -275,6 +286,7 @@ interface ProfileData {
   address_line_1: string;
   address_line_2: string;
   city: string;
+  state: string;
   postal_code: string;
   country: string;
   balance: number;
@@ -306,6 +318,7 @@ const formData = reactive<ProfileData>({
   address_line_1: '',
   address_line_2: '',
   city: '',
+  state: '',
   postal_code: '',
   country: '',
   balance: 0,
@@ -350,6 +363,7 @@ async function fetchProfile(): Promise<void> {
     formData.address_line_1 = (details.address_line_1 as string) || '';
     formData.address_line_2 = (details.address_line_2 as string) || '';
     formData.city = (details.city as string) || '';
+    formData.state = (details.state as string) || '';
     formData.postal_code = (details.postal_code as string) || '';
     formData.country = (details.country as string) || '';
     formData.balance = (details.balance as number) || 0;
@@ -386,6 +400,7 @@ async function handleSave(): Promise<void> {
       address_line_1: formData.address_line_1,
       address_line_2: formData.address_line_2,
       city: formData.city,
+      state: formData.state,
       postal_code: formData.postal_code,
       country: formData.country,
       config: {

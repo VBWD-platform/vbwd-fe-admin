@@ -225,6 +225,19 @@
           </div>
         </div>
 
+        <div class="form-group">
+          <label for="state">{{ $t('profile.state') }}</label>
+          <input
+            id="state"
+            v-model="formData.details.state"
+            name="state"
+            data-testid="state-input"
+            type="text"
+            placeholder="Bavaria"
+            class="form-input"
+          >
+        </div>
+
         <div class="form-row">
           <div class="form-group">
             <label for="country">{{ $t('profile.country') }}</label>
@@ -333,6 +346,7 @@ interface FormDetails {
   address_line_1: string;
   address_line_2: string;
   city: string;
+  state: string;
   postal_code: string;
   country: string;
   phone: string;
@@ -357,6 +371,7 @@ const formData = ref<FormData>({
     address_line_1: '',
     address_line_2: '',
     city: '',
+    state: '',
     postal_code: '',
     country: '',
     phone: '',
@@ -418,6 +433,7 @@ async function handleSubmit(): Promise<void> {
       if (details.address_line_1.trim()) data.details.address_line_1 = details.address_line_1.trim();
       if (details.address_line_2.trim()) data.details.address_line_2 = details.address_line_2.trim();
       if (details.city.trim()) data.details.city = details.city.trim();
+      if (details.state.trim()) data.details.state = details.state.trim();
       if (details.postal_code.trim()) data.details.postal_code = details.postal_code.trim();
       if (details.country.trim()) data.details.country = details.country.trim();
       if (details.phone.trim()) data.details.phone = details.phone.trim();

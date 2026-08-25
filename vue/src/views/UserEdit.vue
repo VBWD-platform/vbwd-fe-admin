@@ -404,6 +404,18 @@
             </div>
 
             <div class="form-group">
+              <label for="state">{{ $t('users.state') }}</label>
+              <input
+                id="state"
+                v-model="formData.state"
+                name="state"
+                data-testid="state-input"
+                type="text"
+                class="form-input"
+              >
+            </div>
+
+            <div class="form-group">
               <label for="country">{{ $t('users.country') }}</label>
               <input
                 id="country"
@@ -698,6 +710,7 @@ interface FormData {
   address_line_1: string;
   address_line_2: string;
   city: string;
+  state: string;
   postal_code: string;
   country: string;
   account_type: string;
@@ -716,6 +729,7 @@ const formData = ref<FormData>({
   address_line_1: '',
   address_line_2: '',
   city: '',
+  state: '',
   postal_code: '',
   country: '',
   account_type: 'private',
@@ -901,6 +915,7 @@ async function fetchUser(): Promise<void> {
       address_line_1: (details.address_line_1 as string) || '',
       address_line_2: (details.address_line_2 as string) || '',
       city: (details.city as string) || '',
+      state: (details.state as string) || '',
       postal_code: (details.postal_code as string) || '',
       country: (details.country as string) || '',
       account_type: (details.account_type as string) || 'private',
@@ -962,6 +977,7 @@ async function handleSubmit(): Promise<void> {
       address_line_1: formData.value.address_line_1,
       address_line_2: formData.value.address_line_2,
       city: formData.value.city,
+      state: formData.value.state,
       postal_code: formData.value.postal_code,
       country: formData.value.country,
       account_type: formData.value.account_type,
